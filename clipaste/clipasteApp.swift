@@ -5,9 +5,11 @@ import SwiftData
 class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboardingDefaultsKey = "hasCompletedOnboarding"
     private var onboardingStateObserver: NSObjectProtocol?
+    private var lastKnownOnboardingState = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let hasCompleted = UserDefaults.standard.bool(forKey: onboardingDefaultsKey)
+        lastKnownOnboardingState = hasCompleted
 
         if !hasCompleted {
             // 引导模式：显示 Dock 图标，允许正常弹窗并获取强焦点
@@ -34,6 +36,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             guard let self else { return }
             let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: self.onboardingDefaultsKey)
+            guard hasCompletedOnboarding != self.lastKnownOnboardingState else { return }
+
+            self.lastKnownOnboardingState = hasCompletedOnboarding
             self.updateActivationPolicy(hasCompletedOnboarding: hasCompletedOnboarding)
         }
     }

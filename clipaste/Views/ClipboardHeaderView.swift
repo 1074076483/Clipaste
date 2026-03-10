@@ -77,6 +77,7 @@ struct ClipboardHeaderView: View {
                 }
                 .padding(.horizontal, 16)
             }
+            .mapVerticalScrollToHorizontal()
 
             Spacer()
 
@@ -85,11 +86,13 @@ struct ClipboardHeaderView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
 
-                TextField("搜索剪贴板...", text: $viewModel.searchText)
+                TextField("搜索历史记录...", text: $viewModel.searchText)
                     .font(.system(size: 13))
-                    .textFieldStyle(PlainTextFieldStyle())
+                    .textFieldStyle(.plain)
                     .autocorrectionDisabled(true)
-                    .disableAutocorrection(true)
+#if os(macOS)
+                    .textContentType(.none)
+#endif
                     .focused($isSearchFocused)
 
                 if !viewModel.searchText.isEmpty {

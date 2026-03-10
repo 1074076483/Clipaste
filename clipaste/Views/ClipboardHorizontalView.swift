@@ -31,6 +31,7 @@ struct ClipboardHorizontalView: View {
             }
             .padding(.horizontal, 24)
         }
+        .mapVerticalScrollToHorizontal()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }

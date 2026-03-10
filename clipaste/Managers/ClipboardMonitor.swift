@@ -57,15 +57,7 @@ final class ClipboardMonitor {
 
         for pasteboardItem in pasteboardItems {
             if let payload = makeFileURLPayload(from: pasteboardItem, appID: appID, appName: appName) {
-                StorageManager.shared.upsertRecord(
-                    hash: payload.hash,
-                    text: payload.text,
-                    appID: payload.appID,
-                    appName: payload.appName,
-                    type: payload.type,
-                    thumbnailPath: nil,
-                    originalFilePath: nil
-                )
+                enqueueUpsert(for: payload)
                 continue
             }
 
@@ -78,15 +70,7 @@ final class ClipboardMonitor {
                 continue
             }
 
-            StorageManager.shared.upsertRecord(
-                hash: payload.hash,
-                text: payload.text,
-                appID: payload.appID,
-                appName: payload.appName,
-                type: payload.type,
-                thumbnailPath: nil,
-                originalFilePath: nil
-            )
+            enqueueUpsert(for: payload)
         }
     }
 
@@ -146,7 +130,7 @@ final class ClipboardMonitor {
         Task.detached(priority: .utility) {
             let contentHash = CryptoHelper.sha256(data: data)
 
-            if StorageManager.shared.recordExists(hash: contentHash) {
+            if await StorageManager.shared.recordExists(hash: contentHash) {
                 StorageManager.shared.upsertRecord(
                     hash: contentHash,
                     text: nil,
@@ -173,6 +157,22 @@ final class ClipboardMonitor {
                 originalFilePath: savedPaths.originalPath
             )
         }
+    }
+
+    private func enqueueUpsert(
+        for payload: ClipboardRecordPayload,
+        thumbnailPath: String? = nil,
+        originalFilePath: String? = nil
+    ) {
+        StorageManager.shared.upsertRecord(
+            hash: payload.hash,
+            text: payload.text,
+            appID: payload.appID,
+            appName: payload.appName,
+            type: payload.type,
+            thumbnailPath: thumbnailPath,
+            originalFilePath: originalFilePath
+        )
     }
 }
 

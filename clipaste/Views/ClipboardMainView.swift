@@ -33,7 +33,6 @@ struct ClipboardMainView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear(perform: focusSearchField)
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
             guard notification.object is ClipboardPanel else { return }
             focusSearchField()

@@ -2,9 +2,10 @@ import AppKit
 import SwiftUI
 
 /// ClipboardPanelManager is responsible for managing the floating clipboard history panel.
-/// It uses a borderless, non-activating NSPanel that floats at the bottom of the screen.
+/// It uses a borderless panel that follows the mouse's screen and presents in front of the Dock.
 class ClipboardPanelManager {
     static let shared = ClipboardPanelManager()
+    private static let panelLevel = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.dockWindow)) + 1)
     
     private var panel: ClipboardPanel?
     private var eventMonitor: Any?
@@ -17,8 +18,8 @@ class ClipboardPanelManager {
     }
     
     private func setupPanel() {
-        // Create an NSPanel with borderless and non-activating style masks.
-        let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel]
+        // Use a regular borderless panel so the search field can establish a normal text input session.
+        let styleMask: NSWindow.StyleMask = [.borderless]
         
         let panel = ClipboardPanel(
             contentRect: .zero,
@@ -33,8 +34,9 @@ class ClipboardPanelManager {
         panel.isOpaque = false
         panel.alphaValue = 0.0 // Start invisible
         
-        // Float above other normal windows
-        panel.level = .floating
+        // Present above the Dock and move with the current Space.
+        panel.level = Self.panelLevel
+        panel.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
         
         // Set the SwiftUI view as the content view controller
         let hostingController = NSHostingController(rootView: ClipboardMainView())
@@ -54,31 +56,36 @@ class ClipboardPanelManager {
     
     /// Shows the panel at the bottom of the screen covering 100% of the screen width and 250pt in height.
     func showPanel() {
-        guard !isVisible, let panel = panel, let screen = NSScreen.main else { return }
+        guard !isVisible, let panel = panel else { return }
         
-        let visibleFrame = screen.visibleFrame
-        let panelHeight: CGFloat = 300
+        let screen = screenContainingMouse() ?? NSScreen.main
+        let screenFrame = screen?.frame ?? .zero
+        // 面板需要容纳顶部 Header + 卡片区域 + 内边距，300pt 会导致卡片底部被裁剪，这里略微调高高度以完整展示内容。
+        let panelHeight: CGFloat = 340
         
-        // Starting frame (slightly below the visible bottom)
+        // Start slightly below the screen edge and animate up so the panel sits in front of the Dock.
         let hiddenFrame = NSRect(
-            x: visibleFrame.minX,
-            y: visibleFrame.minY - 20,
-            width: visibleFrame.width,
+            x: screenFrame.minX,
+            y: screenFrame.minY - 20,
+            width: screenFrame.width,
             height: panelHeight
         )
         
-        // Target frame (exact bottom of the visible frame)
         let visibleFrameRect = NSRect(
-            x: visibleFrame.minX,
-            y: visibleFrame.minY,
-            width: visibleFrame.width,
+            x: screenFrame.minX,
+            y: screenFrame.minY,
+            width: screenFrame.width,
             height: panelHeight
         )
         
         // Set to initial hidden state before animation starts
         panel.setFrame(hiddenFrame, display: true)
         panel.alphaValue = 0.0
+
+        // Establish the app activation context before focusing the panel so IME session setup succeeds.
+        NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
+        panel.becomeFirstResponder()
         
         NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.25
@@ -90,35 +97,33 @@ class ClipboardPanelManager {
             self?.isVisible = true
             self?.setupEventMonitor()
         }
-        
-        // Activate the application as an accessory if needed, but DO NOT ignore other apps.
-        NSApp.activate(ignoringOtherApps: false)
     }
     
-    /// Hides the clipboard panel with an animation.
+    /// Hides the clipboard panel without affecting other app windows.
     func hidePanel() {
-        guard isVisible, let panel = panel else { return }
-        
-        let currentFrame = panel.frame
-        let hiddenFrame = NSRect(
-            x: currentFrame.minX,
-            y: currentFrame.minY - 20,
-            width: currentFrame.width,
-            height: currentFrame.height
-        )
-        
+        guard isVisible else { return }
+        dismissPanelOnly()
+    }
+
+    private func dismissPanelOnly() {
+        guard let panel = panel else { return }
         removeEventMonitor()
-        
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.2
-            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-            
-            panel.animator().setFrame(hiddenFrame, display: true)
-            panel.animator().alphaValue = 0.0
-        }) { [weak self] in
-            panel.orderOut(nil)
-            self?.isVisible = false
-            NSApp.hide(nil)
+        panel.orderOut(nil)
+        panel.resignKey()
+        isVisible = false
+    }
+
+    private func screenContainingMouse() -> NSScreen? {
+        let mouseLocation = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(mouseLocation) }
+    }
+
+    private func hasOtherActiveWindows() -> Bool {
+        guard let panel else { return false }
+
+        let visibleWindows = NSApplication.shared.windows.filter { $0.isVisible }
+        return visibleWindows.contains { window in
+            window !== panel
         }
     }
     
@@ -130,7 +135,12 @@ class ClipboardPanelManager {
         
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, self.isVisible else { return }
-            self.hidePanel()
+
+            if self.hasOtherActiveWindows() {
+                self.dismissPanelOnly()
+            } else {
+                self.hidePanel()
+            }
         }
     }
     

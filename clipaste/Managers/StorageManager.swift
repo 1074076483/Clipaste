@@ -57,10 +57,13 @@ actor ClipboardSearcher {
 final class StorageManager {
     nonisolated static let shared = StorageManager()
     nonisolated let container: ModelContainer
+    private let storeActor: ClipboardStoreActor
 
     private init() {
         do {
-            self.container = try ModelContainer(for: ClipboardRecord.self)
+            let container = try ModelContainer(for: ClipboardRecord.self)
+            self.container = container
+            self.storeActor = ClipboardStoreActor(modelContainer: container)
         } catch {
             fatalError("Failed to initialize SwiftData container: \(error)")
         }
@@ -85,21 +88,8 @@ final class StorageManager {
         return try? context.fetch(descriptor).first
     }
 
-    nonisolated
-    func recordExists(hash: String) -> Bool {
-        let context = ModelContext(container)
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in
-                record.contentHash == hash
-            }
-        )
-        descriptor.fetchLimit = 1
-
-        do {
-            return try context.fetch(descriptor).first != nil
-        } catch {
-            return false
-        }
+    func recordExists(hash: String) async -> Bool {
+        await storeActor.recordExists(hash: hash)
     }
 
     nonisolated
@@ -109,54 +99,23 @@ final class StorageManager {
         appID: String?,
         appName: String?,
         type: String,
-        thumbnailPath: String?,
-        originalFilePath: String?
+        thumbnailPath: String? = nil,
+        originalFilePath: String? = nil
     ) {
         let container = self.container
 
-        // Keep disk I/O off the caller's thread, but do not drop QoS so low that
-        // SwiftData store locking creates a priority inversion with UI/search reads.
-        Task.detached(priority: .userInitiated) {
-            let backgroundContext = ModelContext(container)
-            let descriptor = FetchDescriptor<ClipboardRecord>(
-                predicate: #Predicate<ClipboardRecord> { record in
-                    record.contentHash == hash
-                }
+        Task(priority: .userInitiated) {
+            let storeActor = ClipboardStoreActor(modelContainer: container)
+
+            await storeActor.upsert(
+                hash: hash,
+                text: text,
+                appID: appID,
+                appName: appName,
+                type: type,
+                thumbnailPath: thumbnailPath,
+                originalFilePath: originalFilePath
             )
-            let now = Date()
-
-            do {
-                if let existingRecord = try backgroundContext.fetch(descriptor).first {
-                    existingRecord.timestamp = now
-                    existingRecord.typeRawValue = type
-                    existingRecord.plainText = text
-                    if let thumbnailPath {
-                        existingRecord.thumbnailPath = thumbnailPath
-                    }
-                    if let originalFilePath {
-                        existingRecord.originalFilePath = originalFilePath
-                    }
-                    existingRecord.appBundleID = appID
-                    existingRecord.appLocalizedName = appName
-                } else {
-                    let newRecord = ClipboardRecord(
-                        timestamp: now,
-                        contentHash: hash,
-                        typeRawValue: type,
-                        plainText: text,
-                        thumbnailPath: thumbnailPath,
-                        originalFilePath: originalFilePath,
-                        appBundleID: appID,
-                        appLocalizedName: appName
-                    )
-                    backgroundContext.insert(newRecord)
-                }
-
-                try backgroundContext.save()
-                NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
-            } catch {
-                print("Background save failed: \(error)")
-            }
         }
     }
 
@@ -208,6 +167,78 @@ final class StorageManager {
             return "Image"
         case .color:
             return plainText ?? "Color"
+        }
+    }
+}
+
+@ModelActor
+actor ClipboardStoreActor {
+    func recordExists(hash: String) -> Bool {
+        var descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { record in
+                record.contentHash == hash
+            }
+        )
+        descriptor.fetchLimit = 1
+
+        do {
+            return try modelContext.fetch(descriptor).first != nil
+        } catch {
+            print("❌ [ClipboardStoreActor] 查询失败: \(error)")
+            return false
+        }
+    }
+
+    func upsert(
+        hash: String,
+        text: String?,
+        appID: String?,
+        appName: String?,
+        type: String,
+        thumbnailPath: String?,
+        originalFilePath: String?
+    ) {
+        let descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { record in
+                record.contentHash == hash
+            }
+        )
+
+        do {
+            let now = Date()
+
+            if let existingRecord = try modelContext.fetch(descriptor).first {
+                existingRecord.timestamp = now
+                existingRecord.typeRawValue = type
+                existingRecord.plainText = text
+                existingRecord.appBundleID = appID
+                existingRecord.appLocalizedName = appName
+
+                if let thumbnailPath {
+                    existingRecord.thumbnailPath = thumbnailPath
+                }
+
+                if let originalFilePath {
+                    existingRecord.originalFilePath = originalFilePath
+                }
+            } else {
+                let newRecord = ClipboardRecord(
+                    timestamp: now,
+                    contentHash: hash,
+                    typeRawValue: type,
+                    plainText: text,
+                    thumbnailPath: thumbnailPath,
+                    originalFilePath: originalFilePath,
+                    appBundleID: appID,
+                    appLocalizedName: appName
+                )
+                modelContext.insert(newRecord)
+            }
+
+            try modelContext.save()
+            NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
+        } catch {
+            print("❌ [ClipboardStoreActor] 写入失败: \(error)")
         }
     }
 }
