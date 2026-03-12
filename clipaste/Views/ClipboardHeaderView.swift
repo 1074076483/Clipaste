@@ -29,11 +29,7 @@ struct ClipboardHeaderView: View {
             }
         }
         .padding(.bottom, 8)
-        .background(
-            // WindowDragArea 覆盖整个 Header 区域：只有这里才能拖动面板
-            WindowDragArea()
-                .background(isVerticalLayout ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(Color.clear))
-        )
+        .background(headerBackground)
         .overlay(
             Group {
                 if isVerticalLayout {
@@ -60,6 +56,17 @@ struct ClipboardHeaderView: View {
             }
         } message: {
             Text("确定要删除此分组吗？\n其中的剪贴板记录不会被删除，它们将安全地回到\u{201C}全部\u{201D}列表中。")
+        }
+    }
+
+    @ViewBuilder
+    private var headerBackground: some View {
+        if isVerticalLayout {
+            // 仅竖版允许通过 Header 拖动窗口
+            WindowDragArea()
+                .background(.regularMaterial)
+        } else {
+            Color.clear
         }
     }
 

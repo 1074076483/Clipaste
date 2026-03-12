@@ -50,10 +50,10 @@ struct ClipboardCardView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .frame(width: 16, height: 16)
+                    .frame(width: 32, height: 32)
 
                     Text(item.appName)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
 
@@ -107,14 +107,6 @@ struct ClipboardCardView: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
-        .overlay {
-            if isSelected {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.accentColor, lineWidth: 3)
-                    .shadow(color: Color.accentColor.opacity(0.3), radius: 6)
-                    .allowsHitTesting(false)
-            }
-        }
         // 空格键 QuickLook 气泡（箭头朝下，挂在卡片顶部）
         .popover(
             isPresented: Binding(
@@ -148,16 +140,10 @@ struct ClipboardCardView: View {
                 AsyncImage(url: url) { phase in
                     switch phase {
                     case .success(let img):
-                        ZStack {
-                            // 底层垫一层极其微弱的背景，让透明 PNG 也能优雅展示
-                            Color(nsColor: .controlBackgroundColor).opacity(0.5)
-                            img.resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .padding(8)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipped()
-                        .cornerRadius(8)
+                        img.resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding(8)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     case .empty:
                         ProgressView()
                             .progressViewStyle(.circular)

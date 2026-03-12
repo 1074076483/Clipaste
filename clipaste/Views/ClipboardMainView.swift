@@ -9,43 +9,35 @@ struct ClipboardMainView: View {
 
     var body: some View {
         Group {
-            if viewModel.filteredItems.isEmpty {
-                ClipboardEmptyStateView(viewModel: viewModel)
-            } else {
-                switch clipboardLayout {
-                case .horizontal:
-                    ClipboardHorizontalView(
-                        items: viewModel.filteredItems,
-                        onSelect: { viewModel.userDidSelect(item: $0) },
-                        viewModel: viewModel
-                    )
-                case .vertical:
-                    ClipboardVerticalListView(viewModel: viewModel)
+            if clipboardLayout == .horizontal {
+                VStack(spacing: 0) {
+                    ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
+                    mainContent
                 }
+            } else {
+                mainContent
+                    .safeAreaInset(edge: .top, spacing: 0) {
+                        ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
+                    }
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        HStack {
+                            Text("\(viewModel.filteredItems.count) 个项目")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                        .padding(.top, 4)
+                        .background(.regularMaterial)
+                        .overlay(Divider(), alignment: .top)
+                    }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if clipboardLayout == .vertical {
-                HStack {
-                    Text("\(viewModel.filteredItems.count) 个项目")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-                .padding(.top, 4)
-                .background(.regularMaterial)
-                .overlay(Divider(), alignment: .top)
-            }
-        }
         .background(Color.clear)
         .background(VisualEffectView(material: .popover, blendingMode: .behindWindow))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: clipboardLayout == .vertical ? 14 : 0))
         .edgesIgnoringSafeArea(.all)
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
             guard notification.object is ClipboardPanel else { return }
@@ -62,6 +54,24 @@ struct ClipboardMainView: View {
             if let monitor = localEventMonitor {
                 NSEvent.removeMonitor(monitor)
                 localEventMonitor = nil
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
+        if viewModel.filteredItems.isEmpty {
+            ClipboardEmptyStateView(viewModel: viewModel)
+        } else {
+            switch clipboardLayout {
+            case .horizontal:
+                ClipboardHorizontalView(
+                    items: viewModel.filteredItems,
+                    onSelect: { viewModel.userDidSelect(item: $0) },
+                    viewModel: viewModel
+                )
+            case .vertical:
+                ClipboardVerticalListView(viewModel: viewModel)
             }
         }
     }
@@ -141,4 +151,3 @@ struct ClipboardMainView: View {
 #Preview {
     ClipboardMainView()
 }
-

@@ -136,11 +136,11 @@ class ClipboardPanelManager {
 
     /// Returns the target frame for the given layout, using the correct positioning strategy.
     private func panelFrame(for layout: AppLayoutMode, on screen: NSScreen) -> NSRect {
-        let sf = screen.visibleFrame
         switch layout {
         case .horizontal:
+            let full = screen.frame          // 使用完整屏幕帧，覆盖 Dock 栏
             let height: CGFloat = 320
-            return NSRect(x: sf.minX, y: sf.minY, width: sf.width, height: height)
+            return NSRect(x: full.minX, y: full.minY, width: full.width, height: height)
         case .vertical:
             return verticalFrame(on: screen)
         }
@@ -159,9 +159,9 @@ class ClipboardPanelManager {
             panel.setFrame(target, display: false)
         }
 
-        // 仅允许从 Header 区域拖动（通过 WindowDragArea 视图实现），禁止全窗口背景拖移
-        panel.isMovableByWindowBackground = false
-        panel.isMovable = true
+        // 横版贴底无需阴影（否则顶部出现边框线）；竖版浮窗保留阴影
+        panel.hasShadow = (layout == .vertical)
+        applyPanelMovability(for: layout, panel: panel)
     }
 
     // MARK: - Show / Hide
@@ -189,9 +189,8 @@ class ClipboardPanelManager {
         let layout: AppLayoutMode = isVertical ? .vertical : .horizontal
         let screen = screenContainingMouse() ?? NSScreen.main
 
-        // 仅允许从 Header 区域拖动（通过 WindowDragArea 视图实现），禁止全窗口背景拖移
-        panel.isMovableByWindowBackground = false
-        panel.isMovable = true
+        applyPanelMovability(for: layout, panel: panel)
+        panel.hasShadow = (layout == .vertical)
 
         let visibleFrame = panelFrame(for: layout, on: screen ?? NSScreen.main!)
 
@@ -228,6 +227,11 @@ class ClipboardPanelManager {
             self?.setupEventMonitor()
         }
 
+    }
+
+    private func applyPanelMovability(for layout: AppLayoutMode, panel: ClipboardPanel) {
+        panel.isMovableByWindowBackground = false
+        panel.isMovable = layout == .vertical
     }
 
     /// Hides the clipboard panel — intercepted when the panel is pinned.
