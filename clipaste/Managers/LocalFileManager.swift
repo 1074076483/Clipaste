@@ -1,7 +1,7 @@
 import Foundation
 
-final class LocalFileManager {
-    static let shared = LocalFileManager()
+final class LocalFileManager: @unchecked Sendable {
+    nonisolated static let shared = LocalFileManager()
 
     private let appSupportDirectory: URL
     private let originalsDirectory: URL
@@ -35,7 +35,7 @@ final class LocalFileManager {
         let originalsDirectory = self.originalsDirectory
         let thumbnailsDirectory = self.thumbnailsDirectory
 
-        return try await Task.detached(priority: .utility) {
+        return try await Task.detached(priority: .userInitiated) {
             let fileManager = FileManager.default
             let originalFileName = "\(hash).data"
             let thumbnailFileName = "\(hash)_thumb.png"
@@ -78,7 +78,7 @@ final class LocalFileManager {
             throw LocalFileManagerError.invalidFilePath
         }
 
-        return try await Task.detached(priority: .utility) {
+        return try await Task.detached(priority: .userInitiated) {
             try Data(contentsOf: fileURL)
         }.value
     }

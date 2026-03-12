@@ -68,6 +68,24 @@ enum HistoryRetention: String, CaseIterable, Identifiable {
     }
 }
 
+extension HistoryRetention {
+    /// Returns a threshold date; records created before this date should be deleted.
+    /// Returns nil for `.unlimited` (keep forever).
+    /// Uses Calendar(identifier:) to avoid @MainActor dependency from Calendar.current.
+    nonisolated var expirationDate: Date? {
+        let now = Date()
+        let cal = Calendar(identifier: .gregorian)
+        switch self {
+        case .threeDays:  return now.addingTimeInterval(-3 * 24 * 3600)
+        case .oneWeek:    return now.addingTimeInterval(-7 * 24 * 3600)
+        case .oneMonth:   return cal.date(byAdding: .month, value: -1, to: now)
+        case .sixMonths:  return cal.date(byAdding: .month, value: -6, to: now)
+        case .oneYear:    return cal.date(byAdding: .year,  value: -1, to: now)
+        case .unlimited:  return nil
+        }
+    }
+}
+
 enum PasteTextFormat: String, CaseIterable, Identifiable {
     case original  = "original"
     case plainText = "plainText"

@@ -9,6 +9,18 @@ struct ClipboardCardView: View {
   @State private var isHovering = false
   @FocusState private var isFocused: Bool
 
+  private var previewText: String {
+    if let rawText = item.rawText, !rawText.isEmpty {
+      return rawText
+    }
+
+    return item.textPreview.isEmpty ? "（空）" : item.textPreview
+  }
+
+  private var searchHighlight: String {
+    viewModel?.searchText ?? ""
+  }
+
   private var typeIconName: String {
     if item.contentType == .image {
       return "photo"
@@ -80,9 +92,12 @@ struct ClipboardCardView: View {
           .frame(width: 16, height: 16)
 
           // App Name
-          Text(item.appName)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundColor(.primary)
+          HighlightedText(
+            text: item.appName,
+            highlight: searchHighlight,
+            font: .system(size: 11, weight: .bold),
+            highlightFont: .system(size: 11, weight: .bold)
+          )
             .lineLimit(1)
 
           Spacer(minLength: 4)
@@ -158,23 +173,31 @@ struct ClipboardCardView: View {
   }
 
   private var codePreview: some View {
-    Text(item.textPreview)
-      .font(.system(size: 12, design: .monospaced))
+    HighlightedText(
+      text: previewText,
+      highlight: searchHighlight,
+      font: .system(size: 12, design: .monospaced),
+      foregroundColor: .primary.opacity(0.85),
+      highlightFont: .system(size: 12, weight: .bold, design: .monospaced)
+    )
       .lineLimit(6)
       .lineSpacing(2)
       .multilineTextAlignment(.leading)
-      .foregroundColor(.primary.opacity(0.85))
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .padding(.top, 4)
   }
 
   private var webPreview: some View {
-    Text(item.textPreview)
-      .font(.system(size: 12))
+    HighlightedText(
+      text: previewText,
+      highlight: searchHighlight,
+      font: .system(size: 12),
+      foregroundColor: .primary.opacity(0.85),
+      highlightFont: .system(size: 12, weight: .bold)
+    )
       .lineSpacing(4)
       .lineLimit(6)
       .multilineTextAlignment(.leading)
-      .foregroundColor(.primary.opacity(0.85))
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .padding(.top, 4)
   }
@@ -220,12 +243,16 @@ struct ClipboardCardView: View {
   }
 
   private var textPreview: some View {
-    Text(item.textPreview)
-      .font(.system(size: 12))
+    HighlightedText(
+      text: previewText,
+      highlight: searchHighlight,
+      font: .system(size: 12),
+      foregroundColor: .primary.opacity(0.85),
+      highlightFont: .system(size: 12, weight: .bold)
+    )
       .lineSpacing(4)
       .lineLimit(6)
       .multilineTextAlignment(.leading)
-      .foregroundColor(.primary.opacity(0.85))
       .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       .padding(.top, 4)
   }

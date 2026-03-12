@@ -127,7 +127,7 @@ final class ClipboardMonitor {
     }
 
     private func handleImagePayload(data: Data, appID: String?, appName: String?) {
-        Task.detached(priority: .utility) {
+        Task.detached(priority: .userInitiated) {
             let contentHash = CryptoHelper.sha256(data: data)
 
             if await StorageManager.shared.recordExists(hash: contentHash) {

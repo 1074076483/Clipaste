@@ -6,6 +6,14 @@ struct ClipboardVerticalItemView: View {
 
     @State private var isHovering = false
 
+    private var previewText: String {
+        if let rawText = item.rawText, !rawText.isEmpty {
+            return rawText
+        }
+
+        return item.textPreview.isEmpty ? "（空）" : item.textPreview
+    }
+
     var body: some View {
         HStack(spacing: 14) {
             // 1. 左侧：App 图标
@@ -40,9 +48,7 @@ struct ClipboardVerticalItemView: View {
                         }
                     }
                 } else {
-                    Text(item.textPreview.isEmpty ? "（空）" : item.textPreview)
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(.primary)
+                    HighlightedText(text: previewText, highlight: viewModel.searchText)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }

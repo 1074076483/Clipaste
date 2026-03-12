@@ -60,12 +60,14 @@ final class StorageManager {
     nonisolated static let shared = StorageManager()
     nonisolated let container: ModelContainer
     private let storeActor: ClipboardStoreActor
+    private let cleanupActor: ClipboardStoreActor
 
     private init() {
         do {
             let container = try ModelContainer(for: ClipboardRecord.self, ClipboardGroupModel.self)
             self.container = container
             self.storeActor = ClipboardStoreActor(modelContainer: container)
+            self.cleanupActor = ClipboardStoreActor(modelContainer: container)
         } catch {
             fatalError("Failed to initialize SwiftData container: \(error)")
         }
@@ -104,12 +106,10 @@ final class StorageManager {
         thumbnailPath: String? = nil,
         originalFilePath: String? = nil
     ) {
-        let container = self.container
+        let actor = self.storeActor
 
-        Task(priority: .userInitiated) {
-            let storeActor = ClipboardStoreActor(modelContainer: container)
-
-            await storeActor.upsert(
+        Task.detached(priority: .userInitiated) {
+            await actor.upsert(
                 hash: hash,
                 text: text,
                 appID: appID,
@@ -121,10 +121,19 @@ final class StorageManager {
         }
     }
 
+    /// Call from a @MainActor site: compute expirationDate there, pass the Date in.
+    nonisolated
+    func performAutoCleanup(before expirationDate: Date) {
+        let actor = self.cleanupActor
+        Task.detached(priority: .userInitiated) {
+            await actor.cleanUpExpiredRecords(before: expirationDate)
+        }
+    }
+
     nonisolated
     func deleteRecord(hash: String) {
         let actor = self.storeActor
-        Task(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) {
             await actor.delete(hash: hash)
         }
     }
@@ -132,7 +141,7 @@ final class StorageManager {
     nonisolated
     func createGroup(name: String, systemIconName: String = "folder") {
         let actor = self.storeActor
-        Task(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) {
             await actor.createGroup(name: name, systemIconName: systemIconName)
         }
     }
@@ -140,7 +149,7 @@ final class StorageManager {
     nonisolated
     func assignToGroup(hash: String, groupId: String) {
         let actor = self.storeActor
-        Task(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) {
             await actor.assignRecordToGroup(recordHash: hash, groupId: groupId)
         }
     }
@@ -148,7 +157,7 @@ final class StorageManager {
     nonisolated
     func renameGroup(id: String, newName: String) {
         let actor = self.storeActor
-        Task(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) {
             await actor.updateGroupName(id: id, newName: newName)
         }
     }
@@ -156,7 +165,7 @@ final class StorageManager {
     nonisolated
     func deleteGroup(id: String) {
         let actor = self.storeActor
-        Task(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) {
             await actor.deleteGroup(id: id)
         }
     }
@@ -298,6 +307,40 @@ actor ClipboardStoreActor {
             NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
         } catch {
             print("❌ [ClipboardStoreActor] 写入失败: \(error)")
+        }
+    }
+
+    func cleanUpExpiredRecords(before expirationDate: Date) {
+        let descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate { $0.timestamp < expirationDate }
+        )
+
+        do {
+            let expiredRecords = try modelContext.fetch(descriptor)
+            guard !expiredRecords.isEmpty else { return }
+
+            let fileManager = FileManager.default
+            let localFileManager = LocalFileManager.shared
+
+            for record in expiredRecords {
+                // Delete associated image files to free disk space
+                if record.typeRawValue == ClipboardContentType.image.rawValue {
+                    if let thumbnailPath = record.thumbnailPath,
+                       let url = localFileManager.url(forRelativePath: thumbnailPath) {
+                        try? fileManager.removeItem(at: url)
+                    }
+                    if let originalPath = record.originalFilePath,
+                       let url = localFileManager.url(forRelativePath: originalPath) {
+                        try? fileManager.removeItem(at: url)
+                    }
+                }
+                modelContext.delete(record)
+            }
+
+            try modelContext.save()
+            print("✅ [清理任务] 成功清理了 \(expiredRecords.count) 条过期记录")
+        } catch {
+            print("❌ [清理任务] 清理过期记录失败: \(error)")
         }
     }
 

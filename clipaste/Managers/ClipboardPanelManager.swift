@@ -123,6 +123,11 @@ class ClipboardPanelManager {
         } else {
             panel.setFrame(target, display: false)
         }
+
+        // 动态开关窗口的背景拖拽权限：仅竖屏为 true，横屏为 false
+        let isVertical = layout == .vertical
+        panel.isMovableByWindowBackground = isVertical
+        panel.isMovable = isVertical
     }
 
     // MARK: - Show / Hide
@@ -145,6 +150,10 @@ class ClipboardPanelManager {
         let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
         let layout: AppLayoutMode = isVertical ? .vertical : .horizontal
         let screen = screenContainingMouse() ?? NSScreen.main
+
+        // 每次呼出同步一次拖拽权限：仅竖屏可拖，横屏锁定
+        panel.isMovableByWindowBackground = isVertical
+        panel.isMovable = isVertical
 
         let visibleFrame = panelFrame(for: layout, on: screen ?? NSScreen.main!)
 

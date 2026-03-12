@@ -23,13 +23,6 @@ class ClipboardViewModel: ObservableObject {
             ClipboardGroup(id: UUID(), name: "链接", iconName: "link")
         ]
 
-        $searchText
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.loadData()
-            }
-            .store(in: &cancellables)
-
         NotificationCenter.default.publisher(for: .clipboardDataDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -40,15 +33,30 @@ class ClipboardViewModel: ObservableObject {
         loadData()
         loadCustomGroups()
         self.clipboardMonitor.startMonitoring()
+        triggerAutoCleanup()
+    }
+
+    // MARK: - Auto Cleanup
+
+    func triggerAutoCleanup() {
+        let retentionRaw = UserDefaults.standard.string(forKey: "historyRetention") ?? HistoryRetention.oneMonth.rawValue
+        guard let retention = HistoryRetention(rawValue: retentionRaw),
+              let expirationDate = retention.expirationDate else { return }
+
+        // Defer cleanup so initial UI load and the first clipboard writes do not contend
+        // with the same SwiftData store during app startup.
+        Task.detached(priority: .background) {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            StorageManager.shared.performAutoCleanup(before: expirationDate)
+        }
     }
 
     func loadData() {
-        let currentSearchText = self.searchText
         let container = StorageManager.shared.container
 
         Task(priority: .userInitiated) {
             let searcher = ClipboardSearcher(modelContainer: container)
-            let mappedItems = await searcher.searchAndMap(searchText: currentSearchText)
+            let mappedItems = await searcher.searchAndMap(searchText: "")
             self.items = mappedItems
         }
     }
@@ -83,11 +91,31 @@ class ClipboardViewModel: ObservableObject {
 
     // 动态过滤后的列表数据
     var filteredItems: [ClipboardItem] {
+        var result = items
+
+        // 1. 先进行分组过滤
         if let groupId = selectedGroupId {
-            return items.filter { $0.groupId == groupId }
+            result = result.filter { $0.groupId == groupId }
         }
-        // selectedGroupId == nil 时展示全量数据
-        return items
+
+        // 2. 再进行关键字实时过滤（忽略大小写）
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if !query.isEmpty {
+            result = result.filter { item in
+                let searchableText = (item.rawText ?? item.textPreview).lowercased()
+                if searchableText.contains(query) {
+                    return true
+                }
+
+                if item.appName.lowercased().contains(query) {
+                    return true
+                }
+
+                return false
+            }
+        }
+
+        return result
     }
 
     func loadCustomGroups() {
