@@ -358,8 +358,8 @@ class ClipboardViewModel: ObservableObject {
         EditWindowManager.shared.openEditor(for: item, viewModel: self)
     }
 
-    /// 保存编辑后的文本（由 StandaloneEditView 调用）
-    func saveEditedItem(_ item: ClipboardItem, newText: String) {
+    /// 保存编辑后的文本和 RTF 数据（由 StandaloneEditView 通过 EditorContext 提取后调用）
+    func saveEditedItem(_ item: ClipboardItem, newText: String, newRTFData: Data? = nil) {
         // 1. 乐观 UI：立即更新内存中的 items
         if let idx = items.firstIndex(where: { $0.id == item.id }) {
             // 重新构建 ClipboardItem（因为部分属性是 let 常量）
@@ -383,12 +383,13 @@ class ClipboardViewModel: ObservableObject {
                 groupIDs: item.groupIDs,
                 linkTitle: item.linkTitle,
                 linkIconData: item.linkIconData,
-                isPinned: item.isPinned
+                isPinned: item.isPinned,
+                rtfData: newRTFData ?? item.rtfData
             )
         }
 
-        // 2. 持久化到数据库
-        StorageManager.shared.updateRecordText(hash: item.contentHash, newText: newText)
+        // 2. 持久化到数据库（同时保存纯文本和 RTF 数据）
+        StorageManager.shared.updateRecordText(hash: item.contentHash, newText: newText, newRTFData: newRTFData)
     }
 
     func renameItem(item: ClipboardItem) {

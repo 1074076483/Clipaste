@@ -2,14 +2,20 @@ import SwiftUI
 import AppKit
 
 /// NSTextView-backed rich text editor with native Inspector Bar (formatting toolbar).
+/// ⚠️ Context Extract 模式：NSTextView 内部状态绝不实时回传给 SwiftUI。
+/// 只有保存时通过 EditorContext 闭包一次性提取数据。
 struct NativeRichTextEditor: NSViewRepresentable {
-    @Binding var text: NSAttributedString
+    let initialText: NSAttributedString
+    let context: EditorContext
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator()
     }
 
     func makeNSView(context: Context) -> NSScrollView {
+        // ⚠️ 必须在这里捕获：因为参数 context 会遮蔽 self.context（EditorContext）
+        let editorContext = self.context
+
         let scrollView = NSTextView.scrollableTextView()
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
@@ -37,44 +43,40 @@ struct NativeRichTextEditor: NSViewRepresentable {
         // 非连续布局：支持大文本
         textView.layoutManager?.allowsNonContiguousLayout = true
 
-        // 初始内容
-        textView.textStorage?.setAttributedString(text)
+        // 注入初始文本（一次性，绝不双向同步）
+        textView.textStorage?.setAttributedString(initialText)
 
-        // ⚠️ 使用 NSTextStorageDelegate 代替 NSTextViewDelegate，
-        // 以同时捕获字符变动和属性变动（加粗、颜色等）
-        textView.textStorage?.delegate = context.coordinator
+        // ⚠️ 上下文提权：只有在点击保存时，才会执行这些闭包提取数据，平时绝对不干扰主线程
+        editorContext.getRTFData = { [weak textView] in
+            guard let tv = textView else { return nil }
+            let range = NSRange(location: 0, length: tv.attributedString().length)
+            return try? tv.attributedString().data(from: range, documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
+        }
+
+        editorContext.getPlainText = { [weak textView] in
+            return textView?.string ?? ""
+        }
+
+        editorContext.applyPlainText = { [weak textView] in
+            guard let tv = textView else { return }
+            let plain = tv.string
+            let attr = NSAttributedString(string: plain, attributes: [
+                .font: NSFont.systemFont(ofSize: 14),
+                .foregroundColor: NSColor.textColor
+            ])
+            tv.textStorage?.setAttributedString(attr)
+        }
 
         return scrollView
     }
 
     func updateNSView(_ nsView: NSScrollView, context: Context) {
-        guard let textView = nsView.documentView as? NSTextView else { return }
-        // 只在外部驱动变化时同步（避免死循环）
-        if !context.coordinator.isUpdating {
-            context.coordinator.isUpdating = true
-            textView.textStorage?.setAttributedString(text)
-            context.coordinator.isUpdating = false
-        }
+        // ⚠️ 物理隔离：不再从 SwiftUI 侧同步任何状态到 NSTextView
+        // NSTextView 是唯一的编辑真相源，SwiftUI 不再参与编辑生命周期
     }
 
-    class Coordinator: NSObject, NSTextStorageDelegate {
-        var parent: NativeRichTextEditor
-        var isUpdating = false
-
-        init(_ parent: NativeRichTextEditor) {
-            self.parent = parent
-        }
-
-        // ⚠️ 极其核心：同时监听文本修改和属性修改，避免格式变更被丢弃
-        func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-            guard !isUpdating else { return }
-            if editedMask.contains(.editedAttributes) || editedMask.contains(.editedCharacters) {
-                DispatchQueue.main.async {
-                    self.isUpdating = true
-                    self.parent.text = NSAttributedString(attributedString: textStorage)
-                    self.isUpdating = false
-                }
-            }
-        }
+    class Coordinator: NSObject {
+        // ⚠️ 极其核心：Coordinator 不再持有 parent 引用，不再实现 NSTextStorageDelegate
+        // 彻底切断 NSTextView → SwiftUI 的实时回传通道
     }
 }

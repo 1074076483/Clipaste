@@ -36,6 +36,7 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
     var linkTitle: String?     // 链接预览：网页标题（LinkPresentation 抓取）
     var linkIconData: Data?    // 链接预览：网站图标数据
     var isPinned: Bool         // 固定状态
+    var rtfData: Data?         // 语法高亮后的 RTF 二进制数据
 
     // ⚠️ 性能核心：全部为 let 常量，初始化时一次性计算完毕，SwiftUI 重绘读取耗时 = 0
     let previewText: String?
@@ -62,7 +63,8 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         groupIDs: [String] = [],
         linkTitle: String? = nil,
         linkIconData: Data? = nil,
-        isPinned: Bool = false
+        isPinned: Bool = false,
+        rtfData: Data? = nil
     ) {
         let normalizedGroupIDs = ClipboardItem.normalizedGroupIDs(primaryGroupID: groupId, groupIDs: groupIDs)
 
@@ -85,6 +87,7 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         self.linkTitle = linkTitle
         self.linkIconData = linkIconData
         self.isPinned = isPinned
+        self.rtfData = rtfData
 
         // --- 性能隔离区：只在初始化时执行一次，使用 utf8.count 极速字节级判断 ---
         let sourceText = rawText ?? (textPreview.isEmpty ? nil : textPreview)
@@ -127,7 +130,8 @@ extension ClipboardItem {
         lhs.groupIDs == rhs.groupIDs &&
         lhs.linkTitle == rhs.linkTitle &&
         lhs.linkIconData == rhs.linkIconData &&
-        lhs.isPinned == rhs.isPinned
+        lhs.isPinned == rhs.isPinned &&
+        lhs.rtfData == rhs.rtfData
     }
 
     func hash(into hasher: inout Hasher) {
@@ -148,6 +152,7 @@ extension ClipboardItem {
         hasher.combine(linkTitle)
         hasher.combine(linkIconData)
         hasher.combine(isPinned)
+        hasher.combine(rtfData)
     }
 }
 

@@ -120,10 +120,21 @@ struct ClipboardVerticalItemView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
-                        // 普通文本兜底
-                        HighlightedText(text: previewText, highlight: viewModel.activeSearchQuery)
+                        // 普通文本兜底：优先使用语法高亮 RTF（主题跟随系统深浅模式），否则降级为搜索高亮纯文本
+                        if item.rtfData != nil {
+                            AsyncRichTextRenderer(
+                                rtfData: item.rtfData,
+                                plainText: previewText,
+                                itemId: item.id.uuidString,
+                                maxLength: 300
+                            )
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
+                        } else {
+                            HighlightedText(text: previewText, highlight: viewModel.activeSearchQuery)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                        }
                     }
                 }
             }

@@ -29,8 +29,7 @@ struct ClipboardQuickLookView: View {
                 .frame(width: 280, height: 120)
 
             } else {
-                // 文本预览：使用原生 NSTextView 引擎，支持百万字级懒加载渲染
-                // 设定 20 万字节的绝对物理上限，防止内存炸裂
+                // 文本预览：使用 NativeTextView 引擎（NSTextView 支持深色背景 + 语法高亮色彩完美搭配）
                 let fullText = item.rawText ?? item.textPreview
                 let safeText: String = {
                     if fullText.utf8.count > 200_000 {
@@ -39,7 +38,17 @@ struct ClipboardQuickLookView: View {
                     return fullText
                 }()
 
-                NativeTextView(text: safeText)
+                // 从 rtfData 还原语法高亮的 NSAttributedString
+                let highlightedAttr: NSAttributedString? = {
+                    guard let data = item.rtfData else { return nil }
+                    return try? NSAttributedString(
+                        data: data,
+                        options: [.documentType: NSAttributedString.DocumentType.rtf],
+                        documentAttributes: nil
+                    )
+                }()
+
+                NativeTextView(text: safeText, attributedText: highlightedAttr)
                     .frame(minWidth: 400, idealWidth: 500, maxWidth: 700, minHeight: 300, idealHeight: 400, maxHeight: 600)
                     .padding(16)
             }

@@ -1,25 +1,43 @@
 import SwiftUI
+import AppKit
+
+/// 编辑器特权上下文：通信桥梁类。
+/// NSTextView 内部的状态绝不实时回传给 SwiftUI，只有点击保存时才通过闭包一次性提取。
+class EditorContext {
+    var getRTFData: (() -> Data?)?
+    var getPlainText: (() -> String)?
+    var applyPlainText: (() -> Void)?
+}
 
 struct StandaloneEditView: View {
     let item: ClipboardItem
     @ObservedObject var viewModel: ClipboardViewModel
     let windowId: String
 
-    // 富文本编辑状态
-    @State private var richText: NSAttributedString
+    // ⚠️ 物理隔离：不再使用 @State 持有 NSAttributedString
+    let initialText: NSAttributedString
+    let context = EditorContext()
 
     init(item: ClipboardItem, viewModel: ClipboardViewModel, windowId: String) {
         self.item = item
         self.viewModel = viewModel
         self.windowId = windowId
 
-        // 初始化富文本：优先从 rawText 构建
-        let baseString = item.rawText ?? item.textPreview
-        let attrString = NSAttributedString(string: baseString, attributes: [
-            .font: NSFont.systemFont(ofSize: 14),
-            .foregroundColor: NSColor.textColor
-        ])
-        _richText = State(initialValue: attrString)
+        // 优先从 RTF 数据构建富文本（保留颜色、字体等属性）
+        if let rtfData = item.rtfData,
+           let attrString = try? NSAttributedString(
+               data: rtfData,
+               options: [.documentType: NSAttributedString.DocumentType.rtf],
+               documentAttributes: nil
+           ) {
+            self.initialText = attrString
+        } else {
+            let baseString = item.rawText ?? item.textPreview
+            self.initialText = NSAttributedString(string: baseString, attributes: [
+                .font: NSFont.systemFont(ofSize: 14),
+                .foregroundColor: NSColor.textColor
+            ])
+        }
     }
 
     var body: some View {
@@ -29,12 +47,8 @@ struct StandaloneEditView: View {
                 Spacer()
 
                 Button(action: {
-                    // 转换为纯文本：剥离所有样式
-                    let plainString = richText.string
-                    richText = NSAttributedString(string: plainString, attributes: [
-                        .font: NSFont.systemFont(ofSize: 14),
-                        .foregroundColor: NSColor.textColor
-                    ])
+                    // 转换为纯文本：通过上下文闭包在 NSTextView 内部操作，不回传 SwiftUI
+                    context.applyPlainText?()
                 }) {
                     VStack(spacing: 4) {
                         Image(systemName: "doc.plaintext")
@@ -67,7 +81,7 @@ struct StandaloneEditView: View {
             Divider()
 
             // 富文本编辑器（带原生 Inspector Bar 格式工具栏）
-            NativeRichTextEditor(text: $richText)
+            NativeRichTextEditor(initialText: initialText, context: context)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: 500, minHeight: 400)
@@ -82,8 +96,10 @@ struct StandaloneEditView: View {
         EditWindowManager.shared.forceClose(windowId: windowId)
     }
 
+    /// ⚠️ 上下文提权：保存时才从 NSTextView 一次性提取数据
     private func saveData() {
-        let plainText = richText.string
-        viewModel.saveEditedItem(item, newText: plainText)
+        let plainText = context.getPlainText?() ?? ""
+        let rtfData = context.getRTFData?()
+        viewModel.saveEditedItem(item, newText: plainText, newRTFData: rtfData)
     }
 }

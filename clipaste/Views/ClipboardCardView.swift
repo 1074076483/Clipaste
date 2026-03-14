@@ -234,18 +234,31 @@ struct ClipboardCardView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         } else {
-            // ── 普通文本（含代码）────────────────────────────────────────
-            HighlightedText(
-                text: previewText,
-                highlight: searchHighlight,
-                font: .system(size: 12, design: isCodeContent ? .monospaced : .default),
-                foregroundColor: .primary.opacity(0.85),
-                highlightFont: .system(size: 12, weight: .bold, design: isCodeContent ? .monospaced : .default)
-            )
-            .lineSpacing(3)
-            .lineLimit(8)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            // ── 普通文本（含代码）：优先使用语法高亮 RTF（主题跟随系统深浅模式）
+            if item.rtfData != nil {
+                AsyncRichTextRenderer(
+                    rtfData: item.rtfData,
+                    plainText: previewText,
+                    itemId: item.id.uuidString,
+                    maxLength: 300
+                )
+                .lineSpacing(3)
+                .lineLimit(8)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            } else {
+                HighlightedText(
+                    text: previewText,
+                    highlight: searchHighlight,
+                    font: .system(size: 12, design: isCodeContent ? .monospaced : .default),
+                    foregroundColor: .primary.opacity(0.85),
+                    highlightFont: .system(size: 12, weight: .bold, design: isCodeContent ? .monospaced : .default)
+                )
+                .lineSpacing(3)
+                .lineLimit(8)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
         }
     }
 

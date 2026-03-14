@@ -16,6 +16,7 @@ private struct ClipboardRecordSnapshot: Sendable {
     let linkTitle: String?
     let linkIconData: Data?
     let isPinned: Bool
+    let rtfData: Data?
 }
 
 nonisolated private func normalizedGroupIDs(primaryGroupID: String?, groupIdsRaw: String?) -> [String] {
@@ -89,7 +90,8 @@ actor ClipboardSearcher {
                 groupIdsRaw: record.groupIdsRaw,
                 linkTitle: record.linkTitle,
                 linkIconData: record.linkIconData,
-                isPinned: record.isPinned
+                isPinned: record.isPinned,
+                rtfData: record.rtfData
             )
         }
 
@@ -224,6 +226,21 @@ final class StorageManager {
         }
     }
 
+    /// 对纯文本记录静默运行 Highlightr 语法高亮，成功后回写 rtfData 并刷新 UI。
+    nonisolated
+    func processSyntaxHighlight(hash: String, text: String) {
+        Task(priority: .background) {
+            guard let rtfData = await SyntaxHighlightService.shared.processAndHighlight(text: text) else { return }
+            let container = self.container
+            let highlightActor = ClipboardStoreActor(modelContainer: container)
+            await highlightActor.updateRecordWithRTFData(hash: hash, rtfData: rtfData)
+
+            await MainActor.run {
+                NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
+            }
+        }
+    }
+
     /// 彻底清空所有剪贴板历史，同时删除本地缓存的图片文件。
     /// Actor 完成后广播 `.clipboardDataDidChange`，ViewModel 的 Combine 订阅自动刺激 `loadData()` 清空 UI。
     nonisolated
@@ -288,12 +305,12 @@ final class StorageManager {
         await storeActor.updateItemTimestampToNow(id: id)
     }
 
-    /// 更新记录的 plainText（编辑保存时调用）
+    /// 更新记录的 plainText 和 RTF 数据（编辑保存时调用）
     nonisolated
-    func updateRecordText(hash: String, newText: String) {
+    func updateRecordText(hash: String, newText: String, newRTFData: Data? = nil) {
         let actor = self.storeActor
         Task.detached(priority: .userInitiated) {
-            await actor.updateRecordText(hash: hash, newText: newText)
+            await actor.updateRecordText(hash: hash, newText: newText, newRTFData: newRTFData)
         }
     }
 
@@ -345,7 +362,8 @@ final class StorageManager {
             groupIDs: normalizedGroupIDs(primaryGroupID: record.groupId, groupIdsRaw: record.groupIdsRaw),
             linkTitle: record.linkTitle,
             linkIconData: record.linkIconData,
-            isPinned: record.isPinned
+            isPinned: record.isPinned,
+            rtfData: record.rtfData
         )
     }
 
@@ -374,6 +392,19 @@ final class StorageManager {
 
 @ModelActor
 actor ClipboardStoreActor {
+    /// 将语法高亮后的 RTF 数据静默写入指定文本记录（通过 contentHash 查找记录）。
+    func updateRecordWithRTFData(hash: String, rtfData: Data) {
+        var descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate { $0.contentHash == hash }
+        )
+        descriptor.fetchLimit = 1
+        if let record = try? modelContext.fetch(descriptor).first {
+            record.rtfData = rtfData
+            try? modelContext.save()
+            print("✅ 语法高亮 RTF 已静默更新 (hash: \(hash.prefix(8))…)")
+        }
+    }
+
     /// 将 OCR 提取出的文字静默写入指定图片记录的 plainText 字段（通过 contentHash 查找记录）。
     func updateRecordWithOCRText(hash: String, text: String) {
         var descriptor = FetchDescriptor<ClipboardRecord>(
@@ -707,8 +738,8 @@ actor ClipboardStoreActor {
         }
     }
 
-    /// 更新记录的 plainText 字段（编辑保存时调用）
-    func updateRecordText(hash: String, newText: String) {
+    /// 更新记录的 plainText 和 RTF 数据（编辑保存时调用）
+    func updateRecordText(hash: String, newText: String, newRTFData: Data? = nil) {
         var descriptor = FetchDescriptor<ClipboardRecord>(
             predicate: #Predicate<ClipboardRecord> { $0.contentHash == hash }
         )
@@ -716,6 +747,9 @@ actor ClipboardStoreActor {
         do {
             if let record = try modelContext.fetch(descriptor).first {
                 record.plainText = newText
+                if let rtfData = newRTFData {
+                    record.rtfData = rtfData
+                }
                 try modelContext.save()
                 NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
                 print("✅ [ClipboardStoreActor] 编辑内容已保存 (hash: \(hash.prefix(8))…)")

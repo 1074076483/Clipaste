@@ -187,6 +187,9 @@ final class ClipboardMonitor {
             if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
                 StorageManager.shared.processLinkMetadata(hash: payload.hash, urlString: text.trimmingCharacters(in: .whitespacesAndNewlines))
             }
+
+            // 静默触发后台语法高亮，将代码片段染色后的 RTF 写入数据库
+            StorageManager.shared.processSyntaxHighlight(hash: payload.hash, text: text)
         }
     }
 }

@@ -17,6 +17,7 @@ final class ClipboardRecord {
     var linkTitle: String?     // 链接预览：网页标题
     var linkIconData: Data?    // 链接预览：网站图标数据
     var isPinned: Bool = false // 固定状态
+    var rtfData: Data?         // 语法高亮后的 RTF 二进制数据（Highlightr 生成）
 
     init(
         id: UUID = UUID(),
@@ -32,7 +33,8 @@ final class ClipboardRecord {
         groupIdsRaw: String? = nil,
         linkTitle: String? = nil,
         linkIconData: Data? = nil,
-        isPinned: Bool = false
+        isPinned: Bool = false,
+        rtfData: Data? = nil
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -48,5 +50,6 @@ final class ClipboardRecord {
         self.linkTitle = linkTitle
         self.linkIconData = linkIconData
         self.isPinned = isPinned
+        self.rtfData = rtfData
     }
 }
