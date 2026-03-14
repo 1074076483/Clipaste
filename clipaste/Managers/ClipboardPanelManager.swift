@@ -76,8 +76,9 @@ class ClipboardPanelManager {
             guard let self else { return }
             if let pinned = notification.object as? Bool {
                 self.isPinned = pinned
-                // 固定时提升窗口层级，防止被其他 App 遮挡
-                self.panel?.level = pinned ? .floating : Self.panelLevel
+                // 固定时保持原有层级（dockWindow+1），始终在 Dock 之上
+                // 注意：.floating (level 3) 远低于 Dock 层级，不可使用
+                self.panel?.level = Self.panelLevel
             }
         }
     }

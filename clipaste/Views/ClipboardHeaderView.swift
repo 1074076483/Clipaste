@@ -389,11 +389,12 @@ struct ClipboardHeaderView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .frame(height: 28)
             .frame(maxWidth: .infinity)
-            .background(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .background(Color.clear.background(.regularMaterial))
+            .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
 
             // 右侧：设置菜单
             settingsMenu
@@ -602,7 +603,33 @@ struct FreeScrollWheelView<Content: View>: NSViewRepresentable {
 }
 
 /// 自定义 NSScrollView：拦截垂直滚轮事件，转换为横向滚动。
+/// 同时确保拖拽事件透传到子视图（SwiftUI .onDrop）。
 final class _FreeScrollNSScrollView: NSScrollView {
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        // 注册内部拖拽类型，确保 NSScrollView 不会吞掉拖拽事件
+        registerForDraggedTypes([.init("com.seedpilot.clipboard.item")])
+    }
+
+    // MARK: - 拖拽透传：全部转发给 documentView (SwiftUI HostingView)
+    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        return documentView?.draggingEntered(sender) ?? super.draggingEntered(sender)
+    }
+
+    override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        return documentView?.draggingUpdated(sender) ?? super.draggingUpdated(sender)
+    }
+
+    override func draggingExited(_ sender: (any NSDraggingInfo)?) {
+        documentView?.draggingExited(sender)
+    }
+
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
+        return documentView?.performDragOperation(sender) ?? false
+    }
+
+    // MARK: - 滚轮重定向
     override func scrollWheel(with event: NSEvent) {
         let dy = event.scrollingDeltaY
         let dx = event.scrollingDeltaX
