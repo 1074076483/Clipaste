@@ -8,7 +8,7 @@ final class ClipboardGroupModel {
     var name: String
     var createdAt: Date
     var systemIconName: String
-    var sortOrder: Int
+    var sortOrder: Int = 0
 
     init(id: String = UUID().uuidString, name: String, systemIconName: String = "folder", sortOrder: Int = 0) {
         self.id = id

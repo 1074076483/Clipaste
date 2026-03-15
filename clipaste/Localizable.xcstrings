@@ -368,6 +368,7 @@
       }
     },
     "Add Title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1571,6 +1572,7 @@
       }
     },
     "Edit Content" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5439,6 +5441,9 @@
     "正在同步..." : {
 
     },
+    "添加标题" : {
+
+    },
     "点击后粘贴到当前应用" : {
 
     },
@@ -5446,6 +5451,12 @@
 
     },
     "等待首次同步..." : {
+
+    },
+    "编辑内容" : {
+
+    },
+    "编辑图片" : {
 
     },
     "通过 iCloud 同步" : {

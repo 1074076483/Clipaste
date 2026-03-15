@@ -56,17 +56,25 @@ extension View {
 
                 Divider()
 
-                // 3. Edit
-                Button {
-                    viewModel.editItemContent(item: item)
-                } label: {
-                    Label("Edit Content", systemImage: "pencil")
+                // 3. Edit（上下文感知：按类型分发）
+                if item.contentType == .image {
+                    Button {
+                        viewModel.editImage(item: item)
+                    } label: {
+                        Label("编辑图片", systemImage: "slider.horizontal.3")
+                    }
+                } else {
+                    Button {
+                        viewModel.editItemContent(item: item)
+                    } label: {
+                        Label("编辑内容", systemImage: "square.and.pencil")
+                    }
                 }
 
                 Button {
                     viewModel.renameItem(item: item)
                 } label: {
-                    Label("Add Title", systemImage: "character.cursor.ibeam")
+                    Label("添加标题", systemImage: "character.cursor.ibeam")
                 }
 
                 Divider()

@@ -631,44 +631,49 @@ struct MinimalGroupTabButton: View {
     let action: () -> Void
 
     @State private var isHovered = false
-
-    private var foregroundTint: Color {
-        if isSelected {
-            return .accentColor
-        }
-
-        return Color.primary.opacity(isHovered ? 0.74 : 0.66)
-    }
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
+                    .font(.system(size: 11, weight: .medium))
                 Text(title)
-                    .font(.system(size: 12, weight: isSelected ? .semibold : .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .if(maxTextWidth != nil) { view in
                         view.frame(maxWidth: maxTextWidth!, alignment: .leading)
                     }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
+            .foregroundColor(isSelected ? .accentColor : .secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(isSelected ? Color.accentColor.opacity(0.15) : (isHovered ? Color.secondary.opacity(0.1) : Color.clear))
+                    .fill(backgroundColor)
             )
-            .foregroundColor(foregroundTint)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .fixedSize(horizontal: true, vertical: false)
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.1)) {
+            withAnimation(.easeInOut(duration: 0.12)) {
                 isHovered = hovering
             }
         }
+    }
+
+    private var backgroundColor: Color {
+        if isSelected {
+            return .accentColor.opacity(0.12)
+        }
+        if isHovered {
+            return colorScheme == .dark
+                ? Color.white.opacity(0.06)
+                : Color.black.opacity(0.05)
+        }
+        return .clear
     }
 }
 
