@@ -5,6 +5,7 @@ import Combine
 extension Notification.Name {
     static let selectNextGroup = Notification.Name("selectNextGroup")
     static let selectPreviousGroup = Notification.Name("selectPreviousGroup")
+    static let focusSearchFieldIntent = Notification.Name("focusSearchFieldIntent")
 }
 
 /// 统一分组标识：将智能分类和用户分组抹平为同一类型，供游标引擎使用。
@@ -48,15 +49,25 @@ class ClipboardViewModel: ObservableObject {
     @Published var customGroups: [ClipboardGroupItem] = []
     @Published var selectedGroupId: String? = nil
     @Published var draggedGroup: ClipboardGroupItem? = nil
+    @Published private(set) var quickPasteModifier: ModifierKey = ModifierKey.quickPastePreference()
+    @Published private(set) var plainTextModifier: ModifierKey = ModifierKey.plainTextPreference()
+    @Published private(set) var isQuickPasteModifierHeld: Bool = false
+    @Published private(set) var isPlainTextModifierHeld: Bool = false
     @AppStorage("enable_smart_groups") var isSmartGroupsEnabled: Bool = true
+    @AppStorage("pasteTextFormat") private var pasteTextFormat: PasteTextFormat = .original
 
     private var cancellables: Set<AnyCancellable> = []
     private var filterGeneration: UInt = 0
     private var quickLookLoadTask: Task<Void, Never>? = nil
     private var quickLookLoadGeneration: UInt = 0
     private var quickLookRequestedItemID: UUID? = nil
+    private var keyDownMonitor: Any?
+    private var flagsChangedMonitor: Any?
+    private var currentModifierFlags: NSEvent.ModifierFlags = []
 
     init(clipboardMonitor _: ClipboardMonitor? = nil) {
+        ModifierKey.migrateStoredPreferences()
+
         // 保留旧的固定分组（横版 UI 兼容）
         self.groups = [
             ClipboardGroup(id: UUID(), name: "链接", iconName: "link")
@@ -74,9 +85,209 @@ class ClipboardViewModel: ObservableObject {
         setupFilterPipeline()
         setupGroupSwitchSubscriptions()
         setupSmartGroupsGuard()
+        setupModifierPreferenceSync()
+    }
+
+    deinit {
+        if let keyDownMonitor {
+            NSEvent.removeMonitor(keyDownMonitor)
+        }
+        if let flagsChangedMonitor {
+            NSEvent.removeMonitor(flagsChangedMonitor)
+        }
+    }
+
+    func startKeyboardMonitoring() {
+        stopKeyboardMonitoring()
+        updateModifierFlags(from: NSEvent.modifierFlags)
+
+        flagsChangedMonitor = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
+            self?.updateModifierFlags(from: event.modifierFlags)
+            return event
+        }
+
+        keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            self?.handlePanelKeyDown(event) ?? event
+        }
+    }
+
+    func stopKeyboardMonitoring() {
+        if let keyDownMonitor {
+            NSEvent.removeMonitor(keyDownMonitor)
+            self.keyDownMonitor = nil
+        }
+
+        if let flagsChangedMonitor {
+            NSEvent.removeMonitor(flagsChangedMonitor)
+            self.flagsChangedMonitor = nil
+        }
+
+        resetModifierTracking()
+    }
+
+    func handlePrimaryClickSelection(for itemID: UUID) {
+        handleSelection(
+            id: itemID,
+            isCommand: currentModifierFlags.contains(.command),
+            isShift: currentModifierFlags.contains(.shift)
+        )
+    }
+
+    var reservedSearchModifierFlags: NSEvent.ModifierFlags {
+        quickPasteModifier.eventFlags.union(plainTextModifier.eventFlags)
     }
 
     // MARK: - Combine 防抖搜索管道
+
+    private func setupModifierPreferenceSync() {
+        syncModifierPreferences()
+
+        NotificationCenter.default.publisher(
+            for: UserDefaults.didChangeNotification,
+            object: UserDefaults.standard
+        )
+        .receive(on: DispatchQueue.main)
+        .sink { [weak self] _ in
+            self?.syncModifierPreferences()
+        }
+        .store(in: &cancellables)
+    }
+
+    private func syncModifierPreferences() {
+        let updatedQuickPasteModifier = ModifierKey.quickPastePreference()
+        if quickPasteModifier != updatedQuickPasteModifier {
+            quickPasteModifier = updatedQuickPasteModifier
+        }
+
+        let updatedPlainTextModifier = ModifierKey.plainTextPreference()
+        if plainTextModifier != updatedPlainTextModifier {
+            plainTextModifier = updatedPlainTextModifier
+        }
+
+        updateModifierFlags(from: currentModifierFlags)
+    }
+
+    private func updateModifierFlags(from modifierFlags: NSEvent.ModifierFlags) {
+        currentModifierFlags = modifierFlags.intersection(.deviceIndependentFlagsMask)
+
+        let quickPasteHeld = currentModifierFlags.contains(quickPasteModifier.eventFlags)
+        if isQuickPasteModifierHeld != quickPasteHeld {
+            isQuickPasteModifierHeld = quickPasteHeld
+        }
+
+        let plainTextHeld = currentModifierFlags.contains(plainTextModifier.eventFlags)
+        if isPlainTextModifierHeld != plainTextHeld {
+            isPlainTextModifierHeld = plainTextHeld
+        }
+    }
+
+    private func resetModifierTracking() {
+        currentModifierFlags = []
+        if isQuickPasteModifierHeld {
+            isQuickPasteModifierHeld = false
+        }
+        if isPlainTextModifierHeld {
+            isPlainTextModifierHeld = false
+        }
+    }
+
+    private func handlePanelKeyDown(_ event: NSEvent) -> NSEvent? {
+        updateModifierFlags(from: event.modifierFlags)
+
+        let keyCode = event.keyCode
+
+        if keyCode == 53 {
+            if isQuickLookActive {
+                toggleQuickLook()
+            } else if !searchInput.isEmpty {
+                searchInput = ""
+            } else {
+                NotificationCenter.default.post(name: NSNotification.Name("HidePanelForce"), object: nil)
+            }
+            return nil
+        }
+
+        if keyCode == 49 {
+            if let textView = NSApp.keyWindow?.firstResponder as? NSTextView, textView.hasMarkedText() {
+                return event
+            }
+
+            if let responder = NSApp.keyWindow?.firstResponder,
+               responder is NSTextView || responder is NSTextField {
+                return event
+            }
+
+            if !selectedItemIDs.isEmpty || isQuickLookActive {
+                toggleQuickLook()
+                return nil
+            }
+            return event
+        }
+
+        if keyCode == 36 {
+            if isQuickLookActive {
+                toggleQuickLook()
+                return nil
+            }
+
+            if let firstResponder = NSApp.keyWindow?.firstResponder,
+               firstResponder is NSTextView || firstResponder is NSTextField {
+                return event
+            }
+
+            if let firstID = selectedItemIDs.first,
+               let item = filteredItems.first(where: { $0.id == firstID }) {
+                pasteToActiveApp(item: item)
+            } else if let first = filteredItems.first {
+                pasteToActiveApp(item: first)
+            }
+            return nil
+        }
+
+        if keyCode == 43, event.modifierFlags.contains(.command) {
+            NotificationCenter.default.post(name: .openSettingsIntent, object: nil)
+            return nil
+        }
+
+        if keyCode == 3, event.modifierFlags.contains(.command) {
+            NotificationCenter.default.post(name: .focusSearchFieldIntent, object: nil)
+            return nil
+        }
+
+        if keyCode == 0, event.modifierFlags.contains(.command) {
+            if let responder = NSApp.keyWindow?.firstResponder,
+               responder is NSTextView || responder is NSTextField {
+                return event
+            }
+            selectAll()
+            return nil
+        }
+
+        if !isQuickLookActive {
+            let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
+            if isVertical {
+                if keyCode == 125 {
+                    moveSelection(direction: 1)
+                    return nil
+                }
+                if keyCode == 126 {
+                    moveSelection(direction: -1)
+                    return nil
+                }
+            } else {
+                if keyCode == 124 {
+                    moveSelection(direction: 1)
+                    return nil
+                }
+                if keyCode == 123 {
+                    moveSelection(direction: -1)
+                    return nil
+                }
+            }
+        }
+
+        return event
+    }
 
     private func setupFilterPipeline() {
         // 搜索词变化：防抖 200ms，避免高频输入时大量无意义过滤
@@ -560,7 +771,10 @@ class ClipboardViewModel: ObservableObject {
 
         Task { @MainActor in
             // 2. 双击必须真实写入系统剪贴板
-            let wroteToPasteboard = await PasteEngine.shared.writeToPasteboard(record: record)
+            let wroteToPasteboard = await PasteEngine.shared.writeToPasteboard(
+                record: record,
+                preferPlainText: shouldForcePlainTextOutput
+            )
             guard wroteToPasteboard else {
                 print("❌ 写入系统剪贴板失败: \(item.id)")
                 return
@@ -608,10 +822,21 @@ class ClipboardViewModel: ObservableObject {
         guard let record = StorageManager.shared.fetchRecord(id: item.id) else { return }
 
         Task { @MainActor in
-            _ = await PasteEngine.shared.writeToPasteboard(record: record)
+            _ = await PasteEngine.shared.writeToPasteboard(
+                record: record,
+                preferPlainText: shouldForcePlainTextOutput
+            )
             // 仅复制，不隐藏面板；播放音效作为操作反馈
             NSSound(named: "Pop")?.play()
         }
+    }
+
+    private var shouldForcePlainTextOutput: Bool {
+        if isPlainTextModifierHeld {
+            return true
+        }
+
+        return pasteTextFormat == .plainText
     }
 
     func pinItem(item: ClipboardItem) {

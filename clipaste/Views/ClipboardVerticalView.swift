@@ -2,15 +2,13 @@ import SwiftUI
 
 struct ClipboardVerticalView: View {
     let items: [ClipboardItem]
-    let onSelect: (ClipboardItem) -> Void
+    @ObservedObject var viewModel: ClipboardViewModel
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             LazyVStack(spacing: 16) {
                 ForEach(items) { item in
-                    ClipboardCardView(item: item, onSelect: {
-                        onSelect(item)
-                    })
+                    ClipboardCardView(item: item, viewModel: viewModel)
                         .contentShape(RoundedRectangle(cornerRadius: 16))
                         .help("点击后粘贴到当前应用")
                 }
@@ -24,5 +22,5 @@ struct ClipboardVerticalView: View {
 }
 
 #Preview {
-    ClipboardVerticalView(items: [], onSelect: { _ in })
+    ClipboardVerticalView(items: [], viewModel: ClipboardViewModel())
 }

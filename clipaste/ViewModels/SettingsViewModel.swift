@@ -35,6 +35,14 @@ final class SettingsViewModel: ObservableObject {
         willSet { objectWillChange.send() }
     }
 
+    @AppStorage(ModifierKey.quickPasteDefaultsKey) var quickPasteModifier: ModifierKey = .command {
+        willSet { objectWillChange.send() }
+    }
+
+    @AppStorage(ModifierKey.plainTextDefaultsKey) var plainTextModifier: ModifierKey = .shift {
+        willSet { objectWillChange.send() }
+    }
+
     @AppStorage("playSound") var playSound: Bool = true {
         willSet { objectWillChange.send() }
     }
@@ -70,6 +78,10 @@ final class SettingsViewModel: ObservableObject {
 
 
     init() {
+        ModifierKey.migrateStoredPreferences()
+        quickPasteModifier = ModifierKey.quickPastePreference()
+        plainTextModifier = ModifierKey.plainTextPreference()
+
         // 冷启动时：强制同步系统真实的开机自启状态
         // 防止用户在系统设置里单方面关掉后 Toggle 状态与实际不一致
         let isRegistered = SMAppService.mainApp.status == .enabled

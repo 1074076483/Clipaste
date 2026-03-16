@@ -2,9 +2,15 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ClipboardHeaderView: View {
+    private enum HeaderInputField: Hashable {
+        case newGroupName
+        case editGroupName
+    }
+
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
     @FocusState var isSearchFocused: Bool
+    @FocusState private var focusedHeaderInput: HeaderInputField?
     @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
     @AppStorage("isPanelPinned") private var isPanelPinned: Bool = false
     @AppStorage("isMonitoringPaused") private var isMonitoringPaused: Bool = false
@@ -39,6 +45,12 @@ struct ClipboardHeaderView: View {
         .popover(isPresented: $showEditPopover, arrowEdge: .bottom) {
             editGroupPopover
         }
+        .onChange(of: isShowingNewGroupPopover) { _, isShowing in
+            updatePopoverInputState(isShowing: isShowing, field: .newGroupName)
+        }
+        .onChange(of: showEditPopover) { _, isShowing in
+            updatePopoverInputState(isShowing: isShowing, field: .editGroupName)
+        }
         .alert("Delete Group", isPresented: $showDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -68,7 +80,7 @@ struct ClipboardHeaderView: View {
             searchBarContent
 
             // 第二行：混合分组导航栏（占满全部宽度）
-            hybridGroupBar
+            hybridGroupBar()
         }
         .padding(.horizontal, 14)
         .padding(.top, 14)
@@ -77,97 +89,253 @@ struct ClipboardHeaderView: View {
 
     // MARK: - 横版模式：单行紧凑布局
     private var horizontalHeader: some View {
-        HStack(spacing: 12) {
-            // 固定按钮
-            pinButton
+        HStack(spacing: 0) {
+            horizontalLeadingControls
 
-            // 混合分组导航栏（自动占据左侧空间）
-            hybridGroupBar
+            Spacer(minLength: 20)
 
-            // 搜索框
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
+            HStack(spacing: 6) {
+                horizontalHybridGroupBar
+                    .layoutPriority(1)
 
-                TextField("Search History…", text: $viewModel.searchInput)
-                    .font(.system(size: 13))
-                    .textFieldStyle(.plain)
-                    .autocorrectionDisabled(true)
-#if os(macOS)
-                    .textContentType(.none)
-#endif
-                    .focused($isSearchFocused)
-
-                if !viewModel.searchInput.isEmpty {
-                    Button(action: { viewModel.searchInput = "" }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
+                horizontalSearchBar
             }
-            .padding(.horizontal, 12)
-            .frame(height: 28)
-            .frame(width: 240)
-            .background(Color.clear.background(.regularMaterial))
-            .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
 
-            Spacer()
+            Spacer(minLength: 20)
 
-            // 设置菜单
-            settingsMenu
+            horizontalTrailingControls
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.top, 12)
         .padding(.bottom, 4)
     }
 
+    private var hasHorizontalScrollableGroupTabs: Bool {
+        !viewModel.customGroups.isEmpty || !viewModel.visibleSmartFilters.isEmpty
+    }
+
+    private var horizontalScrollableGroupTabsWidth: CGFloat {
+        let customGroupWidth = CGFloat(viewModel.customGroups.count) * 72
+        let smartFilterWidth = CGFloat(viewModel.visibleSmartFilters.count) * 70
+        let mixedSectionDividerWidth: CGFloat =
+            (!viewModel.customGroups.isEmpty && !viewModel.visibleSmartFilters.isEmpty) ? 14 : 0
+
+        return min(680, customGroupWidth + smartFilterWidth + mixedSectionDividerWidth)
+    }
+
+    private var horizontalLeadingControls: some View {
+        HStack(spacing: 0) {
+            pinButton
+        }
+        .frame(width: 28, alignment: .leading)
+    }
+
+    private var horizontalTrailingControls: some View {
+        HStack(spacing: 0) {
+            settingsMenu
+        }
+        .frame(width: 28, alignment: .trailing)
+    }
+
+    private var horizontalSearchBar: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+
+            TextField("Search History…", text: $viewModel.searchInput)
+                .font(.system(size: 13))
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled(true)
+#if os(macOS)
+                .textContentType(.none)
+#endif
+                .focused($isSearchFocused)
+
+            if !viewModel.searchInput.isEmpty {
+                Button(action: { viewModel.searchInput = "" }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 28)
+        .frame(width: 240)
+        .background(Color.clear.background(.regularMaterial))
+        .clipShape(Capsule())
+        .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+    }
+
+    private var horizontalHybridGroupBar: some View {
+        HStack(spacing: 4) {
+            allGroupTabButton
+
+            if hasHorizontalScrollableGroupTabs {
+                FreeScrollWheelView {
+                    scrollableGroupTabsStrip
+                }
+                .frame(width: horizontalScrollableGroupTabsWidth, alignment: .leading)
+            }
+
+            Divider()
+                .frame(height: 14)
+                .opacity(0.5)
+
+            groupOverflowMenu
+        }
+    }
+
     // MARK: - 核心组件：单行融合导航栏
     // 可滚动区域：[全部][文本][链接][代码][图片] │ [自定义分组…]
     // 固定区域：溢出菜单 ⋯
-    private var hybridGroupBar: some View {
-        HStack(spacing: 6) {
-            // ── 可滚动区域：智能分类 + 自定义分组 ──────────────────
-            FreeScrollWheelView {
-                HStack(spacing: 4) {
-                    // 区域 A：智能分类
-                    MinimalGroupTabButton(
-                        title: String(localized: "All"),
-                        icon: "tray.2.fill",
-                        isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil
-                    ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            viewModel.currentFilter = nil
-                            viewModel.selectedGroupId = nil
+    private var allGroupTabButton: some View {
+        MinimalGroupTabButton(
+            title: String(localized: "All"),
+            icon: "tray.2.fill",
+            isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil
+        ) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.currentFilter = nil
+                viewModel.selectedGroupId = nil
+            }
+        }
+    }
+
+    private var scrollableGroupTabsStrip: some View {
+        HStack(spacing: 4) {
+            scrollableGroupTabsContent
+        }
+        .padding(.horizontal, 2)
+        .fixedSize(horizontal: true, vertical: false)
+        .coordinateSpace(name: GroupBarDropSpace.name)
+        .onPreferenceChange(GroupTabFramePreferenceKey.self) { frames in
+            groupTabFrames = frames
+        }
+        .onDrop(
+            of: [ClipboardDragType.group],
+            delegate: GroupBarDropDelegate(
+                orderedGroupIDs: viewModel.customGroups.map(\.id),
+                groupFrames: groupTabFrames,
+                reorderTarget: $reorderTarget,
+                viewModel: viewModel
+            )
+        )
+    }
+
+    @ViewBuilder
+    private var scrollableGroupTabsContent: some View {
+        ForEach(viewModel.customGroups) { group in
+            groupTabButton(group: group)
+        }
+
+        if !viewModel.customGroups.isEmpty && !viewModel.visibleSmartFilters.isEmpty {
+            Divider()
+                .frame(height: 16)
+                .opacity(0.5)
+        }
+
+        ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
+            MinimalGroupTabButton(
+                title: type.filterLabel,
+                icon: type.systemImage,
+                isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil
+            ) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    viewModel.currentFilter = type
+                    viewModel.selectedGroupId = nil
+                }
+            }
+        }
+    }
+
+    private var groupOverflowMenu: some View {
+        Menu {
+            Section("Smart Filters") {
+                Button(action: {
+                    viewModel.currentFilter = nil
+                    viewModel.selectedGroupId = nil
+                }) {
+                    HStack {
+                        Label(String(localized: "All"), systemImage: "tray.2.fill")
+                        if viewModel.currentFilter == nil && viewModel.selectedGroupId == nil {
+                            Spacer()
+                            Image(systemName: "checkmark")
                         }
                     }
+                }
 
-                    // 区域 A：自定义分组（紧贴"全部"右侧）
-                    ForEach(viewModel.customGroups) { group in
-                        groupTabButton(group: group)
-                    }
-
-                    // 分割线（仅在自定义分组和智能分类同时存在时显示）
-                    if !viewModel.customGroups.isEmpty && !viewModel.visibleSmartFilters.isEmpty {
-                        Divider()
-                            .frame(height: 16)
-                            .opacity(0.5)
-                    }
-
-                    // 区域 B：智能分类
-                    ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
-                        MinimalGroupTabButton(
-                            title: type.filterLabel,
-                            icon: type.systemImage,
-                            isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil
-                        ) {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                viewModel.currentFilter = type
-                                viewModel.selectedGroupId = nil
+                ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
+                    Button(action: {
+                        viewModel.currentFilter = type
+                        viewModel.selectedGroupId = nil
+                    }) {
+                        HStack {
+                            Label(type.filterLabel, systemImage: type.systemImage)
+                            if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
+                                Spacer()
+                                Image(systemName: "checkmark")
                             }
                         }
                     }
+                }
+            }
+
+            if !viewModel.customGroups.isEmpty {
+                Section("Groups") {
+                    ForEach(viewModel.customGroups) { group in
+                        Button(action: {
+                            withAnimation {
+                                viewModel.selectedGroupId = group.id
+                                viewModel.currentFilter = nil
+                            }
+                        }) {
+                            HStack {
+                                Label(group.name, systemImage: group.systemIconName)
+                                if viewModel.selectedGroupId == group.id {
+                                    Spacer()
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Divider()
+
+            Button(action: {
+                newGroupName = ""
+                newGroupIcon = "folder"
+                isShowingNewGroupPopover = true
+            }) {
+                Label(String(localized: "New Group…"), systemImage: "plus")
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .frame(width: 24)
+        .help(String(localized: "All Groups"))
+        .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
+            newGroupPopover
+        }
+    }
+
+    @ViewBuilder
+    private func hybridGroupBar(scrollWidth: CGFloat? = nil) -> some View {
+        HStack(spacing: 4) {
+            // ── 可滚动区域：智能分类 + 自定义分组 ──────────────────
+            FreeScrollWheelView {
+                HStack(spacing: 4) {
+                    allGroupTabButton
+                    scrollableGroupTabsContent
                 }
                 .padding(.horizontal, 2)
                 .fixedSize(horizontal: true, vertical: false)
@@ -185,87 +353,14 @@ struct ClipboardHeaderView: View {
                     )
                 )
             }
+            .frame(width: scrollWidth, alignment: .leading)
 
             Divider()
                 .frame(height: 14)
                 .opacity(0.5)
 
             // ── 固定：溢出菜单 ⋯ ─────────────────────────────────
-            Menu {
-                Section("Smart Filters") {
-                    Button(action: {
-                        viewModel.currentFilter = nil
-                        viewModel.selectedGroupId = nil
-                    }) {
-                        HStack {
-                            Label(String(localized: "All"), systemImage: "tray.2.fill")
-                            if viewModel.currentFilter == nil && viewModel.selectedGroupId == nil {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-
-                    ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
-                        Button(action: {
-                            viewModel.currentFilter = type
-                            viewModel.selectedGroupId = nil
-                        }) {
-                            HStack {
-                                Label(type.filterLabel, systemImage: type.systemImage)
-                                if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if !viewModel.customGroups.isEmpty {
-                    Section("Groups") {
-                        ForEach(viewModel.customGroups) { group in
-                            Button(action: {
-                                withAnimation {
-                                    viewModel.selectedGroupId = group.id
-                                    viewModel.currentFilter = nil
-                                }
-                            }) {
-                                HStack {
-                                    Label(group.name, systemImage: group.systemIconName)
-                                    if viewModel.selectedGroupId == group.id {
-                                        Spacer()
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Divider()
-
-                Button(action: {
-                    newGroupName = ""
-                    newGroupIcon = "folder"
-                    isShowingNewGroupPopover = true
-                }) {
-                    Label(String(localized: "New Group…"), systemImage: "plus")
-                }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.secondary)
-                    .frame(width: 24, height: 24)
-                    .contentShape(Rectangle())
-            }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .frame(width: 24)
-            .help(String(localized: "All Groups"))
-            .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
-                newGroupPopover
-            }
+            groupOverflowMenu
         }
     }
 
@@ -533,7 +628,7 @@ struct ClipboardHeaderView: View {
                                     .stroke(Color.secondary.opacity(0.25))
                             )
                         Image(systemName: newGroupIcon)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.primary)
                             .font(.system(size: 15))
                     }
                 }
@@ -544,7 +639,9 @@ struct ClipboardHeaderView: View {
 
                 TextField("Group Name", text: $newGroupName)
                     .textFieldStyle(.roundedBorder)
+                    .tint(.primary)
                     .frame(width: 150)
+                    .focused($focusedHeaderInput, equals: .newGroupName)
                     .onSubmit { commitNewGroup() }
             }
 
@@ -579,7 +676,7 @@ struct ClipboardHeaderView: View {
                                     .stroke(Color.secondary.opacity(0.25))
                             )
                         Image(systemName: editGroupIcon)
-                            .foregroundColor(.accentColor)
+                            .foregroundColor(.primary)
                             .font(.system(size: 15))
                     }
                 }
@@ -590,7 +687,9 @@ struct ClipboardHeaderView: View {
 
                 TextField("Group Name", text: $editGroupName)
                     .textFieldStyle(.roundedBorder)
+                    .tint(.primary)
                     .frame(width: 150)
+                    .focused($focusedHeaderInput, equals: .editGroupName)
                     .onSubmit { commitEditGroup() }
             }
 
@@ -612,6 +711,19 @@ struct ClipboardHeaderView: View {
             viewModel.updateGroupIcon(group: updatedGroup, newIcon: editGroupIcon)
         }
         showEditPopover = false
+    }
+
+    private func updatePopoverInputState(isShowing: Bool, field: HeaderInputField) {
+        TypeToSearchService.shared.isPaused = isShowingNewGroupPopover || showEditPopover
+
+        if isShowing {
+            isSearchFocused = false
+            DispatchQueue.main.async {
+                focusedHeaderInput = field
+            }
+        } else if focusedHeaderInput == field {
+            focusedHeaderInput = nil
+        }
     }
 }
 

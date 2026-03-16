@@ -4,8 +4,7 @@ import SwiftUI
 struct ModifierPickerView: View {
     let title: String
     let suffix: String
-    @Binding var selection: String
-    let options: [String]
+    @Binding var selection: ModifierKey
 
     var body: some View {
         HStack {
@@ -16,11 +15,12 @@ struct ModifierPickerView: View {
             }
             Spacer()
             Picker("", selection: $selection) {
-                ForEach(options, id: \.self) { option in
-                    Text(option).tag(option)
+                ForEach(ModifierKey.allCases) { option in
+                    Text(option.pickerLabel).tag(option)
                 }
             }
             .labelsHidden()
+            .pickerStyle(.menu)
             .fixedSize()
         }
     }

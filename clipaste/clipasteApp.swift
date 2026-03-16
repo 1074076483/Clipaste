@@ -3,6 +3,10 @@ import AppKit
 import KeyboardShortcuts
 import SwiftData
 
+extension Notification.Name {
+    static let openSettingsIntent = Notification.Name("openSettingsIntent")
+}
+
 class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboardingDefaultsKey = "hasCompletedOnboarding"
     private let globalShortcutNames: [KeyboardShortcuts.Name] = [

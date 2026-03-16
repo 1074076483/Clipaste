@@ -2,14 +2,14 @@ import SwiftUI
 
 struct ClipboardCardView: View {
     let item: ClipboardItem
-    var onSelect: () -> Void = {}
-    var viewModel: ClipboardViewModel? = nil
+    @ObservedObject var viewModel: ClipboardViewModel
+    var quickPasteIndex: Int? = nil
     @ObservedObject private var renderEngine = ListRenderEngine.shared
 
     @State private var isHovered = false
 
     private var isSelected: Bool {
-        viewModel?.selectedItemIDs.contains(item.id) ?? false
+        viewModel.selectedItemIDs.contains(item.id)
     }
 
     private var previewText: String {
@@ -17,7 +17,15 @@ struct ClipboardCardView: View {
         return item.textPreview.isEmpty ? String(localized: "(Empty)") : item.textPreview
     }
 
-    private var searchHighlight: String { viewModel?.activeSearchQuery ?? "" }
+    private var searchHighlight: String { viewModel.activeSearchQuery }
+
+    private var quickPasteNumber: Int? {
+        quickPasteIndex.map { $0 + 1 }
+    }
+
+    private var showsQuickPasteBadge: Bool {
+        quickPasteNumber != nil && viewModel.isQuickPasteModifierHeld
+    }
 
     // MARK: - Body
     var body: some View {
@@ -101,24 +109,45 @@ struct ClipboardCardView: View {
             VisualEffectView(material: .popover, blendingMode: .withinWindow)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         )
+        .background {
+            if let quickPasteIndex {
+                QuickPasteShortcutHost(
+                    shortcutIndex: quickPasteIndex,
+                    modifierKey: viewModel.quickPasteModifier
+                ) {
+                    viewModel.pasteToActiveApp(item: item)
+                }
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            if let quickPasteNumber, showsQuickPasteBadge {
+                QuickPasteShortcutBadge(
+                    modifierKey: viewModel.quickPasteModifier,
+                    number: quickPasteNumber,
+                    color: .secondary
+                )
+                .padding(.trailing, 12)
+                .padding(.bottom, 12)
+                .transition(.opacity)
+            }
+        }
         // (Phase 1: 彩色边线已移除，由 Material Badge 取代)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: Color.black.opacity(0.08), radius: 6, x: 0, y: 3)
+        .animation(.easeInOut(duration: 0.15), value: showsQuickPasteBadge)
         // 空格键 QuickLook 气泡（箭头朝下，挂在卡片顶部）
         .popover(
             isPresented: Binding(
-                get: { viewModel?.quickLookItem?.id == item.id },
+                get: { viewModel.quickLookItem?.id == item.id },
                 set: { isShowing in
-                    if !isShowing, viewModel?.quickLookItem?.id == item.id {
-                        viewModel?.dismissQuickLook()
+                    if !isShowing, viewModel.quickLookItem?.id == item.id {
+                        viewModel.dismissQuickLook()
                     }
                 }
             ),
             arrowEdge: .bottom
         ) {
-            if let viewModel {
-                ClipboardQuickLookView(item: item, viewModel: viewModel)
-            }
+            ClipboardQuickLookView(item: item, viewModel: viewModel)
         }
         // 分享锚点：用 background 捕获 NSView + onChange 触发分享
         .modifier(OptionalShareModifier(item: item, viewModel: viewModel))
@@ -126,12 +155,12 @@ struct ClipboardCardView: View {
         .onAppear { renderEngine.prepareIfNeeded(for: item) }
         .clipboardContextMenu(for: item, viewModel: viewModel)
         .onDrag {
-            viewModel?.draggedItemId = item.id
+            viewModel.draggedItemId = item.id
             return item.universalDragProvider
         } preview: {
             ClipboardDragPreview(item: item)
         }
-        .modifier(ClipboardCardActionModifier(item: item, onSelect: onSelect, viewModel: viewModel))
+        .modifier(ClipboardCardActionModifier(item: item, viewModel: viewModel))
     }
 
     // MARK: - Content Body
@@ -342,7 +371,8 @@ private struct CheckerboardBackground: View {
             appName: "Safari",
             appIconName: "safari",
             rawText: "Preview text of the copied content goes here. It might be long and should truncate."
-        )
+        ),
+        viewModel: ClipboardViewModel()
     )
     .padding()
     .background(Color.black)

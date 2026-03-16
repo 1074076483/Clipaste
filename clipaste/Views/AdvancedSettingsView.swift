@@ -48,7 +48,7 @@ struct AdvancedSettingsView: View {
             } header: {
                 Text("Text Format")
             } footer: {
-                Text("Hold Option and double-click to temporarily reverse the current text format setting.")
+                Text("Hold \(viewModel.plainTextModifier.pickerLabel) while copying or pasting to force plain text output.")
             }
 
             // ── Interface ──

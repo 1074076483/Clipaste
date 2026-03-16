@@ -2,8 +2,7 @@ import SwiftUI
 import KeyboardShortcuts
 
 struct ShortcutsSettingsView: View {
-    @AppStorage("modifier_quick_paste") private var quickPasteModifier: String = "⌘ Command"
-    @AppStorage("modifier_plain_text") private var plainTextModifier: String = "⇧ Shift"
+    @EnvironmentObject private var viewModel: SettingsViewModel
 
     var body: some View {
         Form {
@@ -31,19 +30,17 @@ struct ShortcutsSettingsView: View {
                 ModifierPickerView(
                     title: String(localized: "Quick Paste"),
                     suffix: "+ 1…9",
-                    selection: $quickPasteModifier,
-                    options: ["⌘ Command", "⌥ Option", "⌃ Control", "⇧ Shift"]
+                    selection: $viewModel.quickPasteModifier
                 )
                 ModifierPickerView(
                     title: String(localized: "Plain Text Mode"),
                     suffix: "",
-                    selection: $plainTextModifier,
-                    options: ["⌘ Command", "⌥ Option", "⌃ Control", "⇧ Shift"]
+                    selection: $viewModel.plainTextModifier
                 )
             } header: {
                 Text("Modifier Keys")
             } footer: {
-                Text("Hold the modifier key while clicking an item to trigger the corresponding action.")
+                Text("Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting.")
             }
 
             // ── 重置 ──
@@ -72,6 +69,7 @@ struct ShortcutsSettingsView: View {
 
 #Preview {
     ShortcutsSettingsView()
+        .environmentObject(SettingsViewModel())
 }
 
 private struct ShortcutRecorderRow: View {

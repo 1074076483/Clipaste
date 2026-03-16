@@ -119,6 +119,12 @@ struct SettingsWindowObserver: NSViewRepresentable {
 
             guard let window else { return }
             window.titlebarSeparatorStyle = .none
+
+            // Override macOS auto-generated title (which uses system locale)
+            // with a properly localized title using the in-app locale.
+            let title = String(localized: "Clipaste Settings")
+            window.title = title
+
             Task { @MainActor in
                 SettingsWindowCoordinator.register(window: window)
             }

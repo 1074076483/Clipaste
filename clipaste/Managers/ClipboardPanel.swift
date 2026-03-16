@@ -49,8 +49,8 @@ final class ClipboardPanel: NSPanel {
         // Only act when vertical component dominates
         guard abs(dy) > abs(dx), dy != 0 else { return false }
 
-        // Find the horizontal NSScrollView (cached for performance)
-        guard let scrollView = findHorizontalScrollView() else { return false }
+        // Route scrolling to the horizontal scroll view currently under the pointer.
+        guard let scrollView = findHorizontalScrollView(at: event.locationInWindow) else { return false }
 
         // ── Manually scroll the NSScrollView horizontally ──
         let multiplier: CGFloat = event.hasPreciseScrollingDeltas ? 1.0 : 10.0
@@ -75,10 +75,12 @@ final class ClipboardPanel: NSPanel {
     /// NSScrollView. Validates that the document view is actually wider than the clip view
     /// (i.e. genuinely horizontally scrollable), preventing false matches from SwiftUI
     /// internal scroll views used by sheets, forms, popovers, etc.
-    private func findHorizontalScrollView() -> NSScrollView? {
-        // Validate cache: must still belong to this window AND be genuinely horizontally scrollable
+    private func findHorizontalScrollView(at locationInWindow: NSPoint) -> NSScrollView? {
+        // Validate cache: must still belong to this window, remain scrollable,
+        // and still be under the current pointer location.
         if let sv = cachedScrollView, sv.window === self,
-           sv.frame.width > 200,
+           sv.frame.width > 60,
+           containsWindowPoint(locationInWindow, in: sv),
            isHorizontallyScrollable(sv) {
             return sv
         }
@@ -86,22 +88,43 @@ final class ClipboardPanel: NSPanel {
         cachedScrollView = nil
         guard let root = contentView else { return nil }
         var queue: [NSView] = [root]
+        var hoveredScrollView: NSScrollView?
+        var hoveredScore: CGFloat = .greatestFiniteMagnitude
+        var bestScrollView: NSScrollView?
+        var bestScore: CGFloat = 0
         while !queue.isEmpty {
             let view = queue.removeFirst()
             if let sv = view as? NSScrollView,
-               sv.frame.width > 200,
+               sv.frame.width > 60,
                isHorizontallyScrollable(sv) {
-                cachedScrollView = sv
-                return sv
+                let areaScore = sv.frame.width * sv.frame.height
+
+                if containsWindowPoint(locationInWindow, in: sv),
+                   areaScore < hoveredScore {
+                    hoveredScore = areaScore
+                    hoveredScrollView = sv
+                }
+
+                if areaScore > bestScore {
+                    bestScore = areaScore
+                    bestScrollView = sv
+                }
             }
             queue.append(contentsOf: view.subviews)
         }
-        return nil
+        let resolvedScrollView = hoveredScrollView ?? bestScrollView
+        cachedScrollView = resolvedScrollView
+        return resolvedScrollView
     }
 
     /// A scroll view is "horizontally scrollable" when its document is wider than the visible clip.
     private func isHorizontallyScrollable(_ sv: NSScrollView) -> Bool {
         guard let documentWidth = sv.documentView?.frame.width else { return false }
         return documentWidth > sv.contentView.bounds.width + 1 // +1 for floating-point tolerance
+    }
+
+    private func containsWindowPoint(_ locationInWindow: NSPoint, in scrollView: NSScrollView) -> Bool {
+        let localPoint = scrollView.convert(locationInWindow, from: nil)
+        return scrollView.bounds.contains(localPoint)
     }
 }

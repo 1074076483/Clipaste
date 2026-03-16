@@ -13,15 +13,7 @@ struct ClipboardItemActionModifier: ViewModifier {
             // Make selection feel instant. Double-click still fires paste, but single-click
             // no longer waits for the double-click recognition window to expire.
             .simultaneousGesture(TapGesture().onEnded {
-                // ⚠️ macOS 黑魔法：通过 NSEvent.modifierFlags 嗅探当前修饰键
-                let flags = NSEvent.modifierFlags
-                let isCommand = flags.contains(.command)
-                let isShift = flags.contains(.shift)
-                viewModel.handleSelection(
-                    id: item.id,
-                    isCommand: isCommand,
-                    isShift: isShift
-                )
+                viewModel.handlePrimaryClickSelection(for: item.id)
             })
             .simultaneousGesture(TapGesture(count: 2).onEnded {
                 viewModel.pasteToActiveApp(item: item)
@@ -41,31 +33,16 @@ extension View {
 /// Handles ClipboardCardView which has an optional viewModel and a legacy onSelect callback.
 struct ClipboardCardActionModifier: ViewModifier {
     let item: ClipboardItem
-    let onSelect: () -> Void
-    let viewModel: ClipboardViewModel?
+    @ObservedObject var viewModel: ClipboardViewModel
 
     func body(content: Content) -> some View {
         content
             .contentShape(Rectangle())
             .simultaneousGesture(TapGesture().onEnded {
-                if let vm = viewModel {
-                    let flags = NSEvent.modifierFlags
-                    vm.handleSelection(
-                        id: item.id,
-                        isCommand: flags.contains(.command),
-                        isShift: flags.contains(.shift)
-                    )
-                } else {
-                    onSelect()
-                }
+                viewModel.handlePrimaryClickSelection(for: item.id)
             })
             .simultaneousGesture(TapGesture(count: 2).onEnded {
-                if let vm = viewModel {
-                    vm.pasteToActiveApp(item: item)
-                } else {
-                    onSelect()
-                }
+                viewModel.pasteToActiveApp(item: item)
             })
     }
 }
-

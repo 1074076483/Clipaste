@@ -17,11 +17,13 @@ final class PasteEngine {
         return AXIsProcessTrustedWithOptions(options)
     }
 
-    func writeToPasteboard(record: ClipboardRecord) async -> Bool {
+    func writeToPasteboard(record: ClipboardRecord, preferPlainText: Bool = false) async -> Bool {
         guard let payload = await Self.makePastePayload(
             recordID: record.id,
             typeRawValue: record.typeRawValue,
-            plainText: record.plainText
+            plainText: record.plainText,
+            rtfData: record.rtfData,
+            preferPlainText: preferPlainText
         ) else { return false }
 
         ClipboardMonitor.shared.isIgnoredNextChange = true
@@ -50,8 +52,8 @@ final class PasteEngine {
 
     private func write(payload: PastePayload) -> Bool {
         switch payload {
-        case let .text(text):
-            return pasteboard.setString(text, forType: .string)
+        case let .text(text, rtfData):
+            return writeTextPayload(text: text, rtfData: rtfData)
         case let .fileURL(url):
             return pasteboard.writeObjects([url as NSURL])
         case let .image(data, format):
@@ -74,14 +76,16 @@ final class PasteEngine {
     private static func makePastePayload(
         recordID: UUID,
         typeRawValue: String,
-        plainText: String?
+        plainText: String?,
+        rtfData: Data?,
+        preferPlainText: Bool
     ) async -> PastePayload? {
         guard let contentType = ClipboardContentType(rawValue: typeRawValue) else { return nil }
 
         switch contentType {
         case .text, .color, .link, .code:
             guard let plainText, !plainText.isEmpty else { return nil }
-            return .text(plainText)
+            return .text(plainText, preferPlainText ? nil : rtfData)
         case .fileURL:
             guard let plainText, !plainText.isEmpty else { return nil }
 
@@ -109,6 +113,17 @@ final class PasteEngine {
         }
 
         return .tiff
+    }
+
+    private func writeTextPayload(text: String, rtfData: Data?) -> Bool {
+        var didWrite = pasteboard.setString(text, forType: .string)
+
+        guard let rtfData, !rtfData.isEmpty else {
+            return didWrite
+        }
+
+        didWrite = pasteboard.setData(rtfData, forType: .rtf) || didWrite
+        return didWrite
     }
 
     /// 将图片格式转换后写入系统剪贴板（PNG / TIFF / JPG）
@@ -155,7 +170,7 @@ final class PasteEngine {
 }
 
 private enum PastePayload: Sendable {
-    case text(String)
+    case text(String, Data?)
     case fileURL(URL)
     case image(Data, ImageFormat)
 }

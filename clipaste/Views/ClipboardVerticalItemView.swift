@@ -3,6 +3,7 @@ import SwiftUI
 struct ClipboardVerticalItemView: View {
     let item: ClipboardItem
     @ObservedObject var viewModel: ClipboardViewModel
+    let quickPasteIndex: Int?
     @ObservedObject private var renderEngine = ListRenderEngine.shared
 
     @State private var isHovering = false
@@ -24,7 +25,103 @@ struct ClipboardVerticalItemView: View {
         return item.textPreview.isEmpty ? String(localized: "(Empty)") : item.textPreview
     }
 
+    private var quickPasteNumber: Int? {
+        quickPasteIndex.map { $0 + 1 }
+    }
+
+    private var showsQuickPasteBadge: Bool {
+        quickPasteNumber != nil && viewModel.isQuickPasteModifierHeld
+    }
+
+    private var rowFillStyle: AnyShapeStyle {
+        if let parsedColor {
+            return AnyShapeStyle(parsedColor)
+        }
+
+        if isSelected {
+            return AnyShapeStyle(Color.accentColor.opacity(0.12))
+        }
+
+        return AnyShapeStyle(
+            Color(nsColor: .controlBackgroundColor).opacity(isHovering ? 1.0 : 0.6)
+        )
+    }
+
+    private var rowBorderColor: Color {
+        if parsedColor != nil {
+            return Color.primary.opacity(0.12)
+        }
+
+        if isSelected {
+            return Color.accentColor
+        }
+
+        if isHovering {
+            return Color.accentColor.opacity(0.45)
+        }
+
+        return .clear
+    }
+
+    private var timeTextColor: Color {
+        parsedColor.map { $0.isDark ? .white.opacity(0.6) : .black.opacity(0.45) }
+        ?? .secondary
+    }
+
+    private var dateTextColor: Color {
+        parsedColor.map { $0.isDark ? .white.opacity(0.4) : .black.opacity(0.3) }
+        ?? .secondary.opacity(0.7)
+    }
+
     var body: some View {
+        rowContent
+            .padding(.horizontal, 12)
+            .frame(height: 76)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(rowFillStyle)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(rowBorderColor, lineWidth: 1.5)
+            )
+            // ⚠️ 生命周期钩子：卡片首次出现时触发后台缓存
+            .onAppear { renderEngine.prepareIfNeeded(for: item) }
+            .background { quickPasteShortcutBackground }
+            // 分享锚点：用 background 捕获 NSView + onChange 触发分享
+            .shareable(item: item, viewModel: viewModel)
+            .clipboardContextMenu(for: item, viewModel: viewModel)
+            .onHover { hovering in
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isHovering = hovering
+                }
+            }
+            .animation(.easeInOut(duration: 0.15), value: showsQuickPasteBadge)
+            .onDrag {
+                viewModel.draggedItemId = item.id
+                return item.universalDragProvider
+            } preview: {
+                ClipboardDragPreview(item: item)
+            }
+            .clipboardItemActions(for: item, viewModel: viewModel)
+            // 空格键 QuickLook：以本卡片为锚点弹出原生气泡预览
+            .popover(
+                isPresented: Binding(
+                    get: { viewModel.quickLookItem?.id == item.id },
+                    set: { isShowing in
+                        if !isShowing, viewModel.quickLookItem?.id == item.id {
+                            viewModel.dismissQuickLook()
+                        }
+                    }
+                ),
+                arrowEdge: .trailing  // 气泡在卡片左侧弹出，箭头指向卡片
+            ) {
+                ClipboardQuickLookView(item: item, viewModel: viewModel)
+            }
+    }
+
+    @ViewBuilder
+    private var rowContent: some View {
         HStack(spacing: 12) {
             // 1. 左侧：App 图标
             if let icon = item.appIcon {
@@ -134,77 +231,47 @@ struct ClipboardVerticalItemView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             // 3. 右侧：时间 + 日期双行排版（弱化处理）
-            VStack(alignment: .trailing, spacing: 1) {
-                Text(item.timestamp.timeString)
-                    .font(.system(size: 11))
-                    .foregroundColor(
-                        parsedColor.map { $0.isDark ? .white.opacity(0.6) : .black.opacity(0.45) }
-                        ?? .secondary
-                    )
+            VStack(alignment: .trailing, spacing: 0) {
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(item.timestamp.timeString)
+                        .font(.system(size: 11))
+                        .foregroundColor(timeTextColor)
 
-                Text(item.timestamp.dateString)
-                    .font(.system(size: 9))
-                    .foregroundColor(
-                        parsedColor.map { $0.isDark ? .white.opacity(0.4) : .black.opacity(0.3) }
-                        ?? .secondary.opacity(0.7)
-                    )
+                    Text(item.timestamp.dateString)
+                        .font(.system(size: 9))
+                        .foregroundColor(dateTextColor)
+                }
+
+                Spacer(minLength: 4)
+
+                quickPasteInlineLabel
             }
             .help(item.timestamp.formatted(date: .complete, time: .standard))
-            .frame(minWidth: 44, alignment: .trailing)
+            .frame(minWidth: 44, maxHeight: .infinity, alignment: .topTrailing)
         }
-        .padding(.horizontal, 12)
-        .frame(height: 76)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(
-                    // 颜色卡片：整行用解析出的颜色填充；否则沿用默认选中/悬停样式
-                    parsedColor.map { AnyShapeStyle($0) }
-                    ?? AnyShapeStyle(
-                        isSelected
-                        ? Color.accentColor.opacity(0.12)
-                        : Color(nsColor: .controlBackgroundColor).opacity(isHovering ? 1.0 : 0.6)
-                    )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(
-                    parsedColor != nil
-                        ? Color.primary.opacity(0.12)   // 颜色卡片用极细中性描边
-                        : (isSelected ? Color.accentColor : (isHovering ? Color.accentColor.opacity(0.45) : Color.clear)),
-                    lineWidth: (parsedColor != nil || isSelected) ? 1.5 : 1.5
-                )
-        )
-        // ⚠️ 生命周期钩子：卡片首次出现时触发后台缓存
-        .onAppear { renderEngine.prepareIfNeeded(for: item) }
-        // 分享锚点：用 background 捕获 NSView + onChange 触发分享
-        .shareable(item: item, viewModel: viewModel)
-        .clipboardContextMenu(for: item, viewModel: viewModel)
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isHovering = hovering
+    }
+
+    @ViewBuilder
+    private var quickPasteShortcutBackground: some View {
+        if let quickPasteIndex {
+            QuickPasteShortcutHost(
+                shortcutIndex: quickPasteIndex,
+                modifierKey: viewModel.quickPasteModifier
+            ) {
+                viewModel.pasteToActiveApp(item: item)
             }
         }
-        .onDrag {
-            viewModel.draggedItemId = item.id
-            return item.universalDragProvider
-        } preview: {
-            ClipboardDragPreview(item: item)
-        }
-        .clipboardItemActions(for: item, viewModel: viewModel)
-        // 空格键 QuickLook：以本卡片为锚点弹出原生气泡预览
-        .popover(
-            isPresented: Binding(
-                get: { viewModel.quickLookItem?.id == item.id },
-                set: { isShowing in
-                    if !isShowing, viewModel.quickLookItem?.id == item.id {
-                        viewModel.dismissQuickLook()
-                    }
-                }
-            ),
-            arrowEdge: .trailing  // 气泡在卡片左侧弹出，箭头指向卡片
-        ) {
-            ClipboardQuickLookView(item: item, viewModel: viewModel)
+    }
+
+    @ViewBuilder
+    private var quickPasteInlineLabel: some View {
+        if let quickPasteNumber, showsQuickPasteBadge {
+            QuickPasteShortcutBadge(
+                modifierKey: viewModel.quickPasteModifier,
+                number: quickPasteNumber,
+                color: timeTextColor
+            )
+            .transition(.opacity)
         }
     }
 }

@@ -1,17 +1,17 @@
 import SwiftUI
 
 struct ClipboardHorizontalView: View {
-    let items: [ClipboardItem]
-    let onSelect: (ClipboardItem) -> Void
-    var viewModel: ClipboardViewModel? = nil
+    @ObservedObject var viewModel: ClipboardViewModel
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(alignment: .top, spacing: 20) {
-                ForEach(items) { item in
-                    ClipboardCardView(item: item, onSelect: {
-                        onSelect(item)
-                    }, viewModel: viewModel)
+                ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                    ClipboardCardView(
+                        item: item,
+                        viewModel: viewModel,
+                        quickPasteIndex: index < 9 ? index : nil
+                    )
                         .contentShape(RoundedRectangle(cornerRadius: 16))
                         .help("点击后粘贴到当前应用")
                 }
@@ -26,5 +26,5 @@ struct ClipboardHorizontalView: View {
 }
 
 #Preview {
-    ClipboardHorizontalView(items: [], onSelect: { _ in })
+    ClipboardHorizontalView(viewModel: ClipboardViewModel())
 }

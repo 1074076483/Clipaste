@@ -21,6 +21,9 @@ final class TypeToSearchService {
     /// 此时所有按键直接放行给 TextField 原生处理。
     var isTextFieldFocused: Bool = false
 
+    /// 保留给面板级功能的修饰键（如快速粘贴 / 纯文本模式），命中后必须放行。
+    var reservedModifierFlags: NSEvent.ModifierFlags = []
+
     // MARK: - 回调
 
     /// 捕获到可见字符时回调，参数为字符串（通常单字符）
@@ -66,6 +69,9 @@ final class TypeToSearchService {
 
         // 2. 修饰键组合 → 放行（Cmd+C / Ctrl+A / Option+… 等系统快捷键）
         let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        if !modifiers.intersection(reservedModifierFlags).isEmpty {
+            return event
+        }
         if modifiers.contains(.command) || modifiers.contains(.control) || modifiers.contains(.option) {
             return event
         }

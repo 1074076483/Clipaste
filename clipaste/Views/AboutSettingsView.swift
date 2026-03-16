@@ -2,6 +2,9 @@ import SwiftUI
 import AppKit
 
 struct AboutSettingsView: View {
+    private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
+    private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
+
     private var appName: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
         ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
@@ -17,66 +20,104 @@ struct AboutSettingsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
-            Image(nsImage: NSApp.applicationIconImage)
-                .resizable()
-                .frame(width: 76, height: 76)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
+        ScrollView {
+            VStack(spacing: 30) {
+                VStack(spacing: 12) {
+                    Image(nsImage: NSApp.applicationIconImage)
+                        .resizable()
+                        .frame(width: 82, height: 82)
+                        .clipShape(.rect(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.12), radius: 2, y: 1)
 
-            VStack(spacing: 4) {
-                Text(appName)
-                    .font(.title2.weight(.semibold))
+                    Text(appName)
+                        .font(.title.weight(.bold))
 
-                Text("Version \(shortVersion) (\(buildNumber))")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+                    Text("\(String(localized: "Version")) \(shortVersion) (\(buildNumber))")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
 
-            Text("Quickly recall, search and re-paste recently copied content.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 360)
-
-            GroupBox {
-                VStack(alignment: .leading, spacing: 10) {
-                    LabeledContent("App Name") {
-                        Text(appName)
-                    }
-
-                    LabeledContent("Version") {
-                        Text(shortVersion)
-                    }
-
-                    LabeledContent("Build") {
-                        Text(buildNumber)
-                    }
+                    Text("Quickly recall, search and re-paste recently copied content.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 360)
+                        .padding(.top, 6)
                 }
-                .font(.subheadline)
-            }
-            .frame(maxWidth: 340)
 
-            HStack(spacing: 12) {
-                Button("System About Panel…") {
-                    NSApp.orderFrontStandardAboutPanel()
-                }
-                .buttonStyle(.bordered)
-
-                Button("Send Feedback") {
-                    guard let url = URL(string: "mailto:your_email@example.com?subject=Clipaste%20Feedback") else {
-                        return
+                VStack(spacing: 0) {
+                    Button(action: sendFeedback) {
+                        actionRowLabel(
+                            title: String(localized: "Send Feedback"),
+                            systemImage: "paperplane"
+                        )
                     }
+                    .buttonStyle(.plain)
 
-                    NSWorkspace.shared.open(url)
+                    Divider()
+                        .padding(.leading, 48)
+
+                    Link(destination: privacyPolicyURL) {
+                        actionRowLabel(
+                            title: "Privacy Policy",
+                            systemImage: "lock.doc"
+                        )
+                    }
+                    .buttonStyle(.plain)
+
+                    Divider()
+                        .padding(.leading, 48)
+
+                    Link(destination: termsOfServiceURL) {
+                        actionRowLabel(
+                            title: "Terms of Service",
+                            systemImage: "doc.text"
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.link)
+                .frame(maxWidth: 420)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color(nsColor: .windowBackgroundColor).opacity(0.75))
+                )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                }
             }
-
-            Spacer(minLength: 0)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 32)
+            .padding(.top, 36)
+            .padding(.bottom, 32)
         }
+        .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding(32)
+    }
+
+    private func sendFeedback() {
+        guard let url = URL(string: "mailto:your_email@example.com?subject=Clipaste%20Feedback") else {
+            return
+        }
+
+        NSWorkspace.shared.open(url)
+    }
+
+    private func actionRowLabel(title: String, systemImage: String) -> some View {
+        HStack(spacing: 12) {
+            Label(title, systemImage: systemImage)
+                .foregroundStyle(.primary)
+                .labelStyle(.titleAndIcon)
+
+            Spacer(minLength: 12)
+
+            Image(systemName: "arrow.up.right")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .font(.system(size: 13, weight: .medium))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
 }
 

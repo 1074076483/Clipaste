@@ -6,8 +6,12 @@ struct ClipboardVerticalListView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 8) {
-                ForEach(viewModel.filteredItems) { item in
-                    ClipboardVerticalItemView(item: item, viewModel: viewModel)
+                ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                    ClipboardVerticalItemView(
+                        item: item,
+                        viewModel: viewModel,
+                        quickPasteIndex: index < 9 ? index : nil
+                    )
                         .id(item.id)
                 }
             }
