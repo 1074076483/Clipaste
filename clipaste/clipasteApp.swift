@@ -204,6 +204,7 @@ struct clipasteApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var settingsViewModel = SettingsViewModel()
     @StateObject private var runtimeStore = ClipboardRuntimeStore.shared
+    @StateObject private var storeManager = StoreManager.shared
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
@@ -213,18 +214,20 @@ struct clipasteApp: App {
             SettingsView()
                 .environmentObject(settingsViewModel)
                 .environmentObject(runtimeStore)
+                .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
                 .id(runtimeStore.rootIdentity)
                 .environment(\.locale, appLanguage.locale ?? .current)
                 .preferredColorScheme(appTheme.colorScheme)
         }
-        .defaultSize(width: 620, height: 460)
+        .defaultSize(width: 620, height: 580)
         .windowResizability(.contentMinSize)
 
         // Status Bar Menu to access app functions
         MenuBarExtra("Clipaste", image: "MenuBarIcon") {
             MenuBarExtraContent()
                 .environmentObject(runtimeStore)
+                .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
                 .id(runtimeStore.rootIdentity)
         }

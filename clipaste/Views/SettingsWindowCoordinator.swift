@@ -168,7 +168,13 @@ struct WindowAppearanceObserver: NSViewRepresentable {
         }
 
         private func applyTheme() {
-            window?.appearance = theme.nsAppearance
+            let nsAppearance = theme.nsAppearance
+            window?.appearance = nsAppearance
+            // When reverting to "follow system" (nsAppearance == nil), also reset the
+            // app-level appearance so macOS regenerates the effective appearance from
+            // the system setting. Without this, a previously pinned NSApp.appearance
+            // can keep windows in the wrong mode even after clearing the window-level one.
+            NSApp.appearance = nsAppearance
         }
     }
 }

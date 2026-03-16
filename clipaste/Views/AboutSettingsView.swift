@@ -2,6 +2,7 @@ import SwiftUI
 import AppKit
 
 struct AboutSettingsView: View {
+    @EnvironmentObject private var storeManager: StoreManager
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
 
@@ -45,6 +46,11 @@ struct AboutSettingsView: View {
                 }
 
                 VStack(spacing: 0) {
+                    commerceCard
+
+                    Divider()
+                        .padding(.leading, 48)
+
                     Button(action: sendFeedback) {
                         actionRowLabel(
                             title: String(localized: "Send Feedback"),
@@ -94,6 +100,35 @@ struct AboutSettingsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
+    private var commerceCard: some View {
+        HStack(spacing: 12) {
+            Image(systemName: storeManager.isProUnlocked ? "checkmark.seal.fill" : "sparkles")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(storeManager.isProUnlocked ? .green : .accentColor)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(storeManager.isProUnlocked ? "Clipaste Pro 已解锁" : storeManager.accessHeadline)
+                    .font(.system(size: 13, weight: .semibold))
+
+                Text(storeManager.isProUnlocked ? "当前 Apple ID 已拥有买断授权。" : "一次购买，永久解锁无限历史记录、高级搜索和同步能力。")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 12)
+
+            if !storeManager.isProUnlocked {
+                Button("解锁 Pro") {
+                    storeManager.presentPaywall(from: .settings)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
     private func sendFeedback() {
         guard let url = URL(string: "mailto:your_email@example.com?subject=Clipaste%20Feedback") else {
             return
@@ -123,4 +158,5 @@ struct AboutSettingsView: View {
 
 #Preview {
     AboutSettingsView()
+        .environmentObject(StoreManager.shared)
 }

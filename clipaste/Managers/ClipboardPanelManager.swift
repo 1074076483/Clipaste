@@ -51,6 +51,7 @@ class ClipboardPanelManager {
         let hostingController = NSHostingController(
             rootView: ClipboardPanelRootView()
                 .environmentObject(ClipboardRuntimeStore.shared)
+                .environmentObject(StoreManager.shared)
         )
         hostingController.sizingOptions = []   // 禁止 SwiftUI 内容撑大面板，由 setFrame 控制
         panel.contentViewController = hostingController
@@ -297,10 +298,12 @@ class ClipboardPanelManager {
 
 private struct ClipboardPanelRootView: View {
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
+    @EnvironmentObject private var storeManager: StoreManager
 
     var body: some View {
         ClipboardMainView()
             .environmentObject(runtimeStore)
+            .environmentObject(storeManager)
             .modelContainer(runtimeStore.container)
             .id(runtimeStore.rootIdentity)
     }

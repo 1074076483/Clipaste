@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ClipboardMainView: View {
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
+    @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openSettings) private var openSettings
     @StateObject var viewModel = ClipboardViewModel()
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
@@ -18,22 +19,18 @@ struct ClipboardMainView: View {
                     ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
                     mainContent
                 }
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    if isShowingFreeTierHistoryPreview {
+                        historyPreviewFooter
+                    }
+                }
             } else {
                 mainContent
                     .safeAreaInset(edge: .top, spacing: 0) {
                         ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
                     }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
-                        HStack {
-                            Text("\(viewModel.filteredItems.count) 个项目")
-                                .font(.system(size: 11))
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                        .padding(.top, 4)
-                        .background(.regularMaterial)
+                        historyPreviewFooter
                     }
             }
         }
@@ -51,6 +48,21 @@ struct ClipboardMainView: View {
         .clipShape(RoundedRectangle(cornerRadius: clipboardLayout == .vertical ? 14 : 0))
         .preferredColorScheme(appTheme.colorScheme)
         .edgesIgnoringSafeArea(.all)
+        .sheet(
+            isPresented: Binding(
+                get: {
+                    storeManager.shouldShowPaywall && storeManager.paywallSource == .panel
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        storeManager.dismissPaywall()
+                    }
+                }
+            )
+        ) {
+            PaywallView()
+                .environmentObject(storeManager)
+        }
         .onChange(of: clipboardLayout) {
             NotificationCenter.default.post(
                 name: .clipboardLayoutModeChanged,
@@ -80,11 +92,18 @@ struct ClipboardMainView: View {
             searchService.onCapture = { [weak viewModel] char in
                 viewModel?.appendBlindTypedCharacter(char)
             }
-            searchService.onRequireFocus = { isSearchFocused = true }
+            searchService.onRequireFocus = requestSearchFocus
             syncReservedSearchModifiers()
+            syncAccessState()
         }
         .onDisappear {
             deactivatePanelInputHandling()
+        }
+        .onChange(of: storeManager.isTrialExpired) { _, _ in
+            syncAccessState()
+        }
+        .onChange(of: storeManager.isProUnlocked) { _, _ in
+            syncAccessState()
         }
         // ── ⌘, 意图通知 → 调用 SwiftUI 原生 openSettings ───────────
         .onReceive(NotificationCenter.default.publisher(for: .openSettingsIntent)) { _ in
@@ -93,26 +112,34 @@ struct ClipboardMainView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .focusSearchFieldIntent)) { _ in
-            focusSearchField()
+            requestSearchFocus()
         }
     }
 
     @ViewBuilder
     private var mainContent: some View {
-        if viewModel.filteredItems.isEmpty {
+        if displayedItems.isEmpty {
             ClipboardEmptyStateView(viewModel: viewModel)
         } else {
             switch clipboardLayout {
             case .horizontal:
-                ClipboardHorizontalView(viewModel: viewModel)
+                ClipboardHorizontalView(viewModel: viewModel, items: displayedItems)
             case .vertical:
-                ClipboardVerticalListView(viewModel: viewModel)
+                ClipboardVerticalListView(viewModel: viewModel, items: displayedItems)
             }
         }
     }
 
     private func focusSearchField() {
         DispatchQueue.main.async { isSearchFocused = true }
+    }
+
+    private func requestSearchFocus() {
+        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
+            return
+        }
+
+        focusSearchField()
     }
 
     private func activatePanelInputHandling() {
@@ -131,9 +158,56 @@ struct ClipboardMainView: View {
     private func syncReservedSearchModifiers() {
         searchService.reservedModifierFlags = viewModel.reservedSearchModifierFlags
     }
+
+    private func syncAccessState() {
+        viewModel.updateDisplayedHistoryLimit(storeManager.historyLimitForFreeTier)
+        viewModel.handleAccessRestrictionChange(isRestricted: !storeManager.hasFullAccess)
+    }
+
+    private var displayedItems: [ClipboardItem] {
+        if let historyLimit = storeManager.historyLimitForFreeTier {
+            return Array(viewModel.filteredItems.prefix(historyLimit))
+        }
+
+        return viewModel.filteredItems
+    }
+
+    private var isShowingFreeTierHistoryPreview: Bool {
+        (storeManager.historyLimitForFreeTier != nil) && (viewModel.filteredItems.count > displayedItems.count)
+    }
+
+    @ViewBuilder
+    private var historyPreviewFooter: some View {
+        HStack {
+            if isShowingFreeTierHistoryPreview {
+                Text("免费版当前仅显示最近 10 条记录")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            } else {
+                Text("\(displayedItems.count) 个项目")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if isShowingFreeTierHistoryPreview {
+                Button("解锁 Pro") {
+                    storeManager.presentPaywall(from: .panel, highlighting: .unlimitedHistory)
+                }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .semibold))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .padding(.top, 4)
+        .background(.regularMaterial)
+    }
 }
 
 #Preview {
     ClipboardMainView()
         .environmentObject(ClipboardRuntimeStore.shared)
+        .environmentObject(StoreManager.shared)
 }

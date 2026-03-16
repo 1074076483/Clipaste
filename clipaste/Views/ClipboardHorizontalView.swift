@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ClipboardHorizontalView: View {
     @ObservedObject var viewModel: ClipboardViewModel
+    let items: [ClipboardItem]
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(alignment: .top, spacing: 20) {
-                ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     ClipboardCardView(
                         item: item,
                         viewModel: viewModel,
@@ -26,5 +27,5 @@ struct ClipboardHorizontalView: View {
 }
 
 #Preview {
-    ClipboardHorizontalView(viewModel: ClipboardViewModel())
+    ClipboardHorizontalView(viewModel: ClipboardViewModel(), items: [])
 }

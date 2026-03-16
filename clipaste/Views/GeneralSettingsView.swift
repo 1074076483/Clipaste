@@ -87,7 +87,7 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 320, alignment: .top)
+        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
     }
 }
 

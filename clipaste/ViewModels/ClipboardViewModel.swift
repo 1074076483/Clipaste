@@ -64,8 +64,14 @@ class ClipboardViewModel: ObservableObject {
     private var keyDownMonitor: Any?
     private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
+    private let storeManager: StoreManager
+    private var renderedHistoryLimit: Int?
 
-    init(clipboardMonitor _: ClipboardMonitor? = nil) {
+    init(
+        clipboardMonitor _: ClipboardMonitor? = nil,
+        storeManager: StoreManager? = nil
+    ) {
+        self.storeManager = storeManager ?? StoreManager.shared
         ModifierKey.migrateStoredPreferences()
 
         // 保留旧的固定分组（横版 UI 兼容）
@@ -86,6 +92,7 @@ class ClipboardViewModel: ObservableObject {
         setupGroupSwitchSubscriptions()
         setupSmartGroupsGuard()
         setupModifierPreferenceSync()
+        updateDisplayedHistoryLimit(self.storeManager.historyLimitForFreeTier)
     }
 
     deinit {
@@ -236,9 +243,9 @@ class ClipboardViewModel: ObservableObject {
             }
 
             if let firstID = selectedItemIDs.first,
-               let item = filteredItems.first(where: { $0.id == firstID }) {
+               let item = displayedItemsForInteraction.first(where: { $0.id == firstID }) {
                 pasteToActiveApp(item: item)
-            } else if let first = filteredItems.first {
+            } else if let first = displayedItemsForInteraction.first {
                 pasteToActiveApp(item: first)
             }
             return nil
@@ -318,6 +325,7 @@ class ClipboardViewModel: ObservableObject {
         // 无搜索词且无分组且无类型过滤 → 直接还原全部，避免线程切换开销
         if cleanQuery.isEmpty && groupId == nil && typeFilter == nil {
             self.filteredItems = items
+            clampSelectionToDisplayedItems()
             return
         }
 
@@ -353,6 +361,7 @@ class ClipboardViewModel: ObservableObject {
                 // 若已有更新的过滤请求，丢弃此次过期结果
                 guard let self, self.filterGeneration == thisGeneration else { return }
                 self.filteredItems = result
+                self.clampSelectionToDisplayedItems()
             }
         }
     }
@@ -384,6 +393,7 @@ class ClipboardViewModel: ObservableObject {
             // 避免 Combine 防抖管道 200ms 延迟导致列表短暂显示残缺数据
             if self.searchInput.isEmpty && self.currentFilter == nil && self.selectedGroupId == nil {
                 self.filteredItems = mappedItems
+                self.clampSelectionToDisplayedItems()
             }
 
             // 清理失效的选中 ID：移除已不在数据源中的 ID
@@ -395,7 +405,33 @@ class ClipboardViewModel: ObservableObject {
             if let anchor = self.lastSelectedID, !validIDs.contains(anchor) {
                 self.lastSelectedID = nil
             }
+
+            self.clampSelectionToDisplayedItems()
         }
+    }
+
+    func updateDisplayedHistoryLimit(_ limit: Int?) {
+        if renderedHistoryLimit != limit {
+            renderedHistoryLimit = limit
+        }
+
+        clampSelectionToDisplayedItems()
+    }
+
+    func handleAccessRestrictionChange(isRestricted: Bool) {
+        if isRestricted {
+            if !searchInput.isEmpty {
+                searchInput = ""
+            }
+            if !activeSearchQuery.isEmpty {
+                activeSearchQuery = ""
+            }
+            if currentFilter != nil {
+                currentFilter = nil
+            }
+        }
+
+        clampSelectionToDisplayedItems()
     }
 
     // MARK: - 多选核心运算引擎
@@ -404,7 +440,7 @@ class ClipboardViewModel: ObservableObject {
     func handleSelection(id: UUID, isCommand: Bool, isShift: Bool) {
         if isShift, let anchorID = lastSelectedID {
             // ── Shift 区间连选 ──────────────────────────────────────
-            let source = filteredItems
+            let source = displayedItemsForInteraction
             if let anchorIdx = source.firstIndex(where: { $0.id == anchorID }),
                let targetIdx = source.firstIndex(where: { $0.id == id }) {
                 let range = min(anchorIdx, targetIdx)...max(anchorIdx, targetIdx)
@@ -429,7 +465,7 @@ class ClipboardViewModel: ObservableObject {
 
     /// 全选当前可见列表（基于 filteredItems）
     func selectAll() {
-        selectedItemIDs = Set(filteredItems.map(\.id))
+        selectedItemIDs = Set(displayedItemsForInteraction.map(\.id))
     }
 
     /// 清空所有选中状态
@@ -441,6 +477,9 @@ class ClipboardViewModel: ObservableObject {
     /// 盲打搜索：追加键盘捕获的字符到搜索词
     /// ViewModel 绝不感知键盘/焦点/NSEvent 的存在，仅负责数据变更。
     func appendBlindTypedCharacter(_ char: String) {
+        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
+            return
+        }
         searchInput.append(char)
     }
 
@@ -554,12 +593,20 @@ class ClipboardViewModel: ObservableObject {
 
     /// 方向键导航：direction = +1 下/右，-1 上/左。
     func moveSelection(direction: Int) {
-        let items = filteredItems
+        let items = displayedItemsForInteraction
         guard !items.isEmpty else { return }
 
         // 方向键导航始终回归单选模式
         let currentIndex = lastSelectedID.flatMap { lid in
             items.firstIndex(where: { $0.id == lid })
+        }
+
+        if let renderedHistoryLimit,
+           filteredItems.count > renderedHistoryLimit,
+           direction > 0,
+           currentIndex == items.indices.last {
+            storeManager.presentPaywall(from: .panel, highlighting: .unlimitedHistory)
+            return
         }
 
         let nextIndex: Int
@@ -702,6 +749,9 @@ class ClipboardViewModel: ObservableObject {
             currentFilter = nil
             selectedGroupId = nil
         case .smartFilter(let type):
+            guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
+                return
+            }
             currentFilter = type
             selectedGroupId = nil
         case .userGroup(let id):
@@ -758,6 +808,7 @@ class ClipboardViewModel: ObservableObject {
     // MARK: - 右键菜单动作接口
 
     func pasteToActiveApp(item: ClipboardItem) {
+        guard canUsePlainTextFeaturesIfNeeded() else { return }
         print("🚀 触发双击事件: \(item.id)")
 
         // 1. 先同步 UI 选中态（强制单选）
@@ -806,6 +857,10 @@ class ClipboardViewModel: ObservableObject {
     }
 
     func pasteAsPlainText(item: ClipboardItem) {
+        guard storeManager.requestAccess(to: .plainTextPaste, from: .panel) else {
+            return
+        }
+
         guard let record = StorageManager.shared.fetchRecord(id: item.id),
               let text = record.plainText else { return }
         // 1. 纯文本写入系统剪贴板（抹除一切格式）
@@ -819,6 +874,7 @@ class ClipboardViewModel: ObservableObject {
     }
 
     func copyToClipboard(item: ClipboardItem) {
+        guard canUsePlainTextFeaturesIfNeeded() else { return }
         guard let record = StorageManager.shared.fetchRecord(id: item.id) else { return }
 
         Task { @MainActor in
@@ -837,6 +893,14 @@ class ClipboardViewModel: ObservableObject {
         }
 
         return pasteTextFormat == .plainText
+    }
+
+    private func canUsePlainTextFeaturesIfNeeded() -> Bool {
+        guard shouldForcePlainTextOutput else {
+            return true
+        }
+
+        return storeManager.requestAccess(to: .plainTextPaste, from: .panel)
     }
 
     func pinItem(item: ClipboardItem) {
@@ -1033,11 +1097,11 @@ class ClipboardViewModel: ObservableObject {
     private var quickLookPreviewCandidate: ClipboardItem? {
         if let lastSelectedID,
            selectedItemIDs.contains(lastSelectedID),
-           let item = filteredItems.first(where: { $0.id == lastSelectedID }) {
+           let item = displayedItemsForInteraction.first(where: { $0.id == lastSelectedID }) {
             return item
         }
 
-        return filteredItems.first { selectedItemIDs.contains($0.id) }
+        return displayedItemsForInteraction.first { selectedItemIDs.contains($0.id) }
     }
 
     private func presentQuickLook(for item: ClipboardItem) {
@@ -1139,5 +1203,29 @@ class ClipboardViewModel: ObservableObject {
 
     var isQuickLookActive: Bool {
         quickLookItem != nil || quickLookRequestedItemID != nil
+    }
+
+    private var displayedItemsForInteraction: [ClipboardItem] {
+        guard let renderedHistoryLimit else {
+            return filteredItems
+        }
+
+        return Array(filteredItems.prefix(renderedHistoryLimit))
+    }
+
+    private func clampSelectionToDisplayedItems() {
+        let visibleIDs = Set(displayedItemsForInteraction.map(\.id))
+
+        if !selectedItemIDs.isSubset(of: visibleIDs) {
+            selectedItemIDs.formIntersection(visibleIDs)
+        }
+
+        if let lastSelectedID, !visibleIDs.contains(lastSelectedID) {
+            self.lastSelectedID = selectedItemIDs.first
+        }
+
+        if let quickLookItem, !visibleIDs.contains(quickLookItem.id) {
+            dismissQuickLook()
+        }
     }
 }

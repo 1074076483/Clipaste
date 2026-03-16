@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ClipboardVerticalListView: View {
     @ObservedObject var viewModel: ClipboardViewModel
+    let items: [ClipboardItem]
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 8) {
-                ForEach(Array(viewModel.filteredItems.enumerated()), id: \.element.id) { index, item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     ClipboardVerticalItemView(
                         item: item,
                         viewModel: viewModel,

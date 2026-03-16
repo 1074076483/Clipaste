@@ -9,6 +9,7 @@ struct ClipboardHeaderView: View {
 
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
+    @EnvironmentObject private var storeManager: StoreManager
     @FocusState var isSearchFocused: Bool
     @FocusState private var focusedHeaderInput: HeaderInputField?
     @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
@@ -143,7 +144,7 @@ struct ClipboardHeaderView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
 
-            TextField("Search History…", text: $viewModel.searchInput)
+            TextField("Search History…", text: searchTextBinding)
                 .font(.system(size: 13))
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled(true)
@@ -196,10 +197,7 @@ struct ClipboardHeaderView: View {
             icon: "tray.2.fill",
             isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil
         ) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                viewModel.currentFilter = nil
-                viewModel.selectedGroupId = nil
-            }
+            selectAllGroup()
         }
     }
 
@@ -242,10 +240,7 @@ struct ClipboardHeaderView: View {
                 icon: type.systemImage,
                 isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil
             ) {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    viewModel.currentFilter = type
-                    viewModel.selectedGroupId = nil
-                }
+                selectSmartFilter(type)
             }
         }
     }
@@ -254,8 +249,7 @@ struct ClipboardHeaderView: View {
         Menu {
             Section("Smart Filters") {
                 Button(action: {
-                    viewModel.currentFilter = nil
-                    viewModel.selectedGroupId = nil
+                    selectAllGroup()
                 }) {
                     HStack {
                         Label(String(localized: "All"), systemImage: "tray.2.fill")
@@ -268,8 +262,7 @@ struct ClipboardHeaderView: View {
 
                 ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
                     Button(action: {
-                        viewModel.currentFilter = type
-                        viewModel.selectedGroupId = nil
+                        selectSmartFilter(type)
                     }) {
                         HStack {
                             Label(type.filterLabel, systemImage: type.systemImage)
@@ -286,10 +279,7 @@ struct ClipboardHeaderView: View {
                 Section("Groups") {
                     ForEach(viewModel.customGroups) { group in
                         Button(action: {
-                            withAnimation {
-                                viewModel.selectedGroupId = group.id
-                                viewModel.currentFilter = nil
-                            }
+                            selectCustomGroup(group.id)
                         }) {
                             HStack {
                                 Label(group.name, systemImage: group.systemIconName)
@@ -377,10 +367,7 @@ struct ClipboardHeaderView: View {
             isSelected: isSelected || isDropTarget,
             maxTextWidth: isVerticalLayout ? 60 : 80
         ) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                viewModel.selectedGroupId = group.id
-                viewModel.currentFilter = nil   // ⚠️ 全局互斥：切分组，清智能分类
-            }
+            selectCustomGroup(group.id)
         }
         .help(group.name)
         .background(
@@ -582,7 +569,7 @@ struct ClipboardHeaderView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
-                TextField("Search…", text: $viewModel.searchInput)
+                TextField("Search…", text: searchTextBinding)
                     .font(.system(size: 13))
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled(true)
@@ -725,11 +712,55 @@ struct ClipboardHeaderView: View {
             focusedHeaderInput = nil
         }
     }
+
+    private var searchTextBinding: Binding<String> {
+        Binding(
+            get: { viewModel.searchInput },
+            set: { newValue in
+                if newValue.isEmpty || newValue.count < viewModel.searchInput.count {
+                    viewModel.searchInput = newValue
+                    return
+                }
+
+                guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
+                    return
+                }
+
+                viewModel.searchInput = newValue
+            }
+        )
+    }
+
+    private func selectAllGroup() {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            viewModel.currentFilter = nil
+            viewModel.selectedGroupId = nil
+        }
+    }
+
+    private func selectCustomGroup(_ groupID: String) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            viewModel.selectedGroupId = groupID
+            viewModel.currentFilter = nil
+        }
+    }
+
+    private func selectSmartFilter(_ type: ClipboardContentType) {
+        guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
+            return
+        }
+
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            viewModel.currentFilter = type
+            viewModel.selectedGroupId = nil
+        }
+    }
 }
 
 #Preview {
     let dummyViewModel = ClipboardViewModel(clipboardMonitor: nil)
     return ClipboardHeaderView(viewModel: dummyViewModel)
+        .environmentObject(StoreManager.shared)
         .frame(width: 380)
 }
 

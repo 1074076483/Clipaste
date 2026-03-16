@@ -4,6 +4,7 @@ import SwiftUI
 struct AdvancedSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
+    @EnvironmentObject private var storeManager: StoreManager
     @AppStorage("enable_smart_groups") private var isSmartGroupsEnabled: Bool = true
     @State private var showsDiagnostics = false
     @State private var copiedDiagnostics = false
@@ -79,6 +80,25 @@ struct AdvancedSettingsView: View {
                     .toggleStyle(.switch)
                     .disabled(runtimeStore.isSyncing)
 
+                    if !storeManager.hasFullAccess {
+                        HStack(spacing: 8) {
+                            Image(systemName: "lock.fill")
+                                .foregroundStyle(.secondary)
+
+                            Text("CloudKit 私有库同步在试用结束后需要 Clipaste Pro。")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+
+                            Spacer()
+
+                            Button("解锁 Pro") {
+                                storeManager.presentPaywall(from: .settings, highlighting: .cloudSync)
+                            }
+                            .buttonStyle(.plain)
+                            .font(.system(size: 12, weight: .semibold))
+                        }
+                    }
+
                     // 当同步开启时，展现高级控制台面板
                     if runtimeStore.isSyncEnabled {
                         Divider()
@@ -135,7 +155,7 @@ struct AdvancedSettingsView: View {
         }
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 320, alignment: .top)
+        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
     }
 
     // MARK: - Helpers
@@ -143,7 +163,18 @@ struct AdvancedSettingsView: View {
     private var syncEnabledBinding: Binding<Bool> {
         Binding(
             get: { runtimeStore.isSyncEnabled },
-            set: { runtimeStore.setSyncEnabled($0) }
+            set: { newValue in
+                if !newValue {
+                    runtimeStore.setSyncEnabled(false)
+                    return
+                }
+
+                guard storeManager.requestAccess(to: .cloudSync, from: .settings) else {
+                    return
+                }
+
+                runtimeStore.setSyncEnabled(true)
+            }
         )
     }
 
@@ -327,4 +358,5 @@ struct AdvancedSettingsView: View {
     AdvancedSettingsView()
         .environmentObject(SettingsViewModel())
         .environmentObject(ClipboardRuntimeStore.shared)
+        .environmentObject(StoreManager.shared)
 }

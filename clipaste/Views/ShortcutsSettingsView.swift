@@ -45,25 +45,24 @@ struct ShortcutsSettingsView: View {
 
             // ── 重置 ──
             Section {
-                HStack {
-                    Spacer()
-                    Button(String(localized: "Reset Shortcuts to Defaults")) {
-                        KeyboardShortcuts.reset(
-                            .toggleClipboardPanel,
-                            .toggleVerticalClipboard,
-                            .nextList,
-                            .prevList,
-                            .clearHistory
-                        )
-                    }
-                    .buttonStyle(.link)
-                    .font(.system(size: 13))
+                Button {
+                    KeyboardShortcuts.reset(
+                        .toggleClipboardPanel,
+                        .toggleVerticalClipboard,
+                        .nextList,
+                        .prevList,
+                        .clearHistory
+                    )
+                } label: {
+                    Label("Reset Shortcuts to Defaults", systemImage: "arrow.counterclockwise")
+                        .frame(maxWidth: .infinity)
                 }
+                .controlSize(.regular)
             }
         }
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 320, alignment: .top)
+        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
     }
 }
 
