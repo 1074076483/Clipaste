@@ -1804,7 +1804,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "全域快速键"
+            "value" : "全局快捷键"
           }
         },
         "zh-Hant" : {
@@ -1884,7 +1884,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "賦予粘贴超能力"
+            "value" : "赋予粘贴超能力"
           }
         },
         "zh-Hant" : {
@@ -3353,7 +3353,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已完成授权，可繼續下一步"
+            "value" : "已完成授权，可继续下一步"
           }
         },
         "zh-Hant" : {
@@ -4035,7 +4035,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完成授权后回到 Clipaste，状态将自動更新。"
+            "value" : "完成授权后回到 Clipaste，状态将自动更新。"
           }
         },
         "zh-Hant" : {
@@ -4238,7 +4238,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "按你的習慣完成配置"
+            "value" : "按你的习惯完成配置"
           }
         },
         "zh-Hant" : {
@@ -4278,7 +4278,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "设置你的專属喚醒快速键"
+            "value" : "设置你的专属唤醒快捷键"
           }
         },
         "zh-Hant" : {
@@ -4602,7 +4602,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "登入后直接在选单列待命，不打斷你的工作流程。"
+            "value" : "登录后在菜单栏待命，不打断你的工作流程。"
           }
         },
         "zh-Hant" : {
@@ -4614,6 +4614,7 @@
       }
     },
     "Step %lld of %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4858,7 +4859,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这些选项随时可以在设置裡调整。"
+            "value" : "这些选项随时可以在设置中调整。"
           }
         },
         "zh-Hant" : {
@@ -5298,7 +5299,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "歡迎使用 Clipaste"
+            "value" : "欢迎使用 Clipaste"
           }
         },
         "zh-Hant" : {

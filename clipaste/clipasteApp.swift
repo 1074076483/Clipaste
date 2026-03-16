@@ -162,9 +162,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func makeOnboardingWindow() -> NSWindow {
-        let hostingController = NSHostingController(rootView: OnboardingView())
+        let appLanguage = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "") ?? .auto
+        let rootView = OnboardingView()
+            .environment(\.locale, appLanguage.locale ?? .current)
+        let hostingController = NSHostingController(rootView: rootView)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 460),
             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
@@ -177,7 +180,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.toolbarStyle = .unified
         window.isReleasedWhenClosed = false
         window.isMovableByWindowBackground = true
-        window.setContentSize(NSSize(width: 500, height: 400))
+        window.setContentSize(NSSize(width: 520, height: 460))
         window.center()
 
         window.delegate = self

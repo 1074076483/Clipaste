@@ -198,13 +198,13 @@ struct ClipboardVerticalItemView: View {
                 get: { viewModel.quickLookItem?.id == item.id },
                 set: { isShowing in
                     if !isShowing, viewModel.quickLookItem?.id == item.id {
-                        viewModel.quickLookItem = nil
+                        viewModel.dismissQuickLook()
                     }
                 }
             ),
             arrowEdge: .trailing  // 气泡在卡片左侧弹出，箭头指向卡片
         ) {
-            ClipboardQuickLookView(item: item)
+            ClipboardQuickLookView(item: item, viewModel: viewModel)
         }
     }
 }

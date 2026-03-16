@@ -110,13 +110,15 @@ struct ClipboardCardView: View {
                 get: { viewModel?.quickLookItem?.id == item.id },
                 set: { isShowing in
                     if !isShowing, viewModel?.quickLookItem?.id == item.id {
-                        viewModel?.quickLookItem = nil
+                        viewModel?.dismissQuickLook()
                     }
                 }
             ),
             arrowEdge: .bottom
         ) {
-            ClipboardQuickLookView(item: item)
+            if let viewModel {
+                ClipboardQuickLookView(item: item, viewModel: viewModel)
+            }
         }
         // 分享锚点：用 background 捕获 NSView + onChange 触发分享
         .modifier(OptionalShareModifier(item: item, viewModel: viewModel))

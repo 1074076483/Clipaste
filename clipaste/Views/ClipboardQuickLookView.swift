@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ClipboardQuickLookView: View {
     let item: ClipboardItem
+    @ObservedObject var viewModel: ClipboardViewModel
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if item.contentType == .image {
-                ClipboardQuickLookImageView(itemID: item.id)
+                ClipboardQuickLookImageView(viewModel: viewModel)
             } else if let parsedColor = item.fastParsedColor {
                 // 颜色预览：大色块 + 对比色等宽文字
                 ZStack {

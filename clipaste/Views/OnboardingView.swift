@@ -18,11 +18,13 @@ struct OnboardingView: View {
             backgroundView
 
             VStack(spacing: 0) {
+                // ── Step indicator dots (top area with traffic-light-safe padding) ──
                 headerView
                     .padding(.horizontal, 24)
-                    .padding(.top, 20)
-                    .padding(.bottom, 12)
+                    .padding(.top, 36)
+                    .padding(.bottom, 8)
 
+                // ── Page content ──
                 TabView(selection: $viewModel.currentStep) {
                     ShortcutView()
                         .tag(OnboardingStep.welcomeAndShortcut)
@@ -41,6 +43,7 @@ struct OnboardingView: View {
                 }
                 .animation(.easeInOut, value: viewModel.currentStep)
 
+                // ── Bottom bar ──
                 Divider()
                     .overlay(Color.white.opacity(0.35))
 
@@ -48,7 +51,9 @@ struct OnboardingView: View {
                     Spacer()
 
                     Button(action: viewModel.nextStep) {
-                        Text(isLastStep ? "Done" : "Continue")
+                        Text(isLastStep
+                             ? String(localized: "Done")
+                             : String(localized: "Continue"))
                             .font(.system(size: 15, weight: .semibold))
                             .frame(minWidth: 96)
                     }
@@ -57,11 +62,11 @@ struct OnboardingView: View {
                     .disabled(!canContinue)
                 }
                 .padding(.horizontal, 24)
-                .padding(.vertical, 18)
+                .padding(.vertical, 16)
                 .background(.ultraThinMaterial)
             }
         }
-        .frame(width: 500, height: 400)
+        .frame(width: 520, height: 460)
         .onAppear {
             if viewModel.currentStep == .permissions {
                 viewModel.checkPermission()
@@ -76,6 +81,8 @@ struct OnboardingView: View {
             viewModel.checkPermission()
         }
     }
+
+    // MARK: - Background
 
     private var backgroundView: some View {
         ZStack {
@@ -103,6 +110,8 @@ struct OnboardingView: View {
         .overlay(.ultraThinMaterial.opacity(0.5))
     }
 
+    // MARK: - Header (capsule dots only)
+
     private var headerView: some View {
         HStack(spacing: 10) {
             ForEach(OnboardingStep.allCases, id: \.self) { step in
@@ -113,19 +122,11 @@ struct OnboardingView: View {
             }
 
             Spacer()
-
-            Text(stepCaption)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
         }
     }
-
-    private var stepCaption: String {
-        let total = OnboardingStep.allCases.count
-        let current = (OnboardingStep.allCases.firstIndex(of: viewModel.currentStep) ?? 0) + 1
-        return String(format: String(localized: "Step %lld of %lld"), current, total)
-    }
 }
+
+// MARK: - Step 1: Shortcut
 
 private struct ShortcutView: View {
     private var appIcon: NSImage {
@@ -133,9 +134,10 @@ private struct ShortcutView: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 20) {
             Spacer()
 
+            // App icon
             Image(nsImage: appIcon)
                 .resizable()
                 .interpolation(.high)
@@ -143,6 +145,7 @@ private struct ShortcutView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(color: .black.opacity(0.12), radius: 20, y: 10)
 
+            // Title / Subtitle
             VStack(spacing: 8) {
                 Text("Welcome to Clipaste")
                     .font(.system(size: 28, weight: .bold))
@@ -152,6 +155,7 @@ private struct ShortcutView: View {
                     .foregroundStyle(.secondary)
             }
 
+            // Shortcut recorder panel
             VStack(alignment: .leading, spacing: 12) {
                 Text("Global Shortcut")
                     .font(.system(size: 13, weight: .semibold))
@@ -166,7 +170,7 @@ private struct ShortcutView: View {
                     KeyboardShortcuts.Recorder(for: .toggleClipboardPanel)
                 }
             }
-            .padding(18)
+            .padding(20)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -184,12 +188,14 @@ private struct ShortcutView: View {
     }
 }
 
+// MARK: - Step 2: Permissions
+
 private struct PermissionView: View {
     let hasAccessibilityPermission: Bool
     let openSystemSettings: () -> Void
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 20) {
             Spacer()
 
             Image(systemName: hasAccessibilityPermission ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
@@ -209,8 +215,8 @@ private struct PermissionView: View {
 
             Label(
                 hasAccessibilityPermission
-                    ? "Permission Granted — Continue"
-                    : "Permission Required — Complete System Authorization",
+                    ? String(localized: "Permission Granted — Continue")
+                    : String(localized: "Permission Required — Complete System Authorization"),
                 systemImage: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill"
             )
             .font(.system(size: 13, weight: .semibold))
@@ -231,6 +237,8 @@ private struct PermissionView: View {
             Text("Return to Clipaste after granting permission; status refreshes automatically.")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 36)
 
             Spacer()
         }
@@ -238,12 +246,14 @@ private struct PermissionView: View {
     }
 }
 
+// MARK: - Step 3: Preferences
+
 private struct PreferencesView: View {
     @Binding var launchAtLogin: Bool
     @Binding var historyLimit: HistoryLimit
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 20) {
             Spacer()
 
             VStack(spacing: 8) {

@@ -380,6 +380,10 @@ final class StorageManager {
         await storeActor.loadPreviewImageData(id: id)
     }
 
+    func loadOriginalImageData(id: UUID) async -> Data? {
+        await storeActor.loadOriginalImageData(id: id)
+    }
+
     func loadImageData(id: UUID) async -> Data? {
         await storeActor.loadImageData(id: id)
     }
@@ -989,6 +993,14 @@ actor ClipboardStoreActor {
         )
         descriptor.fetchLimit = 1
         return try? modelContext.fetch(descriptor).first?.previewImageData
+    }
+
+    func loadOriginalImageData(id: UUID) -> Data? {
+        var descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
+        )
+        descriptor.fetchLimit = 1
+        return try? modelContext.fetch(descriptor).first?.imageData
     }
 
     func loadImageData(id: UUID) -> Data? {

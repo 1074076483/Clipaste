@@ -43,31 +43,28 @@ struct ClipboardThumbnailView<Placeholder: View>: View {
 }
 
 struct ClipboardQuickLookImageView: View {
-    let itemID: UUID
-
-    @State private var image: NSImage?
+    @ObservedObject var viewModel: ClipboardViewModel
 
     var body: some View {
         Group {
-            if let image {
+            if let image = viewModel.highResImage {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
                     .antialiased(true)
                     .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 600, maxHeight: 600)
+                    .frame(
+                        width: viewModel.previewTargetSize.width,
+                        height: viewModel.previewTargetSize.height
+                    )
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 10)
                     .padding(16)
             } else {
                 ProgressView()
                     .frame(width: 220, height: 220)
                     .padding(16)
             }
-        }
-        .task(id: itemID) {
-            image = await ClipboardImagePipeline.shared.fullImage(
-                for: itemID,
-                maxPixelSize: 2400
-            )
         }
     }
 }

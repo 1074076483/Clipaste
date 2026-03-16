@@ -113,7 +113,7 @@ struct ClipboardMainView: View {
 
             // ── Esc (53) ──────────────────────────────────────────────────
             if keyCode == 53 {
-                if viewModel.quickLookItem != nil {
+                if viewModel.isQuickLookActive {
                     viewModel.toggleQuickLook()
                 } else if !viewModel.searchInput.isEmpty {
                     viewModel.searchInput = ""
@@ -137,7 +137,7 @@ struct ClipboardMainView: View {
                     return event
                 }
                 // 有选中项或正在预览 → QuickLook
-                if !viewModel.selectedItemIDs.isEmpty || viewModel.quickLookItem != nil {
+                if !viewModel.selectedItemIDs.isEmpty || viewModel.isQuickLookActive {
                     viewModel.toggleQuickLook()
                     return nil
                 }
@@ -146,7 +146,7 @@ struct ClipboardMainView: View {
 
             // ── 回车键 (36) ───────────────────────────────────────────────
             if keyCode == 36 {
-                if viewModel.quickLookItem != nil {
+                if viewModel.isQuickLookActive {
                     viewModel.toggleQuickLook()
                     return nil
                 }
@@ -182,7 +182,7 @@ struct ClipboardMainView: View {
             }
 
             // ── 方向键（有无搜索内容均可导航）────────────────────────────
-            if viewModel.quickLookItem == nil {
+            if !viewModel.isQuickLookActive {
                 let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
                 if isVertical {
                     if keyCode == 125 { viewModel.moveSelection(direction: 1);  return nil }

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import Combine
 
@@ -22,6 +23,11 @@ extension UserDefaults {
 
 @MainActor
 class ClipboardViewModel: ObservableObject {
+    private struct QuickLookImagePreviewState {
+        let image: NSImage
+        let targetSize: CGSize
+    }
+
     @Published var items: [ClipboardItem] = []
     @Published var filteredItems: [ClipboardItem] = []
     @Published var searchInput: String = ""
@@ -31,6 +37,8 @@ class ClipboardViewModel: ObservableObject {
     /// Shift 连选锚点：记录最近一次「主动点击」选中的 item ID
     var lastSelectedID: UUID? = nil
     @Published var quickLookItem: ClipboardItem? = nil  // 空格键预览
+    @Published var highResImage: NSImage? = nil
+    @Published var previewTargetSize: CGSize = .zero
     @Published var sharingItem: ClipboardItem? = nil     // 右键分享错点
     @Published var draggedItemId: UUID? = nil
     // 旧分组（横版 UI 使用的固定分组，保留兼容）
@@ -44,6 +52,9 @@ class ClipboardViewModel: ObservableObject {
 
     private var cancellables: Set<AnyCancellable> = []
     private var filterGeneration: UInt = 0
+    private var quickLookLoadTask: Task<Void, Never>? = nil
+    private var quickLookLoadGeneration: UInt = 0
+    private var quickLookRequestedItemID: UUID? = nil
 
     init(clipboardMonitor _: ClipboardMonitor? = nil) {
         // 保留旧的固定分组（横版 UI 兼容）
@@ -303,7 +314,7 @@ class ClipboardViewModel: ObservableObject {
 
         // 清理 QuickLook
         if let qlItem = quickLookItem, ids.contains(qlItem.id) {
-            quickLookItem = nil
+            dismissQuickLook()
         }
 
         // 持久化
@@ -323,13 +334,10 @@ class ClipboardViewModel: ObservableObject {
     /// 空格键快速预览：开/关切换。
     /// 如果正在预览则关闭；否则弹出当前高亮选中项的预览。
     func toggleQuickLook() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-            if quickLookItem != nil {
-                quickLookItem = nil
-            } else if let firstID = selectedItemIDs.first,
-                      let item = filteredItems.first(where: { $0.id == firstID }) {
-                quickLookItem = item
-            }
+        if isQuickLookActive {
+            dismissQuickLook()
+        } else if let item = quickLookPreviewCandidate {
+            presentQuickLook(for: item)
         }
     }
 
@@ -735,10 +743,10 @@ class ClipboardViewModel: ObservableObject {
 
     func showPreview(item: ClipboardItem) {
         // 复用空格键预览机制：设置 quickLookItem 即可触发 QuickLook popover
-        if quickLookItem?.id == item.id {
-            quickLookItem = nil  // 再次点击则关闭
+        if quickLookRequestedItemID == item.id || quickLookItem?.id == item.id {
+            dismissQuickLook()
         } else {
-            quickLookItem = item
+            presentQuickLook(for: item)
         }
     }
 
@@ -759,7 +767,7 @@ class ClipboardViewModel: ObservableObject {
             lastSelectedID = nil
         }
         if quickLookItem?.id == item.id {
-            quickLookItem = nil
+            dismissQuickLook()
         }
         // 2. 后台持久化：Actor 异步删除数据库记录（不会发通知，不会触发 loadData）
         StorageManager.shared.deleteRecord(hash: item.contentHash)
@@ -782,5 +790,129 @@ class ClipboardViewModel: ObservableObject {
         Task {
             await StorageManager.shared.moveItemToTop(id: item.id)
         }
+    }
+
+    func dismissQuickLook() {
+        quickLookLoadGeneration &+= 1
+        quickLookLoadTask?.cancel()
+        quickLookLoadTask = nil
+        quickLookRequestedItemID = nil
+
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+            quickLookItem = nil
+        }
+
+        resetQuickLookImageState()
+    }
+
+    private var quickLookPreviewCandidate: ClipboardItem? {
+        if let lastSelectedID,
+           selectedItemIDs.contains(lastSelectedID),
+           let item = filteredItems.first(where: { $0.id == lastSelectedID }) {
+            return item
+        }
+
+        return filteredItems.first { selectedItemIDs.contains($0.id) }
+    }
+
+    private func presentQuickLook(for item: ClipboardItem) {
+        quickLookLoadGeneration &+= 1
+        quickLookLoadTask?.cancel()
+        quickLookLoadTask = nil
+        quickLookRequestedItemID = item.id
+
+        if quickLookItem?.id != item.id {
+            quickLookItem = nil
+        }
+
+        if item.contentType == .image {
+            resetQuickLookImageState()
+            loadHighResolutionQuickLookImage(for: item)
+            return
+        }
+
+        resetQuickLookImageState()
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+            quickLookItem = item
+        }
+    }
+
+    private func loadHighResolutionQuickLookImage(for item: ClipboardItem) {
+        let previewItem = item
+        let itemID = item.id
+        let loadGeneration = quickLookLoadGeneration
+
+        quickLookLoadTask = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if self.quickLookLoadGeneration == loadGeneration {
+                    self.quickLookLoadTask = nil
+                }
+            }
+
+            guard let imageData = await StorageManager.shared.loadOriginalImageData(id: itemID),
+                  !Task.isCancelled,
+                  self.quickLookLoadGeneration == loadGeneration,
+                  let image = NSImage(data: imageData) else {
+                if self.quickLookLoadGeneration == loadGeneration {
+                    self.quickLookRequestedItemID = nil
+                }
+                return
+            }
+
+            let previewState = self.makeQuickLookImagePreviewState(from: image)
+            guard !Task.isCancelled, self.quickLookLoadGeneration == loadGeneration else { return }
+
+            self.previewTargetSize = previewState.targetSize
+            self.highResImage = previewState.image
+
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                self.quickLookItem = previewItem
+            }
+        }
+    }
+
+    private func makeQuickLookImagePreviewState(from image: NSImage) -> QuickLookImagePreviewState {
+        let rawSize = image.size
+        let targetWidth = rawSize.width * 1.2
+        let targetHeight = rawSize.height * 1.2
+        let scaledSize = CGSize(width: targetWidth, height: targetHeight)
+        let boundedSize = safeQuickLookPreviewSize(for: scaledSize)
+
+        return QuickLookImagePreviewState(image: image, targetSize: boundedSize)
+    }
+
+    private func safeQuickLookPreviewSize(for proposedSize: CGSize) -> CGSize {
+        guard proposedSize.width > 0, proposedSize.height > 0 else {
+            return .zero
+        }
+
+        let visibleFrame = NSScreen.main?.visibleFrame
+            ?? NSScreen.screens.first?.visibleFrame
+            ?? .zero
+
+        guard visibleFrame.width > 0, visibleFrame.height > 0 else {
+            return proposedSize
+        }
+
+        let maxWidth = visibleFrame.width * 0.8
+        let maxHeight = visibleFrame.height * 0.8
+        let widthScale = maxWidth / proposedSize.width
+        let heightScale = maxHeight / proposedSize.height
+        let scale = min(1, widthScale, heightScale)
+
+        return CGSize(
+            width: proposedSize.width * scale,
+            height: proposedSize.height * scale
+        )
+    }
+
+    private func resetQuickLookImageState() {
+        highResImage = nil
+        previewTargetSize = .zero
+    }
+
+    var isQuickLookActive: Bool {
+        quickLookItem != nil || quickLookRequestedItemID != nil
     }
 }
