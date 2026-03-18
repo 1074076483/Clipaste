@@ -38,9 +38,10 @@ If doing a partial review, load only the relevant reference files.
 
 Organize findings by file. For each issue:
 
-1. State the file and relevant line(s).
-2. Name the rule being violated (e.g., "Use `foregroundStyle()` instead of `foregroundColor()`").
-3. Show a brief before/after code fix.
+1. Always use Chinese to describe the issue.
+2. State the file and relevant line(s).
+3. Name the rule being violated (e.g., "Use `foregroundStyle()` instead of `foregroundColor()`").
+4. Show a brief before/after code fix.
 
 Skip files with no issues. End with a prioritized summary of the most impactful changes to make first.
 

@@ -144,6 +144,29 @@ class ClipboardViewModel: ObservableObject {
         quickPasteModifier.eventFlags.union(plainTextModifier.eventFlags)
     }
 
+    func handleGlobalKeyPress(_ character: String) -> Bool {
+        let modifiers = currentModifierFlags.intersection(.deviceIndependentFlagsMask)
+
+        if modifiers.contains(.command) || modifiers.contains(.control) || modifiers.contains(.option) {
+            return false
+        }
+
+        if !modifiers.intersection(reservedSearchModifierFlags).isEmpty {
+            return false
+        }
+
+        guard let acceptedInput = acceptedSearchInput(from: character) else {
+            return false
+        }
+
+        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
+            return false
+        }
+
+        searchInput.append(contentsOf: acceptedInput)
+        return true
+    }
+
     // MARK: - Combine 防抖搜索管道
 
     private func setupModifierPreferenceSync() {
@@ -270,6 +293,10 @@ class ClipboardViewModel: ObservableObject {
             return nil
         }
 
+        if hasActiveTextInputResponder {
+            return event
+        }
+
         if !isQuickLookActive {
             let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
             if isVertical {
@@ -294,6 +321,57 @@ class ClipboardViewModel: ObservableObject {
         }
 
         return event
+    }
+
+    private func acceptedSearchInput(from rawInput: String) -> String? {
+        guard !rawInput.isEmpty else { return nil }
+        guard rawInput.unicodeScalars.allSatisfy(isAllowedSearchScalar) else { return nil }
+        return rawInput
+    }
+
+    private func isAllowedSearchScalar(_ scalar: UnicodeScalar) -> Bool {
+        let value = scalar.value
+
+        if (0xF700...0xF8FF).contains(value) {
+            return false
+        }
+
+        if CharacterSet.controlCharacters.contains(scalar) {
+            return false
+        }
+
+        switch scalar.properties.generalCategory {
+        case .uppercaseLetter,
+             .lowercaseLetter,
+             .titlecaseLetter,
+             .modifierLetter,
+             .otherLetter,
+             .decimalNumber,
+             .letterNumber,
+             .otherNumber,
+             .connectorPunctuation,
+             .dashPunctuation,
+             .openPunctuation,
+             .closePunctuation,
+             .initialPunctuation,
+             .finalPunctuation,
+             .otherPunctuation,
+             .mathSymbol,
+             .currencySymbol,
+             .modifierSymbol,
+             .otherSymbol:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var hasActiveTextInputResponder: Bool {
+        guard let responder = NSApp.keyWindow?.firstResponder else {
+            return false
+        }
+
+        return responder is NSTextView || responder is NSTextField
     }
 
     private func setupFilterPipeline() {
@@ -474,13 +552,40 @@ class ClipboardViewModel: ObservableObject {
         lastSelectedID = nil
     }
 
-    /// 盲打搜索：追加键盘捕获的字符到搜索词
-    /// ViewModel 绝不感知键盘/焦点/NSEvent 的存在，仅负责数据变更。
-    func appendBlindTypedCharacter(_ char: String) {
-        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
+    /// 面板默认聚焦列表时，保证有一个稳定的主选中项供方向键/回车直接消费。
+    func ensureListSelection() {
+        guard let firstVisible = displayedItemsForInteraction.first else { return }
+
+        if selectedItemIDs.isEmpty {
+            selectedItemIDs = [firstVisible.id]
+            lastSelectedID = firstVisible.id
             return
         }
-        searchInput.append(char)
+
+        if let lastSelectedID,
+           displayedItemsForInteraction.contains(where: { $0.id == lastSelectedID }),
+           selectedItemIDs.contains(lastSelectedID) {
+            return
+        }
+
+        if let selectedVisibleID = displayedItemsForInteraction.first(where: { selectedItemIDs.contains($0.id) })?.id {
+            lastSelectedID = selectedVisibleID
+            return
+        }
+
+        selectedItemIDs = [firstVisible.id]
+        lastSelectedID = firstVisible.id
+    }
+
+    /// 面板唤出时强制对齐竞品体验：默认单选首个可见项目。
+    func selectFirstDisplayedItem() {
+        guard let firstVisible = displayedItemsForInteraction.first else {
+            clearSelection()
+            return
+        }
+
+        selectedItemIDs = [firstVisible.id]
+        lastSelectedID = firstVisible.id
     }
 
     // MARK: - 批量操作引擎

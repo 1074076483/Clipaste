@@ -7,16 +7,21 @@ struct ClipboardMainView: View {
     @StateObject var viewModel = ClipboardViewModel()
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
-    @FocusState private var isSearchFocused: Bool
+    @FocusState private var focusedField: ClipboardPanelFocusField?
 
     @State private var viewRebuildToken: Bool = false
     private let searchService = TypeToSearchService.shared
 
     var body: some View {
+        configuredContent
+    }
+
+    @ViewBuilder
+    private var panelLayoutContent: some View {
         Group {
             if clipboardLayout == .horizontal {
                 VStack(spacing: 0) {
-                    ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
+                    ClipboardHeaderView(viewModel: viewModel, focusedField: _focusedField)
                     mainContent
                 }
                 .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -27,13 +32,17 @@ struct ClipboardMainView: View {
             } else {
                 mainContent
                     .safeAreaInset(edge: .top, spacing: 0) {
-                        ClipboardHeaderView(viewModel: viewModel, isSearchFocused: _isSearchFocused)
+                        ClipboardHeaderView(viewModel: viewModel, focusedField: _focusedField)
                     }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         historyPreviewFooter
                     }
             }
         }
+    }
+
+    private var configuredContent: some View {
+        panelLayoutContent
         .id("\(runtimeStore.rootIdentity)-\(viewRebuildToken)")
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.clear)
@@ -48,18 +57,7 @@ struct ClipboardMainView: View {
         .clipShape(RoundedRectangle(cornerRadius: clipboardLayout == .vertical ? 14 : 0))
         .preferredColorScheme(appTheme.colorScheme)
         .edgesIgnoringSafeArea(.all)
-        .sheet(
-            isPresented: Binding(
-                get: {
-                    storeManager.shouldShowPaywall && storeManager.paywallSource == .panel
-                },
-                set: { isPresented in
-                    if !isPresented {
-                        storeManager.dismissPaywall()
-                    }
-                }
-            )
-        ) {
+        .sheet(isPresented: paywallBinding) {
             PaywallView()
                 .environmentObject(storeManager)
         }
@@ -71,32 +69,32 @@ struct ClipboardMainView: View {
             DispatchQueue.main.async {
                 viewRebuildToken.toggle()
             }
+            scheduleDefaultListFocus()
         }
-        // ── 智能失焦：用户点选卡片后自动将搜索框失焦 ─────────────────
-        .onChange(of: viewModel.selectedItemIDs) { _, newValue in
-            if !newValue.isEmpty {
-                isSearchFocused = false
+        .onChange(of: focusedField) { _, newValue in
+            searchService.isTextFieldFocused = (newValue == .searchBar)
+        }
+        .onChange(of: displayedItemIDs) { _, _ in
+            if focusedField == .clipList {
+                viewModel.ensureListSelection()
             }
-        }
-        // ── 实时同步焦点状态给盲打服务 ─────────────────────────
-        .onChange(of: isSearchFocused) { _, newValue in
-            searchService.isTextFieldFocused = newValue
-        }
-        .onChange(of: viewModel.quickPasteModifier) { _, _ in
-            syncReservedSearchModifiers()
-        }
-        .onChange(of: viewModel.plainTextModifier) { _, _ in
-            syncReservedSearchModifiers()
         }
         .onAppear {
-            searchService.onCapture = { [weak viewModel] char in
-                viewModel?.appendBlindTypedCharacter(char)
+            searchService.onInterceptedKey = { [weak viewModel] char in
+                guard let viewModel else { return false }
+
+                let shouldEnterSearch = viewModel.handleGlobalKeyPress(char)
+                if shouldEnterSearch {
+                    focusSearchField()
+                }
+
+                return shouldEnterSearch
             }
-            searchService.onRequireFocus = requestSearchFocus
-            syncReservedSearchModifiers()
             syncAccessState()
+            scheduleDefaultListFocus()
         }
         .onDisappear {
+            searchService.onInterceptedKey = nil
             deactivatePanelInputHandling()
         }
         .onChange(of: storeManager.isTrialExpired) { _, _ in
@@ -116,6 +114,19 @@ struct ClipboardMainView: View {
         }
     }
 
+    private var paywallBinding: Binding<Bool> {
+        Binding(
+            get: {
+                storeManager.shouldShowPaywall && storeManager.paywallSource == .panel
+            },
+            set: { isPresented in
+                if !isPresented {
+                    storeManager.dismissPaywall()
+                }
+            }
+        )
+    }
+
     @ViewBuilder
     private var mainContent: some View {
         if displayedItems.isEmpty {
@@ -123,15 +134,23 @@ struct ClipboardMainView: View {
         } else {
             switch clipboardLayout {
             case .horizontal:
-                ClipboardHorizontalView(viewModel: viewModel, items: displayedItems)
+                ClipboardHorizontalView(
+                    viewModel: viewModel,
+                    items: displayedItems,
+                    focusedField: _focusedField
+                )
             case .vertical:
-                ClipboardVerticalListView(viewModel: viewModel, items: displayedItems)
+                ClipboardVerticalListView(
+                    viewModel: viewModel,
+                    items: displayedItems,
+                    focusedField: _focusedField
+                )
             }
         }
     }
 
     private func focusSearchField() {
-        DispatchQueue.main.async { isSearchFocused = true }
+        focusedField = .searchBar
     }
 
     private func requestSearchFocus() {
@@ -144,10 +163,10 @@ struct ClipboardMainView: View {
 
     private func activatePanelInputHandling() {
         viewModel.startKeyboardMonitoring()
-        syncReservedSearchModifiers()
         // 先启动面板级键盘监听，再启动盲打搜索，确保特殊按键优先被 ViewModel 消费。
         searchService.start()
-        searchService.isTextFieldFocused = isSearchFocused
+        searchService.isTextFieldFocused = (focusedField == .searchBar)
+        scheduleDefaultListFocus()
     }
 
     private func deactivatePanelInputHandling() {
@@ -155,13 +174,20 @@ struct ClipboardMainView: View {
         viewModel.stopKeyboardMonitoring()
     }
 
-    private func syncReservedSearchModifiers() {
-        searchService.reservedModifierFlags = viewModel.reservedSearchModifierFlags
-    }
-
     private func syncAccessState() {
         viewModel.updateDisplayedHistoryLimit(storeManager.historyLimitForFreeTier)
         viewModel.handleAccessRestrictionChange(isRestricted: !storeManager.hasFullAccess)
+    }
+
+    private func scheduleDefaultListFocus() {
+        focusedField = nil
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            guard NSApp.keyWindow != nil else { return }
+            guard focusedField != .searchBar else { return }
+            focusedField = .clipList
+            viewModel.selectFirstDisplayedItem()
+        }
     }
 
     private var displayedItems: [ClipboardItem] {
@@ -170,6 +196,10 @@ struct ClipboardMainView: View {
         }
 
         return viewModel.filteredItems
+    }
+
+    private var displayedItemIDs: [UUID] {
+        displayedItems.map(\.id)
     }
 
     private var isShowingFreeTierHistoryPreview: Bool {

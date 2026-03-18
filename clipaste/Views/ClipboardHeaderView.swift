@@ -10,7 +10,7 @@ struct ClipboardHeaderView: View {
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
     @EnvironmentObject private var storeManager: StoreManager
-    @FocusState var isSearchFocused: Bool
+    @FocusState var focusedField: ClipboardPanelFocusField?
     @FocusState private var focusedHeaderInput: HeaderInputField?
     @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
     @AppStorage("isPanelPinned") private var isPanelPinned: Bool = false
@@ -151,7 +151,7 @@ struct ClipboardHeaderView: View {
 #if os(macOS)
                 .textContentType(.none)
 #endif
-                .focused($isSearchFocused)
+                .focused($focusedField, equals: .searchBar)
 
             if !viewModel.searchInput.isEmpty {
                 Button(action: { viewModel.searchInput = "" }) {
@@ -576,7 +576,7 @@ struct ClipboardHeaderView: View {
 #if os(macOS)
                     .textContentType(.none)
 #endif
-                    .focused($isSearchFocused)
+                    .focused($focusedField, equals: .searchBar)
                 if !viewModel.searchInput.isEmpty {
                     Button(action: { viewModel.searchInput = "" }) {
                         Image(systemName: "xmark.circle.fill")
@@ -712,7 +712,7 @@ struct ClipboardHeaderView: View {
         TypeToSearchService.shared.isPaused = isShowingNewGroupPopover || showEditPopover
 
         if isShowing {
-            isSearchFocused = false
+            focusedField = nil
             DispatchQueue.main.async {
                 focusedHeaderInput = field
             }
@@ -766,10 +766,20 @@ struct ClipboardHeaderView: View {
 }
 
 #Preview {
-    let dummyViewModel = ClipboardViewModel(clipboardMonitor: nil)
-    return ClipboardHeaderView(viewModel: dummyViewModel)
+    ClipboardHeaderPreview()
+}
+
+private struct ClipboardHeaderPreview: View {
+    @FocusState private var focusedField: ClipboardPanelFocusField?
+
+    var body: some View {
+        ClipboardHeaderView(
+            viewModel: ClipboardViewModel(clipboardMonitor: nil),
+            focusedField: _focusedField
+        )
         .environmentObject(StoreManager.shared)
         .frame(width: 380)
+    }
 }
 
 // MARK: - 极简原生 Tab 按钮子组件

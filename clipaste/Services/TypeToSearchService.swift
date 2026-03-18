@@ -2,8 +2,8 @@ import AppKit
 
 /// 独立的键盘盲打嗅探服务（Service Layer）
 ///
-/// 职责单一：拦截面板上尚未被任何输入框消费的可见字符按键，
-/// 通过回调将字符和聚焦请求传递给上层。
+/// 职责单一：拦截面板上尚未被任何输入框消费的键盘事件，
+/// 将原始字符代理给上层，由上层决定是否消费并切换焦点。
 ///
 /// ⚠️ 与 SwiftUI View 完全解耦，不持有任何 View/ViewModel 引用。
 /// ⚠️ 必须在主线程调用 start()/stop()，生命周期由调用方管理。
@@ -21,16 +21,10 @@ final class TypeToSearchService {
     /// 此时所有按键直接放行给 TextField 原生处理。
     var isTextFieldFocused: Bool = false
 
-    /// 保留给面板级功能的修饰键（如快速粘贴 / 纯文本模式），命中后必须放行。
-    var reservedModifierFlags: NSEvent.ModifierFlags = []
-
     // MARK: - 回调
 
-    /// 捕获到可见字符时回调，参数为字符串（通常单字符）
-    var onCapture: ((String) -> Void)?
-
-    /// 需要聚焦搜索框时回调（UI 层设置 @FocusState）
-    var onRequireFocus: (() -> Void)?
+    /// 代理给上层的原始字符输入，返回 true 表示上层已消费该事件。
+    var onInterceptedKey: ((String) -> Bool)?
 
     // MARK: - 内部状态
 
@@ -67,32 +61,13 @@ final class TypeToSearchService {
         // 1. 搜索框已聚焦 → 全部放行，由 TextField 原生消费
         if isTextFieldFocused { return event }
 
-        // 2. 修饰键组合 → 放行（Cmd+C / Ctrl+A / Option+… 等系统快捷键）
-        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-        if !modifiers.intersection(reservedModifierFlags).isEmpty {
-            return event
-        }
-        if modifiers.contains(.command) || modifiers.contains(.control) || modifiers.contains(.option) {
-            return event
-        }
-
-        // 3. 提取可见字符
+        // 2. 提取原始字符；无字符时交还系统（方向键等仍可能是私有 function key 标量）
         guard let chars = event.charactersIgnoringModifiers, !chars.isEmpty else {
             return event
         }
 
-        // 4. 过滤控制字符（回车、Esc、Tab、方向键、功能键等）
-        let scalar = chars.unicodeScalars.first!
-        // 可见 ASCII 范围：0x21 (!) ~ 0x7E (~)，加上非 ASCII 字符（如中文拼音首字母）
-        let isPrintable = (scalar.value >= 0x21 && scalar.value <= 0x7E)
-                          || scalar.value > 0x7F
-        guard isPrintable else { return event }
-
-        // 5. 捕获字符 → 注入搜索词 → 请求聚焦
-        onCapture?(chars)
-        onRequireFocus?()
-
-        // 6. 消耗事件，防止系统发出 "咚" 的无效按键音
-        return nil
+        // 3. 是否消费完全交给上层决定；服务层不承担任何业务判断
+        let isHandled = onInterceptedKey?(chars) ?? false
+        return isHandled ? nil : event
     }
 }

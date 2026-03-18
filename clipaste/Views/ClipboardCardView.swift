@@ -47,19 +47,7 @@ struct ClipboardCardView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // ── Header：App 图标 + 名称 + 时间 ─────────────────────────
                 HStack(alignment: .center, spacing: 8) {
-                    Group {
-                        if let icon = item.appIcon {
-                            Image(nsImage: icon)
-                                .resizable()
-                                .scaledToFit()
-                        } else {
-                            Image(systemName: "app.dashed")
-                                .resizable()
-                                .scaledToFit()
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .frame(width: 32, height: 32)
+                    AppIconView(appBundleID: item.sourceBundleIdentifier, size: 32)
 
                     Text(item.appName)
                         .font(.system(size: 13, weight: .semibold))

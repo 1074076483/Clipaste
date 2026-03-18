@@ -124,19 +124,8 @@ struct ClipboardVerticalItemView: View {
     private var rowContent: some View {
         HStack(spacing: 12) {
             // 1. 左侧：App 图标
-            if let icon = item.appIcon {
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
-                    .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
-            } else {
-                ZStack {
-                    Circle().fill(Color.gray.opacity(0.2))
-                    Image(systemName: "app.dashed").foregroundColor(.secondary)
-                }
-                .frame(width: 32, height: 32)
-            }
+            AppIconView(appBundleID: item.sourceBundleIdentifier, size: 32)
+                .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
 
             // 2. 中间：内容预览
             VStack(alignment: .leading, spacing: 4) {
@@ -311,19 +300,8 @@ struct ClipboardDragPreview: View {
                     .resizable()
                     .frame(width: 32, height: 32)
                     .foregroundColor(.blue)
-            } else if let icon = item.appIcon {
-                // Has source app: show its icon
-                Image(nsImage: icon)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 36, height: 36)
             } else {
-                // Plain text / fallback
-                Image(systemName: "doc.text.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 30, height: 36)
-                    .foregroundColor(.secondary)
+                AppIconView(appBundleID: item.sourceBundleIdentifier, size: 36)
             }
         }
         .frame(width: 64, height: 64)

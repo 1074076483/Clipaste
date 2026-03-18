@@ -32,7 +32,6 @@ struct GroupIconPicker: View {
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var vm = IconPickerViewModel()
-    @State private var selectedCategoryIndex: Int = 0
 
     private let columns = [GridItem(.adaptive(minimum: 52), spacing: 8)]
 
@@ -57,7 +56,7 @@ struct GroupIconPicker: View {
 
                 if !vm.searchQuery.isEmpty {
                     Button {
-                        vm.searchQuery = ""
+                        vm.clearSearch()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.secondary)
@@ -72,49 +71,12 @@ struct GroupIconPicker: View {
                     .fill(Color(nsColor: .controlBackgroundColor))
             )
             .padding(.horizontal, 14)
-
-            // ── Category tabs (hidden while searching) ──
-            if !vm.isSearching {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(vm.categories.indices, id: \.self) { index in
-                            let cat = vm.categories[index]
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.15)) {
-                                    selectedCategoryIndex = index
-                                }
-                            } label: {
-                                Text(cat.name)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .foregroundStyle(selectedCategoryIndex == index ? .white : .primary)
-                                    .background(
-                                        Capsule()
-                                            .fill(selectedCategoryIndex == index
-                                                  ? Color.accentColor
-                                                  : Color(nsColor: .controlBackgroundColor))
-                                    )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                }
-            } else {
-                Spacer()
-                    .frame(height: 8)
-            }
+            .padding(.bottom, 8)
 
             Divider()
 
             // ── Icon grid ──
-            let displayedIcons = vm.isSearching
-                ? vm.searchResults
-                : vm.categories[selectedCategoryIndex].icons
-
-            if displayedIcons.isEmpty {
+            if vm.displayedIcons.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 28))
@@ -126,12 +88,12 @@ struct GroupIconPicker: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(showsIndicators: false) {
-                    LazyVGrid(columns: columns, spacing: 8) {
-                        ForEach(displayedIcons) { item in
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(vm.displayedIcons) { item in
                             iconCell(item)
                         }
                     }
-                    .padding(14)
+                    .padding(16)
                 }
             }
         }
@@ -148,22 +110,10 @@ struct GroupIconPicker: View {
             selectedIcon = item.name
             dismiss()
         } label: {
-            VStack(spacing: 0) {
-                IconItemView(item: item, size: 22)
-                    .foregroundStyle(isSelected ? .white : .primary)
-                    .frame(width: 52, height: 44)
-            }
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected
-                          ? Color.accentColor
-                          : Color(nsColor: .controlBackgroundColor))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? Color.clear : Color.primary.opacity(0.06), lineWidth: 1)
-            )
-            .contentShape(Rectangle())
+            IconItemView(item: item, size: 18)
+                .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle()) // ensure the hit target is still decent
         }
         .buttonStyle(.plain)
         .help(item.displayName)

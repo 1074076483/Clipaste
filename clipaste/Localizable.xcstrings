@@ -1082,6 +1082,7 @@
       }
     },
     "Clipaste needs Accessibility permission to safely simulate paste in any app." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1120,6 +1121,9 @@
           }
         }
       }
+    },
+    "Clipaste Pro" : {
+
     },
     "Clipaste Settings" : {
       "localizations" : {
@@ -1160,6 +1164,9 @@
           }
         }
       }
+    },
+    "Clipaste 需要辅助功能权限才能在任何应用中安全地模拟粘贴。" : {
+
     },
     "Clipboard Empty" : {
       "localizations" : {
@@ -1241,16 +1248,11 @@
         }
       }
     },
-    "CloudKit 私有库同步在试用结束后需要 Clipaste Pro。" : {
-
-    },
     "Command" : {
 
     },
-    "Common" : {
-
-    },
     "Continue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1613,12 +1615,6 @@
         }
       }
     },
-    "Dev Languages" : {
-
-    },
-    "Dev Tools" : {
-
-    },
     "Display Position" : {
       "localizations" : {
         "de" : {
@@ -1660,6 +1656,7 @@
       }
     },
     "Done" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1904,6 +1901,7 @@
       }
     },
     "Global Shortcut" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1984,6 +1982,7 @@
       }
     },
     "Grant Paste Superpower" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2110,6 +2109,7 @@
       }
     },
     "History Capacity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2605,6 +2605,7 @@
       }
     },
     "Launch at Login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2763,6 +2764,9 @@
           }
         }
       }
+    },
+    "Migration Assistant" : {
+
     },
     "Modifier Keys" : {
       "localizations" : {
@@ -3248,6 +3252,7 @@
       }
     },
     "Open System Settings to Authorize" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3491,6 +3496,7 @@
       }
     },
     "Permission Granted — Continue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3531,6 +3537,7 @@
       }
     },
     "Permission Required — Complete System Authorization" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4174,6 +4181,7 @@
       }
     },
     "Return to Clipaste after granting permission; status refreshes automatically." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4380,6 +4388,7 @@
       }
     },
     "Set Up Your Preferences" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4420,6 +4429,7 @@
       }
     },
     "Set your personal wake shortcut" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4623,6 +4633,7 @@
       }
     },
     "Show Clipboard History" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4747,6 +4758,7 @@
       }
     },
     "Starts in the menu bar after login, without interrupting your workflow." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4866,9 +4878,6 @@
           }
         }
       }
-    },
-    "Storage" : {
-
     },
     "System" : {
       "localizations" : {
@@ -5032,6 +5041,7 @@
       }
     },
     "These options can be changed in Settings at any time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5473,6 +5483,7 @@
       }
     },
     "Welcome to Clipaste" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5592,10 +5603,8 @@
         }
       }
     },
-    "Work" : {
-
-    },
     "You can change this later in Settings." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5641,10 +5650,16 @@
     "上次同步：%@" : {
 
     },
+    "下一步" : {
+
+    },
     "云 Runtime" : {
 
     },
     "云 Store" : {
+
+    },
+    "享受 Clipaste Pro 完整体验" : {
 
     },
     "今天" : {
@@ -5657,6 +5672,9 @@
 
     },
     "免费版当前仅显示最近 10 条记录" : {
+
+    },
+    "全局快捷键" : {
 
     },
     "关闭" : {
@@ -5674,6 +5692,9 @@
     "加入分组" : {
 
     },
+    "历史记录容量" : {
+
+    },
     "合并并复制 %lld 个项目" : {
 
     },
@@ -5681,6 +5702,9 @@
 
     },
     "同步诊断" : {
+
+    },
+    "呼出剪贴板历史记录" : {
 
     },
     "在主界面导航栏显示文本、链接、图片等预置智能分类标签。" : {
@@ -5692,10 +5716,16 @@
     "复制诊断信息" : {
 
     },
+    "完成" : {
+
+    },
     "已初始化" : {
 
     },
     "已复制" : {
+
+    },
+    "已授权 — 请继续" : {
 
     },
     "已解锁" : {
@@ -5710,10 +5740,19 @@
     "恢复购买" : {
 
     },
+    "打开系统设置以授权" : {
+
+    },
+    "授权后返回 Clipaste；状态会自动刷新。" : {
+
+    },
     "排队中的切换" : {
 
     },
     "数据同步" : {
+
+    },
+    "数据来源" : {
 
     },
     "无限历史记录、高级搜索和同步能力都已就绪。" : {
@@ -5749,6 +5788,9 @@
     "检查 iCloud 连接状态" : {
 
     },
+    "欢迎使用 Clipaste" : {
+
+    },
     "正在同步..." : {
 
     },
@@ -5761,7 +5803,19 @@
     "点击后粘贴到当前应用" : {
 
     },
+    "登录后自动运行并在菜单栏显示，不打扰你的工作流。" : {
+
+    },
+    "登录时启动" : {
+
+    },
+    "视图层仅负责数据来源选择、文件选择和状态展示；具体解析与路由分发全部由 MigrationManager 控制。" : {
+
+    },
     "移出分组" : {
+
+    },
+    "稍后也可以在设置中修改。" : {
 
     },
     "等待首次同步..." : {
@@ -5779,7 +5833,25 @@
     "解锁 Pro" : {
 
     },
+    "解锁 Pro 特色" : {
+
+    },
+    "设置你的专属唤醒快捷键" : {
+
+    },
+    "设置偏好" : {
+
+    },
+    "赋予粘贴超能力" : {
+
+    },
+    "这些选项随时可以在设置中更改。" : {
+
+    },
     "通过 iCloud 同步" : {
+
+    },
+    "需要授权 — 去系统设置中开启" : {
 
     }
   },

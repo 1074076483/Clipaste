@@ -18,53 +18,37 @@ struct OnboardingView: View {
             backgroundView
 
             VStack(spacing: 0) {
-                // ── Step indicator dots (top area with traffic-light-safe padding) ──
-                headerView
-                    .padding(.horizontal, 24)
-                    .padding(.top, 36)
-                    .padding(.bottom, 8)
-
                 // ── Page content ──
-                TabView(selection: $viewModel.currentStep) {
-                    ShortcutView()
-                        .tag(OnboardingStep.welcomeAndShortcut)
-
-                    PermissionView(
-                        hasAccessibilityPermission: viewModel.hasAccessibilityPermission,
-                        openSystemSettings: viewModel.openSystemSettingsForAccessibility
-                    )
-                    .tag(OnboardingStep.permissions)
-
-                    PreferencesView(
-                        launchAtLogin: $viewModel.launchAtLogin,
-                        historyLimit: $viewModel.historyLimit
-                    )
-                    .tag(OnboardingStep.preferences)
+                
+                // Step Indicator Dots in Content Area
+                stepIndicatorDots
+                
+                Group {
+                    switch viewModel.currentStep {
+                    case .welcomeAndShortcut:
+                        ShortcutView()
+                            .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .trailing)), removal: .opacity.combined(with: .move(edge: .leading))))
+                    case .permissions:
+                        PermissionView(
+                            hasAccessibilityPermission: viewModel.hasAccessibilityPermission,
+                            openSystemSettings: viewModel.openSystemSettingsForAccessibility
+                        )
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .trailing)), removal: .opacity.combined(with: .move(edge: .leading))))
+                    case .preferences:
+                        PreferencesView(
+                            launchAtLogin: $viewModel.launchAtLogin,
+                            historyLimit: $viewModel.historyLimit
+                        )
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .move(edge: .trailing)), removal: .opacity.combined(with: .move(edge: .leading))))
+                    }
                 }
-                .animation(.easeInOut, value: viewModel.currentStep)
+                .id(viewModel.currentStep)
+                .animation(.easeInOut(duration: 0.3), value: viewModel.currentStep)
 
                 // ── Bottom bar ──
-                Divider()
-                    .overlay(Color.white.opacity(0.35))
-
-                HStack {
-                    Spacer()
-
-                    Button(action: viewModel.nextStep) {
-                        Text(isLastStep
-                             ? String(localized: "Done")
-                             : String(localized: "Continue"))
-                            .font(.system(size: 15, weight: .semibold))
-                            .frame(minWidth: 96)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(!canContinue)
-                }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-                .background(.ultraThinMaterial)
+                bottomNavigationBar
             }
+            .padding(30)
         }
         .frame(width: 520, height: 460)
         .onAppear {
@@ -110,19 +94,41 @@ struct OnboardingView: View {
         .overlay(.ultraThinMaterial.opacity(0.5))
     }
 
-    // MARK: - Header (capsule dots only)
-
-    private var headerView: some View {
-        HStack(spacing: 10) {
+    // MARK: - Step Indicator
+    
+    private var stepIndicatorDots: some View {
+        HStack(spacing: 8) {
             ForEach(OnboardingStep.allCases, id: \.self) { step in
-                Capsule(style: .continuous)
-                    .fill(step == viewModel.currentStep ? Color.primary : Color.white.opacity(0.42))
-                    .frame(width: step == viewModel.currentStep ? 28 : 8, height: 8)
+                Circle()
+                    .fill(step == viewModel.currentStep ? Color.accentColor : Color.secondary.opacity(0.3))
+                    .frame(width: 8, height: 8)
                     .animation(.easeInOut(duration: 0.22), value: viewModel.currentStep)
             }
-
-            Spacer()
         }
+        .padding(.bottom, 24)
+        .padding(.top, 16)
+    }
+
+    // MARK: - Bottom Navigation Bar
+
+    private var bottomNavigationBar: some View {
+        HStack {
+            Spacer()
+
+            // Primary Action Button
+            Button(action: viewModel.nextStep) {
+                Text(isLastStep ? "完成" : "下一步")
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(minWidth: 96)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.capsule)
+            .tint(.accentColor)
+            .controlSize(.large)
+            .disabled(!canContinue)
+        }
+        .padding(.top, 16)
+        .padding(.bottom, 10)
     }
 }
 
@@ -134,57 +140,58 @@ private struct ShortcutView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack {
             Spacer()
+            
+            VStack(spacing: 20) {
+                // App icon
+                Image(nsImage: appIcon)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 96, height: 96)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .shadow(color: .black.opacity(0.12), radius: 20, y: 10)
 
-            // App icon
-            Image(nsImage: appIcon)
-                .resizable()
-                .interpolation(.high)
-                .frame(width: 96, height: 96)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .shadow(color: .black.opacity(0.12), radius: 20, y: 10)
+                // Title / Subtitle
+                VStack(spacing: 8) {
+                    Text("欢迎使用 Clipaste")
+                        .font(.system(size: 28, weight: .bold))
 
-            // Title / Subtitle
-            VStack(spacing: 8) {
-                Text("Welcome to Clipaste")
-                    .font(.system(size: 28, weight: .bold))
-
-                Text("Set your personal wake shortcut")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-
-            // Shortcut recorder panel
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Global Shortcut")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary)
-
-                HStack {
-                    Text("Show Clipboard History")
+                    Text("设置你的专属唤醒快捷键")
                         .font(.system(size: 15, weight: .medium))
-
-                    Spacer()
-
-                    KeyboardShortcuts.Recorder(for: .toggleClipboardPanel)
+                        .foregroundStyle(.secondary)
                 }
+
+                // Shortcut recorder panel
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("全局快捷键")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    HStack {
+                        Text("呼出剪贴板历史记录")
+                            .font(.system(size: 15, weight: .medium))
+
+                        Spacer()
+
+                        KeyboardShortcuts.Recorder(for: .toggleClipboardPanel)
+                    }
+                }
+                .padding(20)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.4))
+                )
+                .padding(.horizontal, 36)
+
+                Text("稍后也可以在设置中修改。")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.tertiary)
             }
-            .padding(20)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.4))
-            )
-            .padding(.horizontal, 36)
-
-            Text("You can change this later in Settings.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.tertiary)
-
+            
             Spacer()
         }
-        .padding(.bottom, 8)
     }
 }
 
@@ -195,54 +202,55 @@ private struct PermissionView: View {
     let openSystemSettings: () -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack {
             Spacer()
+            
+            VStack(spacing: 20) {
+                Image(systemName: hasAccessibilityPermission ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
+                    .font(.system(size: 44, weight: .semibold))
+                    .foregroundStyle(hasAccessibilityPermission ? Color.green : Color.red)
 
-            Image(systemName: hasAccessibilityPermission ? "checkmark.shield.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 44, weight: .semibold))
+                VStack(spacing: 8) {
+                    Text("赋予粘贴超能力")
+                        .font(.system(size: 28, weight: .bold))
+
+                    Text("Clipaste 需要辅助功能权限才能在任何应用中安全地模拟粘贴。")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 360)
+                }
+
+                Label(
+                    hasAccessibilityPermission
+                        ? "已授权 — 请继续"
+                        : "需要授权 — 去系统设置中开启",
+                    systemImage: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill"
+                )
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(hasAccessibilityPermission ? Color.green : Color.red)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(.ultraThinMaterial, in: Capsule(style: .continuous))
 
-            VStack(spacing: 8) {
-                Text("Grant Paste Superpower")
-                    .font(.system(size: 28, weight: .bold))
+                Button(action: openSystemSettings) {
+                    Text("打开系统设置以授权")
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .padding(.horizontal, 72)
 
-                Text("Clipaste needs Accessibility permission to safely simulate paste in any app.")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.secondary)
+                Text("授权后返回 Clipaste；状态会自动刷新。")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
+                    .padding(.horizontal, 36)
             }
-
-            Label(
-                hasAccessibilityPermission
-                    ? String(localized: "Permission Granted — Continue")
-                    : String(localized: "Permission Required — Complete System Authorization"),
-                systemImage: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill"
-            )
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(hasAccessibilityPermission ? Color.green : Color.red)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(.ultraThinMaterial, in: Capsule(style: .continuous))
-
-            Button(action: openSystemSettings) {
-                Text("Open System Settings to Authorize")
-                    .font(.system(size: 15, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .padding(.horizontal, 72)
-
-            Text("Return to Clipaste after granting permission; status refreshes automatically.")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.tertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 36)
-
+            
             Spacer()
         }
-        .padding(.bottom, 8)
     }
 }
 
@@ -253,62 +261,63 @@ private struct PreferencesView: View {
     @Binding var historyLimit: HistoryLimit
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack {
             Spacer()
+            
+            VStack(spacing: 20) {
+                VStack(spacing: 8) {
+                    Text("设置偏好")
+                        .font(.system(size: 28, weight: .bold))
 
-            VStack(spacing: 8) {
-                Text("Set Up Your Preferences")
-                    .font(.system(size: 28, weight: .bold))
-
-                Text("These options can be changed in Settings at any time.")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Toggle(isOn: $launchAtLogin) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Launch at Login")
-                                .font(.system(size: 15, weight: .semibold))
-
-                            Text("Starts in the menu bar after login, without interrupting your workflow.")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .toggleStyle(.switch)
+                    Text("这些选项随时可以在设置中更改。")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(.secondary)
                 }
-                .padding(18)
 
-                Divider()
-                    .overlay(Color.white.opacity(0.4))
+                VStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Toggle(isOn: $launchAtLogin) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("登录时启动")
+                                    .font(.system(size: 15, weight: .semibold))
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("History Capacity")
-                        .font(.system(size: 15, weight: .semibold))
-
-                    Picker("History Capacity", selection: $historyLimit) {
-                        ForEach(HistoryLimit.allCases) { limit in
-                            Text(limit.displayName).tag(limit)
+                                Text("登录后自动运行并在菜单栏显示，不打扰你的工作流。")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                        .toggleStyle(.switch)
                     }
-                    .labelsHidden()
-                    .pickerStyle(.menu)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .padding(18)
-            }
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(Color.white.opacity(0.4))
-            )
-            .padding(.horizontal, 36)
+                    .padding(18)
 
+                    Divider()
+                        .overlay(Color.white.opacity(0.4))
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("历史记录容量")
+                            .font(.system(size: 15, weight: .semibold))
+
+                        Picker("历史记录容量", selection: $historyLimit) {
+                            ForEach(HistoryLimit.allCases) { limit in
+                                Text(limit.displayName).tag(limit)
+                            }
+                        }
+                        .labelsHidden()
+                        .pickerStyle(.menu)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(18)
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.4))
+                )
+                .padding(.horizontal, 36)
+            }
+            
             Spacer()
         }
-        .padding(.bottom, 8)
     }
 }
 
