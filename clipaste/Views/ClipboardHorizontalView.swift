@@ -18,7 +18,7 @@ struct ClipboardHorizontalView: View {
                         )
                             .id(item.id)
                             .contentShape(RoundedRectangle(cornerRadius: 16))
-                            .help("点击后粘贴到当前应用")
+                            .help("Click to paste to the active app")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -36,9 +36,9 @@ struct ClipboardHorizontalView: View {
                 guard !viewModel.selectedItemIDs.isEmpty else { return }
                 showingDeleteConfirmation = true
             }
-            .alert("确认删除选中的历史吗？", isPresented: $showingDeleteConfirmation) {
-                Button("取消", role: .cancel) { }
-                Button("删除", role: .destructive) {
+            .alert("Delete Selected History?", isPresented: $showingDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
                     viewModel.batchDelete()
                 }
             }

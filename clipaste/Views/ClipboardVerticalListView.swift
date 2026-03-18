@@ -32,9 +32,9 @@ struct ClipboardVerticalListView: View {
                 guard !viewModel.selectedItemIDs.isEmpty else { return }
                 showingDeleteConfirmation = true
             }
-            .alert("确认删除选中的历史吗？", isPresented: $showingDeleteConfirmation) {
-                Button("取消", role: .cancel) { }
-                Button("删除", role: .destructive) {
+            .alert("Delete Selected History?", isPresented: $showingDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
                     viewModel.batchDelete()
                 }
             }

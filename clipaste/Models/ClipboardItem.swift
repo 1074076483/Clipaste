@@ -61,6 +61,10 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
     let hasImageData: Bool
     let imageUTType: String?
     let fileURL: String?
+    let resolvedFileURL: URL?
+    let fileDisplayPath: String?
+    let fileDisplayName: String?
+    let fileRepresentsImage: Bool
     var groupIDs: [String] // 所属分组 ID 集合
     var linkTitle: String?     // 链接预览：网页标题（LinkPresentation 抓取）
     var linkIconData: Data?    // 链接预览：网站图标数据
@@ -112,6 +116,17 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         self.hasImageData = hasImageData
         self.imageUTType = imageUTType
         self.fileURL = fileURL
+        let resolvedFileURL = ClipboardFileReference.resolvedURL(from: fileURL)
+        self.resolvedFileURL = resolvedFileURL
+        self.fileDisplayPath = resolvedFileURL?.path
+        if let path = resolvedFileURL?.path, !path.isEmpty {
+            self.fileDisplayName = (path as NSString).lastPathComponent
+        } else if let fileURL, !fileURL.isEmpty {
+            self.fileDisplayName = fileURL
+        } else {
+            self.fileDisplayName = nil
+        }
+        self.fileRepresentsImage = resolvedFileURL.map { ClipboardFileReference.isLikelyImageFileURL($0) } ?? false
         self.groupIDs = normalizedGroupIDs
         self.linkTitle = linkTitle
         self.linkIconData = linkIconData
@@ -157,6 +172,10 @@ extension ClipboardItem {
         lhs.hasImageData == rhs.hasImageData &&
         lhs.imageUTType == rhs.imageUTType &&
         lhs.fileURL == rhs.fileURL &&
+        lhs.resolvedFileURL == rhs.resolvedFileURL &&
+        lhs.fileDisplayPath == rhs.fileDisplayPath &&
+        lhs.fileDisplayName == rhs.fileDisplayName &&
+        lhs.fileRepresentsImage == rhs.fileRepresentsImage &&
         lhs.groupIDs == rhs.groupIDs &&
         lhs.linkTitle == rhs.linkTitle &&
         lhs.linkIconData == rhs.linkIconData &&
@@ -179,6 +198,10 @@ extension ClipboardItem {
         hasher.combine(hasImageData)
         hasher.combine(imageUTType)
         hasher.combine(fileURL)
+        hasher.combine(resolvedFileURL)
+        hasher.combine(fileDisplayPath)
+        hasher.combine(fileDisplayName)
+        hasher.combine(fileRepresentsImage)
         hasher.combine(groupIDs)
         hasher.combine(linkTitle)
         hasher.combine(linkIconData)

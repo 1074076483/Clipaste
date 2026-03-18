@@ -2,26 +2,18 @@ import AppKit
 import SwiftUI
 
 struct PaywallView: View {
-    private struct PaywallFeature: Identifiable {
-        let id = UUID()
-        let title: String
-        let subtitle: String
-    }
-
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var storeManager: StoreManager
 
-    private let features: [PaywallFeature] = [
-        .init(title: "无限历史记录", subtitle: "不再只保留最近 10 条，完整浏览所有剪贴板历史。"),
-        .init(title: "高级搜索", subtitle: "即时搜索文本、链接和代码片段，定位更快。"),
-        .init(title: "纯文本快捷粘贴", subtitle: "一键去除格式，保持清爽输出。"),
-        .init(title: "CloudKit 私有库同步", subtitle: "在同一 Apple ID 的多台 Mac 间同步历史记录。")
+    private let proFeatures: [(icon: String, title: LocalizedStringKey)] = [
+        ("clock.arrow.circlepath", "Unlimited History"),
+        ("magnifyingglass", "Advanced Search"),
+        ("doc.plaintext", "Plain Text Quick Paste"),
+        ("icloud.fill", "CloudKit Private Sync"),
+        ("paintpalette.fill", "Multiple Themes"),
+        ("slider.horizontal.3", "Custom Rules")
     ]
-
-    private var featureColumns: [GridItem] {
-        Array(repeating: GridItem(.flexible(), spacing: 14), count: 2)
-    }
 
     var body: some View {
         ZStack {
@@ -43,14 +35,15 @@ struct PaywallView: View {
             VStack(spacing: 0) {
                 topBar
                 header
-                featureGrid
+                featureList
+                priceHero
                 footer
             }
             .padding(.horizontal, 30)
             .padding(.top, 24)
             .padding(.bottom, 28)
         }
-        .frame(width: 560)
+        .frame(width: 480)
         .padding(22)
         .onChange(of: storeManager.isProUnlocked) { _, unlocked in
             if unlocked {
@@ -58,6 +51,8 @@ struct PaywallView: View {
             }
         }
     }
+
+    // MARK: - Ambient Background
 
     private var ambientBackground: some View {
         ZStack {
@@ -91,6 +86,8 @@ struct PaywallView: View {
         .clipShape(RoundedRectangle(cornerRadius: 34, style: .continuous))
     }
 
+    // MARK: - Top Bar (Close)
+
     private var topBar: some View {
         HStack {
             Spacer()
@@ -111,28 +108,27 @@ struct PaywallView: View {
         .padding(.bottom, 4)
     }
 
+    // MARK: - Header (Icon + Title)
+
     private var header: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             appIconHero
 
-            VStack(spacing: 7) {
-                Text("解锁 Clipaste Pro")
-                    .font(.system(size: 36, weight: .bold))
-                    .tracking(-1.2)
+            VStack(spacing: 6) {
+                Text("Clipaste Pro Lifetime Membership")
+                    .font(.system(size: 28, weight: .bold))
+                    .tracking(-0.8)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
 
                 Text(storeManager.accessHeadline)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.secondary)
-
-                Text(featureHighlightText)
-                    .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
             }
         }
-        .padding(.top, 8)
-        .padding(.bottom, 30)
+        .padding(.top, 4)
+        .padding(.bottom, 24)
     }
 
     private var appIconHero: some View {
@@ -148,7 +144,7 @@ struct PaywallView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 104, height: 104)
+                .frame(width: 96, height: 96)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
                         .stroke(glassStrokeColor, lineWidth: 0.8)
@@ -157,53 +153,55 @@ struct PaywallView: View {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 86, height: 86)
-                .clipShape(.rect(cornerRadius: 22))
+                .frame(width: 78, height: 78)
+                .clipShape(.rect(cornerRadius: 20))
                 .shadow(color: .accentColor.opacity(0.4), radius: 30, x: 0, y: 10)
         }
     }
 
-    private var featureGrid: some View {
-        LazyVGrid(columns: featureColumns, spacing: 14) {
-            ForEach(features) { feature in
-                featureCard(feature)
+    // MARK: - Feature List (Compact Vertical)
+
+    private var featureList: some View {
+        LazyVGrid(
+            columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)],
+            alignment: .leading,
+            spacing: 10
+        ) {
+            ForEach(proFeatures, id: \.icon) { feature in
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+
+                    Text(feature.title)
+                        .font(.system(size: 13, weight: .medium))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
             }
         }
-        .padding(.bottom, 30)
+        .padding(.horizontal, 8)
+        .padding(.bottom, 28)
     }
 
-    private func featureCard(_ feature: PaywallFeature) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 19, weight: .semibold))
+    // MARK: - Price Hero (Prominent ¥49)
+
+    private var priceHero: some View {
+        VStack(spacing: 6) {
+            Text(storeManager.localizedLifetimePrice)
+                .font(.system(size: 52, weight: .bold, design: .rounded))
+                .tracking(-1.5)
                 .foregroundStyle(Color.accentColor)
-                .shadow(color: Color.accentColor.opacity(0.28), radius: 10, y: 2)
 
-            VStack(alignment: .leading, spacing: 5) {
-                Text(feature.title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .tracking(-0.2)
-
-                Text(feature.subtitle)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer(minLength: 0)
+            Text(storeManager.lifetimePriceSubtitle)
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, minHeight: 108, alignment: .topLeading)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(featureCardFill)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(colorScheme == .dark ? 0.18 : 0.24), lineWidth: 0.5)
-        )
-        .shadow(color: .black.opacity(colorScheme == .dark ? 0.12 : 0.06), radius: 18, y: 12)
+        .padding(.bottom, 24)
     }
+
+    // MARK: - Footer (CTA + Restore + Error)
 
     private var footer: some View {
         VStack(spacing: 12) {
@@ -240,7 +238,7 @@ struct PaywallView: View {
                             .controlSize(.small)
                     }
 
-                    Text("恢复购买")
+                    Text("Restore Purchase")
                         .font(.caption.weight(.semibold))
                 }
             }
@@ -264,24 +262,10 @@ struct PaywallView: View {
         }
     }
 
-    private var featureHighlightText: String {
-        if let highlightedFeature = storeManager.highlightedFeature {
-            return "继续使用“\(highlightedFeature.title)”需要解锁 Pro。"
-        }
-
-        return "一次购买，永久解锁 Clipaste 的全部高级能力。"
-    }
+    // MARK: - Helpers
 
     private var glassStrokeColor: Color {
         Color.white.opacity(colorScheme == .dark ? 0.14 : 0.34)
-    }
-
-    private var featureCardFill: AnyShapeStyle {
-        if colorScheme == .dark {
-            return AnyShapeStyle(Color.white.opacity(0.08))
-        }
-
-        return AnyShapeStyle(.thinMaterial)
     }
 
     private func close() {
@@ -289,6 +273,8 @@ struct PaywallView: View {
         dismiss()
     }
 }
+
+// MARK: - CTA Button Style
 
 private struct PaywallCTAButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

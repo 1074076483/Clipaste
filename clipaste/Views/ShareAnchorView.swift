@@ -69,7 +69,7 @@ struct ShareableModifier: ViewModifier {
                 objects.append(image)
             }
         case .fileURL:
-            if let urlStr = item.fileURL, let url = URL(string: urlStr), url.isFileURL {
+            if let url = item.resolvedFileURL {
                 objects.append(url)
             } else if let text = item.rawText ?? item.previewText {
                 objects.append(text)

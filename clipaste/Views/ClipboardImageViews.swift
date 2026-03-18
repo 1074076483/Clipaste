@@ -42,6 +42,47 @@ struct ClipboardThumbnailView<Placeholder: View>: View {
     }
 }
 
+struct ClipboardFileThumbnailView<Placeholder: View>: View {
+    let fileURL: URL
+    let maxPixelSize: Int
+    @ViewBuilder let placeholder: Placeholder
+
+    @State private var image: NSImage?
+
+    init(
+        fileURL: URL,
+        maxPixelSize: Int,
+        @ViewBuilder placeholder: () -> Placeholder
+    ) {
+        self.fileURL = fileURL
+        self.maxPixelSize = maxPixelSize
+        self.placeholder = placeholder()
+    }
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.medium)
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                placeholder
+            }
+        }
+        .task(id: cacheIdentity) {
+            image = await ClipboardImagePipeline.shared.thumbnail(
+                forFileURL: fileURL,
+                maxPixelSize: maxPixelSize
+            )
+        }
+    }
+
+    private var cacheIdentity: String {
+        "\(fileURL.standardizedFileURL.path)-\(maxPixelSize)"
+    }
+}
+
 struct ClipboardQuickLookImageView: View {
     @ObservedObject var viewModel: ClipboardViewModel
 

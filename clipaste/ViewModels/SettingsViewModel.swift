@@ -1,13 +1,22 @@
 import SwiftUI
 import Combine
-import ServiceManagement
 
+@MainActor
 final class SettingsViewModel: ObservableObject {
     let objectWillChange = ObservableObjectPublisher()
+    private let preferencesStore: AppPreferencesStore
+    private var cancellables = Set<AnyCancellable>()
+    private var isApplyingSharedState = false
 
-    @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
+    var launchAtLogin: Bool {
         willSet { objectWillChange.send() }
-        didSet { toggleLaunchAtLogin(enabled: launchAtLogin) }
+        didSet {
+            guard !isApplyingSharedState, launchAtLogin != oldValue else { return }
+            preferencesStore.updateLaunchAtLogin(launchAtLogin)
+            applySharedState {
+                launchAtLogin = preferencesStore.launchAtLogin
+            }
+        }
     }
 
     @AppStorage("appLanguage") var appLanguage: AppLanguage = .auto {
@@ -76,38 +85,21 @@ final class SettingsViewModel: ObservableObject {
         willSet { objectWillChange.send() }
     }
 
+    convenience init() {
+        self.init(preferencesStore: AppPreferencesStore.shared)
+    }
 
-    init() {
+    init(preferencesStore: AppPreferencesStore) {
+        self.preferencesStore = preferencesStore
+        self.launchAtLogin = preferencesStore.launchAtLogin
+
         ModifierKey.migrateStoredPreferences()
         quickPasteModifier = ModifierKey.quickPastePreference()
         plainTextModifier = ModifierKey.plainTextPreference()
-
-        // 冷启动时：强制同步系统真实的开机自启状态
-        // 防止用户在系统设置里单方面关掉后 Toggle 状态与实际不一致
-        let isRegistered = SMAppService.mainApp.status == .enabled
-        if launchAtLogin != isRegistered {
-            launchAtLogin = isRegistered
-        }
-    }
-
-    // MARK: - 开机自启
-
-    private func toggleLaunchAtLogin(enabled: Bool) {
-        do {
-            if enabled {
-                guard SMAppService.mainApp.status != .enabled else { return }
-                try SMAppService.mainApp.register()
-                print("✅ 成功注册开机自启")
-            } else {
-                try SMAppService.mainApp.unregister()
-                print("✅ 成功取消开机自启")
-            }
-        } catch {
-            print("❌ 开机自启状态修改失败: \(error)")
-            // 底层调用失败时，将 UI 回滚到系统真实状态
-            DispatchQueue.main.async {
-                self.launchAtLogin = SMAppService.mainApp.status == .enabled
-            }
+        bindPreferences()
+        preferencesStore.refreshLaunchAtLoginStatus()
+        applySharedState {
+            launchAtLogin = preferencesStore.launchAtLogin
         }
     }
 
@@ -121,5 +113,23 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
         }
         UserDefaults.standard.synchronize()
+    }
+
+    private func bindPreferences() {
+        preferencesStore.$launchAtLogin
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                guard let self else { return }
+                self.applySharedState {
+                    self.launchAtLogin = isEnabled
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func applySharedState(_ updates: () -> Void) {
+        isApplyingSharedState = true
+        updates()
+        isApplyingSharedState = false
     }
 }

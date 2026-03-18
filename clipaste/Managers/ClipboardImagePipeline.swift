@@ -39,4 +39,23 @@ final class ClipboardImagePipeline: @unchecked Sendable {
 
         return image
     }
+
+    nonisolated func thumbnail(forFileURL fileURL: URL, maxPixelSize: Int) async -> NSImage? {
+        let cacheKey = "file-thumb-\(fileURL.standardizedFileURL.path)-\(maxPixelSize)" as NSString
+        if let cached = cache.object(forKey: cacheKey) {
+            return cached
+        }
+
+        let imageTask = Task.detached(priority: .userInitiated) { () -> NSImage? in
+            guard let data = ClipboardFileReference.loadImageData(from: fileURL) else { return nil }
+            return ImageProcessor.downsampleImage(from: data, maxPixelSize: maxPixelSize)
+        }
+        let image = await imageTask.value
+
+        if let image {
+            cache.setObject(image, forKey: cacheKey)
+        }
+
+        return image
+    }
 }

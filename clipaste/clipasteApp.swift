@@ -61,6 +61,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    func applicationDidBecomeActive(_ notification: Notification) {
+        Task { @MainActor in
+            AppPreferencesStore.shared.refreshLaunchAtLoginStatus()
+        }
+    }
+
     private func handleTogglePanelShortcut() {
         ClipboardPanelManager.shared.togglePanel()
     }
@@ -202,6 +208,7 @@ extension AppDelegate: NSWindowDelegate {
 @main
 struct clipasteApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @StateObject private var preferencesStore = AppPreferencesStore.shared
     @StateObject private var settingsViewModel = SettingsViewModel()
     @StateObject private var runtimeStore = ClipboardRuntimeStore.shared
     @StateObject private var storeManager = StoreManager.shared
@@ -212,6 +219,7 @@ struct clipasteApp: App {
         // Register standard macOS Settings Window
         Settings {
             SettingsView()
+                .environmentObject(preferencesStore)
                 .environmentObject(settingsViewModel)
                 .environmentObject(runtimeStore)
                 .environmentObject(storeManager)
@@ -226,6 +234,7 @@ struct clipasteApp: App {
         // Status Bar Menu to access app functions
         MenuBarExtra("Clipaste", image: "MenuBarIcon") {
             MenuBarExtraContent()
+                .environmentObject(preferencesStore)
                 .environmentObject(runtimeStore)
                 .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)

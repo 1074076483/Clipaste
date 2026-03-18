@@ -210,11 +210,11 @@ struct ClipboardMainView: View {
     private var historyPreviewFooter: some View {
         HStack {
             if isShowingFreeTierHistoryPreview {
-                Text("免费版当前仅显示最近 10 条记录")
+                Text("Free plan shows latest 10 records only")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
             } else {
-                Text("\(displayedItems.count) 个项目")
+                Text("\(displayedItems.count) Items")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
             }
@@ -222,7 +222,7 @@ struct ClipboardMainView: View {
             Spacer()
 
             if isShowingFreeTierHistoryPreview {
-                Button("解锁 Pro") {
+                Button(String(localized: "Unlock Pro")) {
                     storeManager.presentPaywall(from: .panel, highlighting: .unlimitedHistory)
                 }
                 .buttonStyle(.plain)
@@ -238,6 +238,7 @@ struct ClipboardMainView: View {
 
 #Preview {
     ClipboardMainView()
+        .environmentObject(AppPreferencesStore.shared)
         .environmentObject(ClipboardRuntimeStore.shared)
         .environmentObject(StoreManager.shared)
 }

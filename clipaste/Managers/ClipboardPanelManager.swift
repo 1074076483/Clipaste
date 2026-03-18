@@ -50,6 +50,7 @@ class ClipboardPanelManager {
 
         let hostingController = NSHostingController(
             rootView: ClipboardPanelRootView()
+                .environmentObject(AppPreferencesStore.shared)
                 .environmentObject(ClipboardRuntimeStore.shared)
                 .environmentObject(StoreManager.shared)
         )
@@ -297,11 +298,13 @@ class ClipboardPanelManager {
 }
 
 private struct ClipboardPanelRootView: View {
+    @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @EnvironmentObject private var storeManager: StoreManager
 
     var body: some View {
         ClipboardMainView()
+            .environmentObject(preferencesStore)
             .environmentObject(runtimeStore)
             .environmentObject(storeManager)
             .modelContainer(runtimeStore.container)

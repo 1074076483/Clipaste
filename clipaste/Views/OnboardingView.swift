@@ -117,9 +117,11 @@ struct OnboardingView: View {
 
             // Primary Action Button
             Button(action: viewModel.nextStep) {
-                Text(isLastStep ? "完成" : "下一步")
+                Text(isLastStep ? "Done" : "Next")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(minWidth: 96)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
@@ -154,22 +156,22 @@ private struct ShortcutView: View {
 
                 // Title / Subtitle
                 VStack(spacing: 8) {
-                    Text("欢迎使用 Clipaste")
+                    Text("Welcome to Clipaste")
                         .font(.system(size: 28, weight: .bold))
 
-                    Text("设置你的专属唤醒快捷键")
+                    Text("Set Up Your Activation Shortcut")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.secondary)
                 }
 
                 // Shortcut recorder panel
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("全局快捷键")
+                    Text("Global Shortcut")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(.secondary)
 
                     HStack {
-                        Text("呼出剪贴板历史记录")
+                        Text("Open Clipboard History")
                             .font(.system(size: 15, weight: .medium))
 
                         Spacer()
@@ -185,7 +187,7 @@ private struct ShortcutView: View {
                 )
                 .padding(.horizontal, 36)
 
-                Text("稍后也可以在设置中修改。")
+                Text("You can change this later in Settings.")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.tertiary)
             }
@@ -211,10 +213,10 @@ private struct PermissionView: View {
                     .foregroundStyle(hasAccessibilityPermission ? Color.green : Color.red)
 
                 VStack(spacing: 8) {
-                    Text("赋予粘贴超能力")
+                    Text("Grant Paste Superpower")
                         .font(.system(size: 28, weight: .bold))
 
-                    Text("Clipaste 需要辅助功能权限才能在任何应用中安全地模拟粘贴。")
+                    Text("Clipaste needs Accessibility permission to securely simulate paste in any app.")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -223,8 +225,8 @@ private struct PermissionView: View {
 
                 Label(
                     hasAccessibilityPermission
-                        ? "已授权 — 请继续"
-                        : "需要授权 — 去系统设置中开启",
+                        ? String(localized: "Authorized — Continue")
+                        : String(localized: "Authorization Required — Enable in System Settings"),
                     systemImage: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill"
                 )
                 .font(.system(size: 13, weight: .semibold))
@@ -234,15 +236,17 @@ private struct PermissionView: View {
                 .background(.ultraThinMaterial, in: Capsule(style: .continuous))
 
                 Button(action: openSystemSettings) {
-                    Text("打开系统设置以授权")
+                    Text("Open System Settings to Authorize")
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .padding(.horizontal, 72)
 
-                Text("授权后返回 Clipaste；状态会自动刷新。")
+                Text("Return to Clipaste after authorizing; status refreshes automatically.")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
@@ -266,10 +270,10 @@ private struct PreferencesView: View {
             
             VStack(spacing: 20) {
                 VStack(spacing: 8) {
-                    Text("设置偏好")
+                    Text("Set Preferences")
                         .font(.system(size: 28, weight: .bold))
 
-                    Text("这些选项随时可以在设置中更改。")
+                    Text("These options can be changed anytime in Settings.")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(.secondary)
                 }
@@ -278,10 +282,10 @@ private struct PreferencesView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Toggle(isOn: $launchAtLogin) {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("登录时启动")
+                                Text("Launch at Login")
                                     .font(.system(size: 15, weight: .semibold))
 
-                                Text("登录后自动运行并在菜单栏显示，不打扰你的工作流。")
+                                Text("Runs automatically after login and appears in the menu bar, without interrupting your workflow.")
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundStyle(.secondary)
                             }
@@ -294,10 +298,10 @@ private struct PreferencesView: View {
                         .overlay(Color.white.opacity(0.4))
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("历史记录容量")
+                        Text("History Capacity")
                             .font(.system(size: 15, weight: .semibold))
 
-                        Picker("历史记录容量", selection: $historyLimit) {
+                        Picker("History Capacity", selection: $historyLimit) {
                             ForEach(HistoryLimit.allCases) { limit in
                                 Text(limit.displayName).tag(limit)
                             }

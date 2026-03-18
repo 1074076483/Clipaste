@@ -53,7 +53,7 @@ struct AboutSettingsView: View {
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("更快地回顾、搜索及重新粘贴最近复制的内容。")
+            Text("Quickly review, search, and re-paste recently copied content.")
                 .font(.system(size: 15))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -83,9 +83,9 @@ struct AboutSettingsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(storeManager.isProUnlocked ? "Clipaste Pro 已解锁" : "Clipaste Pro")
+                    Text(storeManager.isProUnlocked ? String(localized: "Clipaste Pro Unlocked") : "Clipaste Pro")
                         .font(.system(size: 15, weight: .bold))
-                    Text(storeManager.isProUnlocked ? "核心能力都已就绪。" : "享受 Clipaste Pro 完整体验")
+                    Text(storeManager.isProUnlocked ? String(localized: "All core features are ready.") : String(localized: "Enjoy the full Clipaste Pro experience"))
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
                 }
@@ -95,16 +95,16 @@ struct AboutSettingsView: View {
             
             // Middle: Core features
             HStack(spacing: 24) {
-                featureItem(icon: "paintpalette.fill", text: "多款主题")
-                featureItem(icon: "slider.horizontal.3", text: "自定义规则")
-                featureItem(icon: "clock.arrow.circlepath", text: "无限历史")
+                featureItem(icon: "paintpalette.fill", text: String(localized: "Multiple Themes"))
+                featureItem(icon: "slider.horizontal.3", text: String(localized: "Custom Rules"))
+                featureItem(icon: "clock.arrow.circlepath", text: String(localized: "Unlimited History"))
             }
             .padding(.vertical, 4)
             .padding(.leading, 2)
             
             // Bottom: Action Button / Unlocked Badge
             if storeManager.isProUnlocked {
-                Text("已解锁")
+                Text("Unlocked")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Color.accentColor)
                     .frame(maxWidth: .infinity)
@@ -114,10 +114,12 @@ struct AboutSettingsView: View {
                 Button {
                     storeManager.presentPaywall(from: .settings)
                 } label: {
-                    Text("解锁 Pro 特色")
+                    Text("Unlock Pro Experience (\(storeManager.localizedLifetimePrice) Lifetime)")
                         .font(.system(size: 13, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.regular)
@@ -157,6 +159,8 @@ struct AboutSettingsView: View {
             Text(text)
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
     }
 
@@ -175,7 +179,7 @@ struct AboutSettingsView: View {
 
             Link(destination: privacyPolicyURL) {
                 actionRowLabel(
-                    title: "Privacy Policy",
+                    title: String(localized: "Privacy Policy"),
                     systemImage: "lock.doc"
                 )
             }
@@ -186,7 +190,7 @@ struct AboutSettingsView: View {
 
             Link(destination: termsOfServiceURL) {
                 actionRowLabel(
-                    title: "Terms of Service",
+                    title: String(localized: "Terms of Service"),
                     systemImage: "doc.text"
                 )
             }

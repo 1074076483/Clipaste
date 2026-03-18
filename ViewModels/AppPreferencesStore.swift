@@ -42,6 +42,15 @@ final class AppPreferencesStore: ObservableObject {
         refreshLaunchAtLoginStatus()
     }
 
+    func updateLaunchAtLogin(_ enable: Bool) {
+        do {
+            try setLaunchAtLogin(enable)
+        } catch {
+            print("❌ 开机自启状态修改失败: \(error)")
+            refreshLaunchAtLoginStatus()
+        }
+    }
+
     func setEnableSoundEffects(_ enable: Bool) {
         guard enableSoundEffects != enable else { return }
 

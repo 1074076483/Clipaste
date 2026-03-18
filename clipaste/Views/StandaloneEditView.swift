@@ -54,7 +54,7 @@ struct StandaloneEditView: View {
                     VStack(spacing: 4) {
                         Image(systemName: "doc.plaintext")
                             .font(.system(size: 16))
-                        Text("使用纯文本")
+                        Text("Use Plain Text")
                             .font(.system(size: 10))
                     }
                     .frame(width: 60)
@@ -66,7 +66,7 @@ struct StandaloneEditView: View {
                     VStack(spacing: 4) {
                         Image(systemName: "square.and.arrow.down")
                             .font(.system(size: 16))
-                        Text("保存")
+                        Text("Save")
                             .font(.system(size: 10))
                     }
                     .frame(width: 50)

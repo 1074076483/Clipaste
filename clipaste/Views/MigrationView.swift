@@ -17,7 +17,7 @@ struct MigrationView: View {
     var body: some View {
         Section {
             VStack(alignment: .leading, spacing: 14) {
-                Picker("数据来源", selection: $selectedSource) {
+                Picker("Data Source", selection: $selectedSource) {
                     ForEach(MigrationManager.MigrationSource.allCases) { source in
                         Text(source.displayName).tag(source)
                     }
@@ -55,7 +55,7 @@ struct MigrationView: View {
                     isImporterPresented = true
                 } label: {
                     Label(
-                        migrationManager.isMigrating ? "迁移进行中..." : selectedSource.fileButtonTitle,
+                        migrationManager.isMigrating ? String(localized: "Migration in Progress…") : selectedSource.fileButtonTitle,
                         systemImage: "externaldrive.badge.plus"
                     )
                 }
@@ -65,7 +65,7 @@ struct MigrationView: View {
         } header: {
             Text("Migration Assistant")
         } footer: {
-            Text("视图层仅负责数据来源选择、文件选择和状态展示；具体解析与路由分发全部由 MigrationManager 控制。")
+            Text("The View layer handles source selection, file picking, and status display; all parsing and routing is managed by MigrationManager.")
         }
         .fileImporter(
             isPresented: $isImporterPresented,
@@ -83,7 +83,7 @@ struct MigrationView: View {
         }
 
         if migrationManager.statusSource == selectedSource,
-           migrationManager.migrationProgress.contains("失败") {
+           migrationManager.migrationProgress.contains(String(localized: "Failed")) {
             return .red
         }
 
@@ -153,7 +153,7 @@ struct MigrationView: View {
             guard (error as NSError).code != NSUserCancelledError else { return }
             importerStatus = ImporterStatus(
                 source: selectedSource,
-                message: "文件选择失败：\(error.localizedDescription)"
+                message: String(localized: "File selection failed: \(error.localizedDescription)")
             )
         }
     }

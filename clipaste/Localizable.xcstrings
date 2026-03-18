@@ -64,8 +64,61 @@
         }
       }
     },
-    "%lld 个项目" : {
-
+    "%lld Items" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 个项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 個項目"
+          }
+        }
+      }
+    },
+    "%lld Trial Days Remaining" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testlauf: noch %lld Tage"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld jours d'essai restants"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残り%lld日のお試し期間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "체험 기간 %lld일 남음"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试用剩余 %lld 天"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試用剩餘 %lld 天"
+          }
+        }
+      }
     },
     "1 Day" : {
       "localizations" : {
@@ -267,6 +320,46 @@
         }
       }
     },
+    "3-Day Trial Has Ended" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3-Tage-Testlauf beendet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'essai de 3 jours est terminé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3日間の試用期間が終了しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3일 체험 기간이 종료되었습니다"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 天试用已结束"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 天試用已結束"
+          }
+        }
+      }
+    },
     "6 Months" : {
       "localizations" : {
         "de" : {
@@ -387,8 +480,23 @@
         }
       }
     },
+    "Active Route" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活动路由"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活動路由"
+          }
+        }
+      }
+    },
     "Add Title" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -508,6 +616,46 @@
         }
       }
     },
+    "Advanced Search" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erweiterte Suche"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche avancée"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高度な検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "고급 검색"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高级搜索"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進階搜尋"
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "de" : {
@@ -544,6 +692,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全部"
+          }
+        }
+      }
+    },
+    "All core features are ready." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Kernfunktionen sind bereit."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les fonctionnalités principales sont prêtes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのコア機能が利用可能です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 핵심 기능이 준비되었습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有核心功能已就绪。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有核心功能已就緒。"
           }
         }
       }
@@ -624,6 +812,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一律純文字"
+          }
+        }
+      }
+    },
+    "An unrecognized purchase result occurred." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein unbekanntes Kaufergebnis ist aufgetreten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un résultat d'achat non reconnu s'est produit."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不明な購入結果が発生しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인식할 수 없는 구매 결과가 발생했습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出现了未识别的购买结果。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出現了未識別的購買結果。"
           }
         }
       }
@@ -709,6 +937,38 @@
         }
       }
     },
+    "Authorization Required — Enable in System Settings" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要授权 — 去系统设置中开启"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要授權 — 前往系統設定開啟"
+          }
+        }
+      }
+    },
+    "Authorized — Continue" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已授权 — 继续"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已授權 — 繼續"
+          }
+        }
+      }
+    },
     "Auto-Paste to Active App on Double-Click" : {
       "localizations" : {
         "de" : {
@@ -745,6 +1005,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "雙擊後自動貼上到目前的 App"
+          }
+        }
+      }
+    },
+    "Browse your complete clipboard history, not just the latest 10." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浏览完整的剪贴板历史，而非仅最近 10 条。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "瀏覽完整的剪貼簿歷史，不僅限最近 10 筆。"
           }
         }
       }
@@ -826,6 +1103,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消"
+          }
+        }
+      }
+    },
+    "Check iCloud Connection Status" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查 iCloud 连接状态"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查 iCloud 連線狀態"
           }
         }
       }
@@ -1071,6 +1364,22 @@
         }
       }
     },
+    "Click to paste to the active app" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击后粘贴到当前应用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點擊後貼上到目前應用程式"
+          }
+        }
+      }
+    },
     "Clipaste" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1122,11 +1431,101 @@
         }
       }
     },
-    "Clipaste Pro" : {
-
+    "Clipaste needs Accessibility permission to securely simulate paste in any app." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste 需要辅助功能权限来安全模拟在任意 App 中粘贴。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste 需要輔助使用權限來安全模擬在任意 App 中貼上。"
+          }
+        }
+      }
     },
-    "Clipaste Pro 已解锁" : {
-
+    "Clipaste Pro Lifetime Membership" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro Lebenslange Mitgliedschaft"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro Abonnement à vie"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 永久メンバーシップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 평생 멤버십"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 终身会员"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 終身會員"
+          }
+        }
+      }
+    },
+    "Clipaste Pro Unlocked" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro freigeschaltet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro débloqué"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 解除済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 잠금 해제됨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 已解锁"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 已解鎖"
+          }
+        }
+      }
     },
     "Clipaste Settings" : {
       "localizations" : {
@@ -1167,9 +1566,6 @@
           }
         }
       }
-    },
-    "Clipaste 需要辅助功能权限才能在任何应用中安全地模拟粘贴。" : {
-
     },
     "Clipboard Empty" : {
       "localizations" : {
@@ -1251,11 +1647,149 @@
         }
       }
     },
-    "CloudKit 私有库同步在试用结束后需要 Clipaste Pro。" : {
-
+    "Cloud Runtime" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端运行时"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雲端執行階段"
+          }
+        }
+      }
+    },
+    "Cloud Store" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端存储"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雲端儲存"
+          }
+        }
+      }
+    },
+    "CloudKit Private Database sync requires Clipaste Pro after the trial ends." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试用期结束后，CloudKit 私有数据库同步需要 Clipaste Pro。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試用期結束後，CloudKit 私有資料庫同步需要 Clipaste Pro。"
+          }
+        }
+      }
+    },
+    "CloudKit Private Sync" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CloudKit Private Synchronisation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisation privée CloudKit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CloudKit プライベート同期"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CloudKit 비공개 동기화"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CloudKit 私有同步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CloudKit 私有同步"
+          }
+        }
+      }
     },
     "Command" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Command"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Command"
+          }
+        }
+      }
+    },
+    "Confirm Payment (%@)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zahlung bestätigen (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer le paiement (%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お支払いを確定 (%@)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "결제 확인 (%@)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认付款 (%@)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認付款 (%@)"
+          }
+        }
+      }
     },
     "Continue" : {
       "extractionState" : "stale",
@@ -1299,7 +1833,36 @@
       }
     },
     "Control" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control"
+          }
+        }
+      }
+    },
+    "Copied" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已拷貝"
+          }
+        }
+      }
     },
     "Copied text, images and links will appear here" : {
       "localizations" : {
@@ -1377,6 +1940,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拷貝"
+          }
+        }
+      }
+    },
+    "Copy Diagnostics" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制诊断信息"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷貝診斷資訊"
           }
         }
       }
@@ -1461,6 +2040,62 @@
         }
       }
     },
+    "Current Toggle State" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前开关状态"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前開關狀態"
+          }
+        }
+      }
+    },
+    "Custom Rules" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigene Regeln"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Règles personnalisées"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カスタムルール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용자 지정 규칙"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义规则"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂規則"
+          }
+        }
+      }
+    },
     "Dark" : {
       "localizations" : {
         "de" : {
@@ -1497,6 +2132,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "深色"
+          }
+        }
+      }
+    },
+    "Data Source" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据来源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料來源"
+          }
+        }
+      }
+    },
+    "Data Sync" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据同步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料同步"
           }
         }
       }
@@ -1581,6 +2248,22 @@
         }
       }
     },
+    "Delete %lld Items" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除 %lld 个项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除 %lld 個項目"
+          }
+        }
+      }
+    },
     "Delete Group" : {
       "localizations" : {
         "de" : {
@@ -1617,6 +2300,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除群組"
+          }
+        }
+      }
+    },
+    "Delete Selected History?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认删除选中的历史吗？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認刪除選取的歷史嗎？"
           }
         }
       }
@@ -1661,8 +2360,23 @@
         }
       }
     },
+    "Display preset category tabs like Text, Links, and Images in the navigation bar." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在导航栏中显示文本、链接和图片等预设分类标签。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在導覽列中顯示文字、連結和圖片等預設分類標籤。"
+          }
+        }
+      }
+    },
     "Done" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1703,7 +2417,6 @@
       }
     },
     "Edit Content" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1744,7 +2457,108 @@
       }
     },
     "Edit Group" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑分组"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯群組"
+          }
+        }
+      }
+    },
+    "Edit Image" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑图片"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯圖片"
+          }
+        }
+      }
+    },
+    "Enjoy the full Clipaste Pro experience" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genießen Sie das volle Clipaste Pro Erlebnis"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profitez de l'expérience complète Clipaste Pro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro のフル体験をお楽しみください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clipaste Pro 전체 경험을 즐기세요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "畅享 Clipaste Pro 完整体验"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "盡享 Clipaste Pro 完整體驗"
+          }
+        }
+      }
+    },
+    "Failed" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失败"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失敗"
+          }
+        }
+      }
+    },
+    "File selection failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件选择失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案選擇失敗：%@"
+          }
+        }
+      }
     },
     "Follow System" : {
       "localizations" : {
@@ -1822,6 +2636,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "永久"
+          }
+        }
+      }
+    },
+    "Free plan shows latest 10 records only" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费版当前仅显示最近 10 条记录"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免費版目前僅顯示最近 10 筆紀錄"
           }
         }
       }
@@ -1906,8 +2736,47 @@
         }
       }
     },
+    "Global Search" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Globale Suche"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche globale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グローバル検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 검색"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全局搜索"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全域搜尋"
+          }
+        }
+      }
+    },
     "Global Shortcut" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1988,7 +2857,6 @@
       }
     },
     "Grant Paste Superpower" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2069,7 +2937,20 @@
       }
     },
     "Groups" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分组"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群組"
+          }
+        }
+      }
     },
     "Hello, world!" : {
 
@@ -2115,7 +2996,6 @@
       }
     },
     "History Capacity" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2156,7 +3036,20 @@
       }
     },
     "Hold %@ while copying or pasting to force plain text output." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制或粘贴时按住 %@ 可强制输出纯文本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拷貝或貼上時按住 %@ 可強制輸出純文字。"
+          }
+        }
+      }
     },
     "Hold Option and double-click to temporarily reverse the current text format setting." : {
       "extractionState" : "stale",
@@ -2241,7 +3134,20 @@
       }
     },
     "Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住快速粘贴修饰键可显示 1…9 快捷键。复制或粘贴时按住纯文本修饰键可剥离格式。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住快速貼上修飾鍵可顯示 1…9 快捷鍵。拷貝或貼上時按住純文字修飾鍵可剝離格式。"
+          }
+        }
+      }
     },
     "Horizontal Cards" : {
       "localizations" : {
@@ -2324,7 +3230,20 @@
       }
     },
     "iCloud" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud"
+          }
+        }
+      }
     },
     "If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility." : {
       "localizations" : {
@@ -2366,8 +3285,54 @@
         }
       }
     },
+    "Initialized" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已初始化"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已初始化"
+          }
+        }
+      }
+    },
+    "Instantly search text, links, and code snippets — find anything faster." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即时搜索文本、链接和代码片段——更快找到所需内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即時搜尋文字、連結和程式碼片段——更快找到所需內容。"
+          }
+        }
+      }
+    },
     "Interface" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "界面"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "介面"
+          }
+        }
+      }
     },
     "Invoke Clipaste from any app." : {
       "extractionState" : "stale",
@@ -2570,6 +3535,22 @@
         }
       }
     },
+    "Last Sync: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次同步：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次同步：%@"
+          }
+        }
+      }
+    },
     "Launch & Language" : {
       "localizations" : {
         "de" : {
@@ -2611,7 +3592,6 @@
       }
     },
     "Launch at Login" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2652,6 +3632,7 @@
       }
     },
     "Launch at Login (Coming Soon)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2731,6 +3712,46 @@
         }
       }
     },
+    "Lifetime purchase, pay once, free updates forever." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einmalkauf, lebenslang kostenlose Updates."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achat à vie, payez une fois, mises à jour gratuites pour toujours."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "買い切り型、一度のお支払いで永久無料アップデート。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "평생 구매, 한 번 결제로 영구 무료 업데이트."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "终身买断，一次付费，后续免费升级。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終身買斷，一次付費，後續免費升級。"
+          }
+        }
+      }
+    },
     "Light" : {
       "localizations" : {
         "de" : {
@@ -2771,8 +3792,101 @@
         }
       }
     },
+    "Local" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機"
+          }
+        }
+      }
+    },
+    "Local Runtime" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地运行时"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機執行階段"
+          }
+        }
+      }
+    },
+    "Local Store" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地存储"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機儲存"
+          }
+        }
+      }
+    },
+    "Merge and Copy %lld Items" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合并并复制 %lld 个项目"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "合併並拷貝 %lld 個項目"
+          }
+        }
+      }
+    },
     "Migration Assistant" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移助手"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移助理"
+          }
+        }
+      }
+    },
+    "Migration in Progress…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "迁移进行中…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遷移進行中…"
+          }
+        }
+      }
     },
     "Modifier Keys" : {
       "localizations" : {
@@ -2850,6 +3964,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貼上後將項目移至列表最前"
+          }
+        }
+      }
+    },
+    "Multiple Themes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mehrere Designs"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thèmes multiples"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複数のテーマ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다양한 테마"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多种主题"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多種主題"
           }
         }
       }
@@ -3054,6 +4208,22 @@
         }
       }
     },
+    "Next" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一步"
+          }
+        }
+      }
+    },
     "Next List" : {
       "localizations" : {
         "de" : {
@@ -3134,8 +4304,53 @@
         }
       }
     },
+    "No Events Recorded" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无事件记录"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無事件紀錄"
+          }
+        }
+      }
+    },
+    "No Groups" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无分组"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無群組"
+          }
+        }
+      }
+    },
     "No icons found" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到图标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到圖示"
+          }
+        }
+      }
     },
     "No Matches Found" : {
       "localizations" : {
@@ -3173,6 +4388,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "找不到相符項目"
+          }
+        }
+      }
+    },
+    "No restorable Pro purchase found for this Apple ID." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein wiederherstellbarer Pro-Kauf für diese Apple-ID gefunden."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun achat Pro restaurable trouvé pour cet identifiant Apple."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Apple ID で復元可能な Pro 購入が見つかりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 Apple ID에 복원 가능한 Pro 구매가 없습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前 Apple ID 下没有可恢复的 Pro 购买记录。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前 Apple ID 下沒有可恢復的 Pro 購買紀錄。"
+          }
+        }
+      }
+    },
+    "None" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無"
           }
         }
       }
@@ -3217,6 +4488,71 @@
         }
       }
     },
+    "Not Initialized" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未初始化"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未初始化"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關"
+          }
+        }
+      }
+    },
+    "On" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開"
+          }
+        }
+      }
+    },
+    "One-click format stripping for clean output." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一键剥离格式，输出纯净文本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一鍵剝離格式，輸出乾淨文字。"
+          }
+        }
+      }
+    },
     "Open Accessibility Settings…" : {
       "localizations" : {
         "de" : {
@@ -3257,8 +4593,23 @@
         }
       }
     },
+    "Open Clipboard History" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开剪贴板历史"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開剪貼簿歷史"
+          }
+        }
+      }
+    },
     "Open System Settings to Authorize" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3299,7 +4650,20 @@
       }
     },
     "Option" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Option"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Option"
+          }
+        }
+      }
     },
     "Paste" : {
       "localizations" : {
@@ -3457,6 +4821,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貼上到目前的 App"
+          }
+        }
+      }
+    },
+    "Pause Monitoring" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂停监听"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停監聽"
+          }
+        }
+      }
+    },
+    "Pending Disable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待禁用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待停用"
+          }
+        }
+      }
+    },
+    "Pending Enable" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待启用"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待啟用"
+          }
+        }
+      }
+    },
+    "Pending Toggle" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待切换"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待切換"
           }
         }
       }
@@ -3704,6 +5132,46 @@
         }
       }
     },
+    "Plain Text Quick Paste" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klartext-Schnelleinfügen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collage rapide en texte brut"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレーンテキスト即時貼り付け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일반 텍스트 빠른 붙여넣기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一键纯文本粘贴"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一鍵純文字貼上"
+          }
+        }
+      }
+    },
     "Preview" : {
       "localizations" : {
         "de" : {
@@ -3780,6 +5248,222 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上一個列表"
+          }
+        }
+      }
+    },
+    "Privacy Policy" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱私權政策"
+          }
+        }
+      }
+    },
+    "Product info failed to load: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Produktinformationen konnten nicht geladen werden: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec du chargement des informations produit : %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "製品情報の読み込みに失敗しました: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "제품 정보 로드 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "商品信息加载失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "商品資訊載入失敗：%@"
+          }
+        }
+      }
+    },
+    "Purchase failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kauf fehlgeschlagen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de l'achat : %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入に失敗しました: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買失敗：%@"
+          }
+        }
+      }
+    },
+    "Purchase is pending Apple confirmation." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kauf wartet auf Apple-Bestätigung."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'achat est en attente de confirmation par Apple."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入は Apple の確認待ちです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매가 Apple 확인 대기 중입니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买正在等待 Apple 确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買正在等待 Apple 確認。"
+          }
+        }
+      }
+    },
+    "Purchase once, unlock all premium features of Clipaste forever." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einmal kaufen, alle Premium-Funktionen von Clipaste dauerhaft freischalten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achetez une fois, débloquez toutes les fonctionnalités premium de Clipaste pour toujours."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一度の購入で Clipaste のすべてのプレミアム機能を永久に解除。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번 구매로 Clipaste의 모든 프리미엄 기능을 영구 잠금 해제."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次购买，永久解锁 Clipaste 所有高级功能。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次購買，永久解鎖 Clipaste 所有進階功能。"
+          }
+        }
+      }
+    },
+    "Purchase verified with your current Apple ID." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kauf mit Ihrer aktuellen Apple-ID bestätigt."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Achat vérifié avec votre identifiant Apple actuel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の Apple ID で購入が確認されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 Apple ID로 구매가 확인되었습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "购买记录已通过当前 Apple ID 验证。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買紀錄已通過目前 Apple ID 驗證。"
           }
         }
       }
@@ -3865,6 +5549,46 @@
         }
       }
     },
+    "Quickly review, search, and re-paste recently copied content." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt kopierte Inhalte schnell anzeigen, suchen und erneut einfügen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consultez, recherchez et recollez rapidement le contenu récemment copié."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近コピーした内容をすばやく確認、検索、再貼り付け。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 복사한 내용을 빠르게 확인, 검색 및 다시 붙여넣기."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速查看、搜索并重新粘贴最近复制的内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快速檢視、搜尋並重新貼上最近拷貝的內容。"
+          }
+        }
+      }
+    },
     "Quit" : {
       "localizations" : {
         "de" : {
@@ -3941,6 +5665,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "退出 Clipaste"
+          }
+        }
+      }
+    },
+    "Recent Error" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近错误"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近錯誤"
+          }
+        }
+      }
+    },
+    "Recent Events" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近事件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近事件"
+          }
+        }
+      }
+    },
+    "Remove from Group" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从分组移除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從群組移除"
           }
         }
       }
@@ -4106,6 +5878,86 @@
         }
       }
     },
+    "Restore failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung fehlgeschlagen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de la restauration : %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "復元に失敗しました: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복원 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復購買失敗：%@"
+          }
+        }
+      }
+    },
+    "Restore Purchase" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kauf wiederherstellen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer l'achat"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入を復元"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매 복원"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢复购买"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "恢復購買"
+          }
+        }
+      }
+    },
     "Resume Monitoring" : {
       "localizations" : {
         "de" : {
@@ -4186,6 +6038,22 @@
         }
       }
     },
+    "Return to Clipaste after authorizing; status refreshes automatically." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授权后返回 Clipaste，状态会自动刷新。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授權後返回 Clipaste，狀態會自動重新整理。"
+          }
+        }
+      }
+    },
     "Return to Clipaste after granting permission; status refreshes automatically." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4227,8 +6095,37 @@
         }
       }
     },
+    "Runs automatically after login and appears in the menu bar, without interrupting your workflow." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录后自动运行并显示在菜单栏，不打扰工作流。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登入後自動執行並顯示在選單列，不打擾工作流程。"
+          }
+        }
+      }
+    },
     "Runtime Generation" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "运行时版本号"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "執行階段版本號"
+          }
+        }
+      }
     },
     "Save" : {
       "localizations" : {
@@ -4266,6 +6163,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
+          }
+        }
+      }
+    },
+    "Seamlessly sync clipboard history across all Macs signed in with the same Apple ID." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在使用同一 Apple ID 登录的所有 Mac 间无缝同步剪贴板历史。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在使用同一 Apple ID 登入的所有 Mac 間無縫同步剪貼簿歷史。"
           }
         }
       }
@@ -4311,7 +6224,20 @@
       }
     },
     "Search icons…" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索图标…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋圖示…"
+          }
+        }
+      }
     },
     "Search…" : {
       "localizations" : {
@@ -4389,6 +6315,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送意見反應"
+          }
+        }
+      }
+    },
+    "Set Preferences" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置偏好"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定偏好"
+          }
+        }
+      }
+    },
+    "Set Up Your Activation Shortcut" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置你的激活快捷键"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定你的啟動快捷鍵"
           }
         }
       }
@@ -4556,7 +6514,20 @@
       }
     },
     "Shift" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shift"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shift"
+          }
+        }
+      }
     },
     "Shortcuts" : {
       "localizations" : {
@@ -4720,8 +6691,77 @@
         }
       }
     },
+    "Show Smart Groups" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示智能分组"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示智慧群組"
+          }
+        }
+      }
+    },
     "Smart Filters" : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能筛选"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智慧篩選"
+          }
+        }
+      }
+    },
+    "Smart Group Switching" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intelligente Gruppenwechsel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changement de groupe intelligent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スマートグループ切替"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스마트 그룹 전환"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能分组切换"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智慧群組切換"
+          }
+        }
+      }
     },
     "Sort & Behavior" : {
       "localizations" : {
@@ -4846,6 +6886,7 @@
       }
     },
     "Stop Monitoring" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4881,6 +6922,127 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "停止監控剪貼板"
+          }
+        }
+      }
+    },
+    "StoreKit transaction verification failed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreKit-Transaktionsüberprüfung fehlgeschlagen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La vérification de la transaction StoreKit a échoué."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreKit トランザクション検証に失敗しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreKit 거래 확인에 실패했습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreKit 交易校验失败。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "StoreKit 交易驗證失敗。"
+          }
+        }
+      }
+    },
+    "Sync Diagnostics" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步诊断"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步診斷"
+          }
+        }
+      }
+    },
+    "Sync Failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步失敗：%@"
+          }
+        }
+      }
+    },
+    "Sync history across all Macs signed in with the same Apple ID." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在使用同一 Apple ID 登录的所有 Mac 间同步历史。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在使用同一 Apple ID 登入的所有 Mac 間同步歷史。"
+          }
+        }
+      }
+    },
+    "Sync via iCloud" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通过 iCloud 同步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 iCloud 同步"
+          }
+        }
+      }
+    },
+    "Syncing…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步中…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同步中…"
           }
         }
       }
@@ -4966,6 +7128,22 @@
         }
       }
     },
+    "Terms of Service" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务条款"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服務條款"
+          }
+        }
+      }
+    },
     "Text Format" : {
       "localizations" : {
         "de" : {
@@ -5042,6 +7220,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此群組內的剪貼板記錄將安全地回到「全部」列表中。"
+          }
+        }
+      }
+    },
+    "The View layer handles source selection, file picking, and status display; all parsing and routing is managed by MigrationManager." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "视图层负责来源选择、文件拾取和状态展示；所有解析和路由由 MigrationManager 管理。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "視圖層負責來源選擇、檔案擷取和狀態展示；所有解析和路由由 MigrationManager 管理。"
+          }
+        }
+      }
+    },
+    "These options can be changed anytime in Settings." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些选项随时可以在设置中更改。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些選項隨時可以在設定中更改。"
           }
         }
       }
@@ -5127,6 +7337,46 @@
         }
       }
     },
+    "Transaction verification failed: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transaktionsüberprüfung fehlgeschlagen: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec de la vérification de la transaction : %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トランザクション検証に失敗しました: %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "거래 확인 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "交易校验失败：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "交易驗證失敗：%@"
+          }
+        }
+      }
+    },
     "Try a different search term" : {
       "localizations" : {
         "de" : {
@@ -5163,6 +7413,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請嘗試更換搜尋關鍵字"
+          }
+        }
+      }
+    },
+    "Unable to load purchase info. Please try again later." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaufinformationen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de charger les informations d'achat. Veuillez réessayer plus tard."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購入情報を読み込めませんでした。後でもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "구매 정보를 불러올 수 없습니다. 나중에 다시 시도해 주세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂时无法加载购买信息，请稍后再试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫時無法載入購買資訊，請稍後再試。"
           }
         }
       }
@@ -5207,6 +7497,267 @@
         }
       }
     },
+    "Unlimited History" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unbegrenzter Verlauf"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Historique illimité"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無制限の履歴"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무제한 기록"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无限历史"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無限歷史"
+          }
+        }
+      }
+    },
+    "Unlock Clipaste Pro" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Clipaste Pro"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解鎖 Clipaste Pro"
+          }
+        }
+      }
+    },
+    "Unlock Clipaste Pro Now" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解锁 Clipaste Pro"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解鎖 Clipaste Pro"
+          }
+        }
+      }
+    },
+    "Unlock Now %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解锁 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解鎖 %@"
+          }
+        }
+      }
+    },
+    "Unlock Pro" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Pro"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解鎖 Pro"
+          }
+        }
+      }
+    },
+    "Unlock Pro Experience (%@ Lifetime)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro-Erlebnis freischalten (%@ Lebenslang)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débloquer l'expérience Pro (%@ à vie)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro 体験を解除 (%@ 永久)"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro 체험 잠금 해제 (%@ 평생)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Pro 体验 (%@ 终身)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解鎖 Pro 體驗 (%@ 終身)"
+          }
+        }
+      }
+    },
+    "Unlock Pro Features" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Pro 功能"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解鎖 Pro 功能"
+          }
+        }
+      }
+    },
+    "Unlock Pro for unlimited history, advanced search, and sync." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro freischalten für unbegrenzten Verlauf, erweiterte Suche und Synchronisation."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débloquez Pro pour un historique illimité, la recherche avancée et la synchronisation."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro を解除して無制限の履歴、高度な検索、同期をご利用ください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro를 잠금 해제하여 무제한 기록, 고급 검색 및 동기화를 이용하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续使用无限历史记录、高级搜索和同步功能，需要解锁 Pro。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繼續使用無限歷史、進階搜尋和同步功能，需要解鎖 Pro。"
+          }
+        }
+      }
+    },
+    "Unlock Pro to continue using this feature: %@." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Pro 以继续使用此功能：%@。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解鎖 Pro 以繼續使用此功能：%@。"
+          }
+        }
+      }
+    },
+    "Unlocked" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Freigeschaltet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débloqué"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解除済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잠금 해제됨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已解锁"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已解鎖"
+          }
+        }
+      }
+    },
     "Unpin Panel" : {
       "localizations" : {
         "de" : {
@@ -5243,6 +7794,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消固定面板"
+          }
+        }
+      }
+    },
+    "Use Plain Text" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用纯文本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用純文字"
           }
         }
       }
@@ -5488,8 +8055,23 @@
         }
       }
     },
+    "Waiting for First Sync…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待首次同步…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待首次同步…"
+          }
+        }
+      }
+    },
     "Welcome to Clipaste" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5610,7 +8192,6 @@
       }
     },
     "You can change this later in Settings." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5650,220 +8231,13 @@
         }
       }
     },
-    "上次同步：%@" : {
-
-    },
-    "下一步" : {
-
-    },
-    "云 Runtime" : {
-
-    },
-    "云 Store" : {
-
-    },
-    "享受 Clipaste Pro 完整体验" : {
-
-    },
     "今天" : {
-
-    },
-    "使用纯文本" : {
-
-    },
-    "保存" : {
-
-    },
-    "免费版当前仅显示最近 10 条记录" : {
-
-    },
-    "全局快捷键" : {
-
-    },
-    "关闭" : {
-
-    },
-    "最近事件" : {
-
-    },
-    "最近错误" : {
-
-    },
-    "删除" : {
-
-    },
-    "删除 %lld 个项目" : {
-
-    },
-    "加入分组" : {
-
-    },
-    "历史记录容量" : {
-
-    },
-    "取消" : {
-
-    },
-    "合并并复制 %lld 个项目" : {
-
-    },
-    "同步失败: %@" : {
-
-    },
-    "同步诊断" : {
-
-    },
-    "呼出剪贴板历史记录" : {
-
-    },
-    "在主界面导航栏显示文本、链接、图片等预置智能分类标签。" : {
-
-    },
-    "在所有登录同一 Apple ID 的 Mac 设备间无缝同步您的剪贴板历史记录。" : {
-
-    },
-    "复制诊断信息" : {
-
-    },
-    "完成" : {
-
-    },
-    "已初始化" : {
-
-    },
-    "已复制" : {
-
-    },
-    "已授权 — 请继续" : {
-
-    },
-    "已解锁" : {
-
-    },
-    "开启" : {
-
-    },
-    "当前开关状态" : {
-
-    },
-    "恢复购买" : {
-
-    },
-    "打开系统设置以授权" : {
-
-    },
-    "授权后返回 Clipaste；状态会自动刷新。" : {
-
-    },
-    "排队中的切换" : {
-
-    },
-    "数据同步" : {
-
-    },
-    "数据来源" : {
 
     },
     "昨天" : {
 
     },
-    "显示智能分组" : {
-
-    },
-    "暂无事件记录" : {
-
-    },
-    "暂无分组" : {
-
-    },
-    "更快地回顾、搜索及重新粘贴最近复制的内容。" : {
-
-    },
-    "未初始化" : {
-
-    },
-    "本地" : {
-
-    },
-    "本地 Runtime" : {
-
-    },
-    "本地 Store" : {
-
-    },
-    "核心能力都已就绪。" : {
-
-    },
-    "检查 iCloud 连接状态" : {
-
-    },
-    "欢迎使用 Clipaste" : {
-
-    },
-    "正在同步..." : {
-
-    },
-    "活动路由" : {
-
-    },
-    "添加标题" : {
-
-    },
     "点击后粘贴到当前应用" : {
-
-    },
-    "登录后自动运行并在菜单栏显示，不打扰你的工作流。" : {
-
-    },
-    "登录时启动" : {
-
-    },
-    "确认删除选中的历史吗？" : {
-
-    },
-    "视图层仅负责数据来源选择、文件选择和状态展示；具体解析与路由分发全部由 MigrationManager 控制。" : {
-
-    },
-    "移出分组" : {
-
-    },
-    "稍后也可以在设置中修改。" : {
-
-    },
-    "等待首次同步..." : {
-
-    },
-    "编辑内容" : {
-
-    },
-    "编辑图片" : {
-
-    },
-    "解锁 Clipaste Pro" : {
-
-    },
-    "解锁 Pro" : {
-
-    },
-    "解锁 Pro 特色" : {
-
-    },
-    "设置你的专属唤醒快捷键" : {
-
-    },
-    "设置偏好" : {
-
-    },
-    "赋予粘贴超能力" : {
-
-    },
-    "这些选项随时可以在设置中更改。" : {
-
-    },
-    "通过 iCloud 同步" : {
-
-    },
-    "需要授权 — 去系统设置中开启" : {
 
     }
   },

@@ -10,6 +10,7 @@ struct ClipboardHeaderView: View {
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
     @EnvironmentObject private var storeManager: StoreManager
+    @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @FocusState var focusedField: ClipboardPanelFocusField?
     @FocusState private var focusedHeaderInput: HeaderInputField?
     @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
@@ -51,6 +52,9 @@ struct ClipboardHeaderView: View {
         }
         .onChange(of: showEditPopover) { _, isShowing in
             updatePopoverInputState(isShowing: isShowing, field: .editGroupName)
+        }
+        .onAppear {
+            preferencesStore.refreshLaunchAtLoginStatus()
         }
         .alert("Delete Group", isPresented: $showDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -135,7 +139,7 @@ struct ClipboardHeaderView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
 
-            TextField("Search History…", text: searchTextBinding)
+            TextField(String(localized: "Search History…"), text: searchTextBinding)
                 .font(.system(size: 13))
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled(true)
@@ -471,17 +475,17 @@ struct ClipboardHeaderView: View {
                 .animation(.spring(), value: isPanelPinned)
         }
         .buttonStyle(.plain)
-        .help(isPanelPinned ? "Unpin Panel" : "Pin Panel")
+        .help(isPanelPinned ? String(localized: "Unpin Panel") : String(localized: "Pin Panel"))
     }
 
     // MARK: - 设置下拉菜单
     private var settingsMenu: some View {
         Menu {
             Button(action: { isMonitoringPaused.toggle() }) {
-                Text(isMonitoringPaused ? "Resume Monitoring" : "Stop Monitoring")
+                Text(isMonitoringPaused ? "Resume Monitoring" : "Pause Monitoring")
             }
 
-            Menu("Clipboard Monitoring Interval") {
+            Menu(String(localized: "Clipboard Monitoring Interval")) {
                 Button(action: { monitorInterval = 0.1 }) {
                     HStack {
                         Text("Very Frequent (0.1s)")
@@ -504,7 +508,7 @@ struct ClipboardHeaderView: View {
 
             Divider()
 
-            Button("Settings…") {
+            Button(String(localized: "Settings…")) {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("HidePanelForce"),
                     object: nil
@@ -514,12 +518,11 @@ struct ClipboardHeaderView: View {
                 }
             }
 
-            Button("Launch at Login (Coming Soon)") {}
-                .disabled(true)
+            Toggle(String(localized: "Launch at Login"), isOn: launchAtLoginBinding)
 
             Divider()
 
-            Button("About Clipaste") {
+            Button(String(localized: "About Clipaste")) {
                 NSApp.orderFrontStandardAboutPanel()
                 NotificationCenter.default.post(
                     name: NSNotification.Name("HidePanelForce"),
@@ -527,7 +530,7 @@ struct ClipboardHeaderView: View {
                 )
             }
 
-            Button("Send Feedback") {
+            Button(String(localized: "Send Feedback")) {
                 if let url = URL(string: "mailto:your_email@example.com?subject=clipaste%20Feedback") {
                     NSWorkspace.shared.open(url)
                 }
@@ -535,7 +538,7 @@ struct ClipboardHeaderView: View {
 
             Divider()
 
-            Button("Quit") {
+            Button(String(localized: "Quit")) {
                 NSApplication.shared.terminate(nil)
             }
         } label: {
@@ -546,6 +549,13 @@ struct ClipboardHeaderView: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
+    }
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { preferencesStore.launchAtLogin },
+            set: { preferencesStore.updateLaunchAtLogin($0) }
+        )
     }
 
     // MARK: - 搜索栏（竖版模式使用）
@@ -560,7 +570,7 @@ struct ClipboardHeaderView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
-                TextField("Search…", text: searchTextBinding)
+                TextField(String(localized: "Search…"), text: searchTextBinding)
                     .font(.system(size: 13))
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled(true)
@@ -591,7 +601,7 @@ struct ClipboardHeaderView: View {
     // MARK: - 新建分组弹窗
     private var newGroupPopover: some View {
         VStack(spacing: 12) {
-            Text("New Group")
+            Text("New Group").lineLimit(1).minimumScaleFactor(0.8)
                 .font(.headline)
 
             HStack(spacing: 10) {
@@ -619,7 +629,7 @@ struct ClipboardHeaderView: View {
                     GroupIconPicker(selectedIcon: $newGroupIcon)
                 }
 
-                TextField("Group Name", text: $newGroupName)
+                TextField(String(localized: "Group Name"), text: $newGroupName)
                     .textFieldStyle(.roundedBorder)
                     .tint(.primary)
                     .frame(width: 150)
@@ -627,7 +637,7 @@ struct ClipboardHeaderView: View {
                     .onSubmit { commitNewGroup() }
             }
 
-            Button("Create") { commitNewGroup() }
+            Button(String(localized: "Create")) { commitNewGroup() }
                 .buttonStyle(.borderedProminent)
                 .disabled(newGroupName.isEmpty)
         }
@@ -643,7 +653,7 @@ struct ClipboardHeaderView: View {
     // MARK: - 编辑分组弹窗（支持修改名称 + 图标）
     private var editGroupPopover: some View {
         VStack(spacing: 12) {
-            Text("Edit Group")
+            Text("Edit Group").lineLimit(1).minimumScaleFactor(0.8)
                 .font(.headline)
 
             HStack(spacing: 10) {
@@ -671,7 +681,7 @@ struct ClipboardHeaderView: View {
                     GroupIconPicker(selectedIcon: $editGroupIcon)
                 }
 
-                TextField("Group Name", text: $editGroupName)
+                TextField(String(localized: "Group Name"), text: $editGroupName)
                     .textFieldStyle(.roundedBorder)
                     .tint(.primary)
                     .frame(width: 150)
@@ -679,7 +689,7 @@ struct ClipboardHeaderView: View {
                     .onSubmit { commitEditGroup() }
             }
 
-            Button("Save") { commitEditGroup() }
+            Button(String(localized: "Save")) { commitEditGroup() }
                 .buttonStyle(.borderedProminent)
                 .disabled(editGroupName.isEmpty)
         }
@@ -768,6 +778,7 @@ private struct ClipboardHeaderPreview: View {
             viewModel: ClipboardViewModel(clipboardMonitor: nil),
             focusedField: _focusedField
         )
+        .environmentObject(AppPreferencesStore.shared)
         .environmentObject(StoreManager.shared)
         .frame(width: 380)
     }

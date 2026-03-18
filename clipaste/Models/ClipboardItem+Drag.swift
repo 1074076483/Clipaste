@@ -15,14 +15,8 @@ extension ClipboardItem {
         // ==========================================
         // 1. 本地文件（⚠️ 必须最高优先级，否则会被纯文本分支拦截）
         // ==========================================
-        if contentType == .fileURL, let path = fileURL {
-            // 始终用 URL(fileURLWithPath:) 确保 scheme = file://
-            // 系统会自动挂载 public.file-url 协议链，微信/Finder 等均可识别
-            let resolvedPath: String = {
-                if let url = URL(string: path), url.isFileURL { return url.path }
-                return path
-            }()
-            provider = NSItemProvider(object: URL(fileURLWithPath: resolvedPath) as NSURL)
+        if contentType == .fileURL, let fileURL = resolvedFileURL {
+            provider = NSItemProvider(object: fileURL as NSURL)
 
         // ==========================================
         // 2. 图片

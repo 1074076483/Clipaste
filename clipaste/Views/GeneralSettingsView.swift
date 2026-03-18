@@ -2,6 +2,7 @@ import SwiftUI
 
 struct GeneralSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
+    @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
     @State private var showingClearAlert = false
@@ -9,7 +10,7 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Launch Clipaste at Login", isOn: $viewModel.launchAtLogin)
+                Toggle("Launch Clipaste at Login", isOn: launchAtLoginBinding)
                     .toggleStyle(.switch)
 
                 Picker("Appearance", selection: $appTheme) {
@@ -88,10 +89,21 @@ struct GeneralSettingsView: View {
         .formStyle(.grouped)
         .scrollIndicators(.hidden)
         .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
+        .onAppear {
+            preferencesStore.refreshLaunchAtLoginStatus()
+        }
+    }
+
+    private var launchAtLoginBinding: Binding<Bool> {
+        Binding(
+            get: { preferencesStore.launchAtLogin },
+            set: { preferencesStore.updateLaunchAtLogin($0) }
+        )
     }
 }
 
 #Preview {
     GeneralSettingsView()
         .environmentObject(SettingsViewModel())
+        .environmentObject(AppPreferencesStore.shared)
 }

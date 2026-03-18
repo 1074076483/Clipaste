@@ -155,34 +155,46 @@ struct ClipboardCardView: View {
 
     @ViewBuilder
     private var contentBody: some View {
-        if item.contentType == .fileURL, let filePath = item.fileURL {
-            // ── 文件类型：系统原生图标 + 文件名 + 路径 ──────────────────
-            let resolvedPath: String = {
-                if let url = URL(string: filePath), url.isFileURL {
-                    return url.path
+        if item.contentType == .fileURL, let fileURL = item.resolvedFileURL {
+            let displayPath = item.fileDisplayPath ?? fileURL.path
+
+            if item.fileRepresentsImage {
+                ZStack {
+                    CheckerboardBackground()
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                    ClipboardFileThumbnailView(fileURL: fileURL, maxPixelSize: 480) {
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: displayPath))
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 64, height: 64)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                return filePath
-            }()
-            VStack(spacing: 8) {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: resolvedPath))
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 64, height: 64)
-                VStack(spacing: 2) {
-                    Text((resolvedPath as NSString).lastPathComponent)
-                        .font(.system(size: 12, weight: .medium))
-                        .lineLimit(2)
-                        .truncationMode(.middle)
-                        .multilineTextAlignment(.center)
-                    Text(resolvedPath)
-                        .font(.system(size: 10))
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                        .truncationMode(.middle)
-                        .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                // ── 文件类型：系统原生图标 + 文件名 + 路径 ──────────────────
+                VStack(spacing: 8) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: displayPath))
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 64, height: 64)
+                    VStack(spacing: 2) {
+                        Text(item.fileDisplayName ?? (displayPath as NSString).lastPathComponent)
+                            .font(.system(size: 12, weight: .medium))
+                            .lineLimit(2)
+                            .truncationMode(.middle)
+                            .multilineTextAlignment(.center)
+                        Text(displayPath)
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                            .truncationMode(.middle)
+                            .multilineTextAlignment(.center)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if item.contentType == .image {
             // ── 图片：等比例完整显示，绝不裁切原图 ──────────────────────
             ZStack {

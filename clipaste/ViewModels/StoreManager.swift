@@ -14,15 +14,15 @@ enum ProAccessFeature: String, Identifiable {
     var title: String {
         switch self {
         case .unlimitedHistory:
-            return "无限历史记录"
+            return String(localized: "Unlimited History")
         case .globalSearch:
-            return "全局搜索"
+            return String(localized: "Global Search")
         case .plainTextPaste:
-            return "纯文本快捷粘贴"
+            return String(localized: "Plain Text Quick Paste")
         case .smartGroups:
-            return "智能分组切换"
+            return String(localized: "Smart Group Switching")
         case .cloudSync:
-            return "CloudKit 私有库同步"
+            return String(localized: "CloudKit Private Sync")
         }
     }
 }
@@ -102,36 +102,41 @@ final class StoreManager: ObservableObject {
         hasFullAccess ? nil : Self.historyPreviewLimit
     }
 
-    var purchaseButtonTitle: String {
-        if let proProduct {
-            return "立即解锁 \(proProduct.displayPrice)"
-        }
+    /// StoreKit resolved price (e.g. "¥49.00") or hardcoded fallback.
+    var localizedLifetimePrice: String {
+        proProduct?.displayPrice ?? "¥49"
+    }
 
-        return "立即解锁 Clipaste Pro"
+    var lifetimePriceSubtitle: String {
+        String(localized: "Lifetime purchase, pay once, free updates forever.")
+    }
+
+    var purchaseButtonTitle: String {
+        String(localized: "Confirm Payment (\(localizedLifetimePrice))")
     }
 
     var accessHeadline: String {
         if isProUnlocked {
-            return "Clipaste Pro 已解锁"
+            return String(localized: "Clipaste Pro Unlocked")
         }
 
         if isTrialExpired {
-            return "3 天试用已结束"
+            return String(localized: "3-Day Trial Has Ended")
         }
 
-        return "试用剩余 \(remainingTrialDays) 天"
+        return String(localized: "\(remainingTrialDays) Trial Days Remaining")
     }
 
     var accessFootnote: String {
         if isProUnlocked {
-            return "购买记录已通过当前 Apple ID 验证。"
+            return String(localized: "Purchase verified with your current Apple ID.")
         }
 
         if isTrialExpired {
-            return "继续使用无限历史记录、高级搜索和同步功能，需要解锁 Pro。"
+            return String(localized: "Unlock Pro for unlimited history, advanced search, and sync.")
         }
 
-        return "一次购买，永久解锁全部高级功能。"
+        return String(localized: "Purchase once, unlock all premium features of Clipaste forever.")
     }
 
     func requestAccess(
@@ -171,7 +176,7 @@ final class StoreManager: ObservableObject {
         }
 
         guard let proProduct else {
-            storeErrorMessage = "暂时无法加载购买信息，请稍后再试。"
+            storeErrorMessage = String(localized: "Unable to load purchase info. Please try again later.")
             return
         }
 
@@ -191,14 +196,14 @@ final class StoreManager: ObservableObject {
                     dismissPaywall()
                 }
             case .pending:
-                storeErrorMessage = "购买正在等待 Apple 确认。"
+                storeErrorMessage = String(localized: "Purchase is pending Apple confirmation.")
             case .userCancelled:
                 break
             @unknown default:
-                storeErrorMessage = "出现了未识别的购买结果。"
+                storeErrorMessage = String(localized: "An unrecognized purchase result occurred.")
             }
         } catch {
-            storeErrorMessage = "购买失败：\(error.localizedDescription)"
+            storeErrorMessage = String(localized: "Purchase failed: \(error.localizedDescription)")
         }
     }
 
@@ -214,10 +219,10 @@ final class StoreManager: ObservableObject {
             if isProUnlocked {
                 dismissPaywall()
             } else {
-                storeErrorMessage = "当前 Apple ID 下没有可恢复的 Pro 购买记录。"
+                storeErrorMessage = String(localized: "No restorable Pro purchase found for this Apple ID.")
             }
         } catch {
-            storeErrorMessage = "恢复购买失败：\(error.localizedDescription)"
+            storeErrorMessage = String(localized: "Restore failed: \(error.localizedDescription)")
         }
     }
 
@@ -230,7 +235,7 @@ final class StoreManager: ObservableObject {
             }
         } catch {
             if proProduct == nil {
-                storeErrorMessage = "商品信息加载失败：\(error.localizedDescription)"
+                storeErrorMessage = String(localized: "Product info failed to load: \(error.localizedDescription)")
             }
         }
     }
@@ -286,7 +291,7 @@ final class StoreManager: ObservableObject {
                     await transaction.finish()
                     await self.refreshEntitlements()
                 } catch {
-                    self.storeErrorMessage = "交易校验失败：\(error.localizedDescription)"
+                    self.storeErrorMessage = String(localized: "Transaction verification failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -325,7 +330,7 @@ extension StoreManager {
         var errorDescription: String? {
             switch self {
             case .verificationFailed:
-                return "StoreKit 交易校验失败。"
+                return String(localized: "StoreKit transaction verification failed.")
             }
         }
     }

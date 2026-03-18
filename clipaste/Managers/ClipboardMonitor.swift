@@ -56,13 +56,18 @@ final class ClipboardMonitor {
         let appName = sourceApplication?.localizedName
 
         for pasteboardItem in pasteboardItems {
-            if let payload = makeFileURLPayload(from: pasteboardItem, appID: appID, appName: appName) {
-                enqueueUpsert(for: payload)
+            if let imageData = imageData(from: pasteboardItem) {
+                handleImagePayload(data: imageData, appID: appID, appName: appName)
                 continue
             }
 
-            if let imageData = imageData(from: pasteboardItem) {
+            if let imageData = imageDataFromFileURL(from: pasteboardItem) {
                 handleImagePayload(data: imageData, appID: appID, appName: appName)
+                continue
+            }
+
+            if let payload = makeFileURLPayload(from: pasteboardItem, appID: appID, appName: appName) {
+                enqueueUpsert(for: payload)
                 continue
             }
 
@@ -150,6 +155,11 @@ final class ClipboardMonitor {
         }
 
         return nil
+    }
+
+    private func imageDataFromFileURL(from pasteboardItem: NSPasteboardItem) -> Data? {
+        guard let fileURLString = pasteboardItem.string(forType: fileURLType) else { return nil }
+        return ClipboardFileReference.loadImageData(from: fileURLString)
     }
 
     private func handleImagePayload(data: Data, appID: String?, appName: String?) {

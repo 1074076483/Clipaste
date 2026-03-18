@@ -7,15 +7,12 @@ extension View {
     func clipboardContextMenu(for item: ClipboardItem, viewModel: ClipboardViewModel?) -> some View {
         if let viewModel {
             self.contextMenu {
-                // ── 状态分流 ──────────────────────────────────────────────
                 let isBatchMode = viewModel.selectedItemIDs.contains(item.id)
                     && viewModel.selectedItemIDs.count > 1
 
                 if isBatchMode {
-                    // ═══════════════ 分支 A：批量操作菜单 ═══════════════
                     batchMenuContent(viewModel: viewModel)
                 } else {
-                    // ═══════════════ 分支 B：单项标准菜单 ═══════════════
                     singleItemMenuContent(item: item, viewModel: viewModel)
                 }
             }
@@ -24,7 +21,7 @@ extension View {
         }
     }
 
-    // MARK: - 批量菜单（View 层仅渲染 + 意图转发）
+    // MARK: - Batch Menu
 
     @ViewBuilder
     private func batchMenuContent(viewModel: ClipboardViewModel) -> some View {
@@ -33,14 +30,14 @@ extension View {
         Button {
             viewModel.batchCopy()
         } label: {
-            Label("合并并复制 \(count) 个项目", systemImage: "doc.on.doc")
+            Label("Merge and Copy \(count) Items", systemImage: "doc.on.doc")
         }
 
         Divider()
 
         Menu {
             if viewModel.customGroups.isEmpty {
-                Text("暂无分组")
+                Text("No Groups")
                     .foregroundColor(.secondary)
             } else {
                 ForEach(viewModel.customGroups) { group in
@@ -57,10 +54,10 @@ extension View {
             Button(role: .destructive) {
                 viewModel.batchAssignToGroup(groupId: nil)
             } label: {
-                Label("移出分组", systemImage: "folder.badge.minus")
+                Label("Remove from Group", systemImage: "folder.badge.minus")
             }
         } label: {
-            Label("加入分组", systemImage: "folder.badge.plus")
+            Label("Add to Group", systemImage: "folder.badge.plus")
         }
 
         Divider()
@@ -68,17 +65,14 @@ extension View {
         Button(role: .destructive) {
             viewModel.batchDelete()
         } label: {
-            Label("删除 \(count) 个项目", systemImage: "trash")
+            Label("Delete \(count) Items", systemImage: "trash")
         }
     }
 
-    // MARK: - 单项菜单（保持原有功能不变）
+    // MARK: - Single Item Menu
 
     @ViewBuilder
     private func singleItemMenuContent(item: ClipboardItem, viewModel: ClipboardViewModel) -> some View {
-        // ⚠️ 商业级 UX 修正：右键未选中卡片时，静默重选该项
-        // SwiftUI contextMenu 的 onAppear 时机不可控，因此在菜单 Button action 中处理
-
         // 1. Core paste actions
         Button {
             viewModel.handleSelection(id: item.id, isCommand: false, isShift: false)
@@ -131,25 +125,25 @@ extension View {
 
         Divider()
 
-        // 3. Edit（上下文感知：按类型分发）
+        // 3. Edit (context-aware: dispatch by type)
         if item.contentType == .image {
             Button {
                 viewModel.editImage(item: item)
             } label: {
-                Label("编辑图片", systemImage: "slider.horizontal.3")
+                Label("Edit Image", systemImage: "slider.horizontal.3")
             }
         } else {
             Button {
                 viewModel.editItemContent(item: item)
             } label: {
-                Label("编辑内容", systemImage: "square.and.pencil")
+                Label("Edit Content", systemImage: "square.and.pencil")
             }
         }
 
         Button {
             viewModel.renameItem(item: item)
         } label: {
-            Label("添加标题", systemImage: "character.cursor.ibeam")
+            Label("Add Title", systemImage: "character.cursor.ibeam")
         }
 
         Divider()

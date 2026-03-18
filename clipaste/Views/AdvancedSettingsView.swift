@@ -56,23 +56,23 @@ struct AdvancedSettingsView: View {
 
             // ── Interface ──
             Section {
-                Toggle("显示智能分组", isOn: $isSmartGroupsEnabled)
+                Toggle("Show Smart Groups", isOn: $isSmartGroupsEnabled)
                     .toggleStyle(.switch)
             } header: {
                 Text("Interface")
             } footer: {
-                Text("在主界面导航栏显示文本、链接、图片等预置智能分类标签。")
+                Text("Display preset category tabs like Text, Links, and Images in the navigation bar.")
             }
 
-            // ── iCloud 数据同步 ──
+            // ── iCloud Sync ──
             Section {
                 VStack(alignment: .leading, spacing: 12) {
                     Toggle(isOn: syncEnabledBinding) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("通过 iCloud 同步")
+                            Text("Sync via iCloud")
                                 .font(.system(size: 14, weight: .medium))
 
-                            Text("在所有登录同一 Apple ID 的 Mac 设备间无缝同步您的剪贴板历史记录。")
+                            Text("Seamlessly sync clipboard history across all Macs signed in with the same Apple ID.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
                                 .lineLimit(2)
@@ -87,13 +87,13 @@ struct AdvancedSettingsView: View {
                             Image(systemName: "lock.fill")
                                 .foregroundStyle(.secondary)
 
-                            Text("CloudKit 私有库同步在试用结束后需要 Clipaste Pro。")
+                            Text("CloudKit Private Database sync requires Clipaste Pro after the trial ends.")
                                 .font(.system(size: 12))
                                 .foregroundColor(.secondary)
 
                             Spacer()
 
-                            Button("解锁 Pro") {
+                            Button("Unlock Pro") {
                                 storeManager.presentPaywall(from: .settings, highlighting: .cloudSync)
                             }
                             .buttonStyle(.plain)
@@ -101,13 +101,13 @@ struct AdvancedSettingsView: View {
                         }
                     }
 
-                    // 当同步开启时，展现高级控制台面板
+                    // Show advanced console panel when sync is enabled
                     if runtimeStore.isSyncEnabled {
                         Divider()
                             .padding(.vertical, 4)
 
                         HStack {
-                            // 状态指示器
+                            // Status indicator
                             HStack(spacing: 6) {
                                 Circle()
                                     .fill(syncStatusColor)
@@ -125,7 +125,7 @@ struct AdvancedSettingsView: View {
 
                             Spacer()
 
-                            // 立即同步按钮
+                            // Sync Now button
                             Button {
                                 runtimeStore.refreshCurrentRoute()
                             } label: {
@@ -142,7 +142,7 @@ struct AdvancedSettingsView: View {
                             .buttonStyle(.plain)
                             .foregroundColor(runtimeStore.isSyncing ? .secondary : .accentColor)
                             .disabled(runtimeStore.isSyncing)
-                            .help("检查 iCloud 连接状态")
+                            .help(String(localized: "Check iCloud Connection Status"))
                         }
                     }
 
@@ -150,7 +150,7 @@ struct AdvancedSettingsView: View {
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("数据同步")
+                Text("Data Sync")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
             }
@@ -189,19 +189,19 @@ struct AdvancedSettingsView: View {
     @ViewBuilder
     private var syncStatusText: some View {
         if runtimeStore.isSyncing {
-            Text("正在同步...")
+            Text("Syncing…")
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         } else if let error = runtimeStore.syncError {
-            Text("同步失败: \(error)")
+            Text("Sync Failed: \(error)")
                 .font(.system(size: 12))
                 .foregroundColor(.red)
         } else if let date = runtimeStore.lastSyncDate {
-            Text("上次同步：\(date, format: .dateTime.month().day().hour().minute())")
+            Text("Last Sync: \(date, format: .dateTime.month().day().hour().minute())")
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         } else {
-            Text("等待首次同步...")
+            Text("Waiting for First Sync…")
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
         }
@@ -211,38 +211,38 @@ struct AdvancedSettingsView: View {
         DisclosureGroup(isExpanded: $showsDiagnostics) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("活动路由")
+                    Text("Active Route")
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text(runtimeStore.diagnosticsSnapshot.activeRoute == "cloud" ? "iCloud" : "本地")
+                    Text(runtimeStore.diagnosticsSnapshot.activeRoute == "cloud" ? String(localized: "iCloud") : String(localized: "Local"))
                 }
 
                 HStack {
-                    Text("当前开关状态")
+                    Text("Current Toggle State")
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text(runtimeStore.diagnosticsSnapshot.currentSyncEnabled ? "开启" : "关闭")
+                    Text(runtimeStore.diagnosticsSnapshot.currentSyncEnabled ? String(localized: "On") : String(localized: "Off"))
                 }
 
                 HStack {
-                    Text("排队中的切换")
+                    Text("Pending Toggle")
                         .foregroundColor(.secondary)
                     Spacer()
                     Text(pendingSyncDescription)
                 }
 
                 HStack {
-                    Text("本地 Runtime")
+                    Text("Local Runtime")
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text(runtimeStore.diagnosticsSnapshot.localRuntimeReady ? "已初始化" : "未初始化")
+                    Text(runtimeStore.diagnosticsSnapshot.localRuntimeReady ? String(localized: "Initialized") : String(localized: "Not Initialized"))
                 }
 
                 HStack {
-                    Text("云 Runtime")
+                    Text("Cloud Runtime")
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text(runtimeStore.diagnosticsSnapshot.cloudRuntimeReady ? "已初始化" : "未初始化")
+                    Text(runtimeStore.diagnosticsSnapshot.cloudRuntimeReady ? String(localized: "Initialized") : String(localized: "Not Initialized"))
                 }
 
                 HStack {
@@ -256,7 +256,7 @@ struct AdvancedSettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("本地 Store")
+                    Text("Local Store")
                         .foregroundColor(.secondary)
                     Text(runtimeStore.diagnosticsSnapshot.localStorePath)
                         .font(.system(size: 11, design: .monospaced))
@@ -264,7 +264,7 @@ struct AdvancedSettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("云 Store")
+                    Text("Cloud Store")
                         .foregroundColor(.secondary)
                     Text(runtimeStore.diagnosticsSnapshot.cloudStorePath)
                         .font(.system(size: 11, design: .monospaced))
@@ -273,7 +273,7 @@ struct AdvancedSettingsView: View {
 
                 if let error = runtimeStore.diagnosticsSnapshot.lastError {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("最近错误")
+                        Text("Recent Error")
                             .foregroundColor(.secondary)
                         Text(error)
                             .font(.system(size: 11))
@@ -284,10 +284,10 @@ struct AdvancedSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("最近事件")
+                        Text("Recent Events")
                             .foregroundColor(.secondary)
                         Spacer()
-                        Button(copiedDiagnostics ? "已复制" : "复制诊断信息") {
+                        Button(copiedDiagnostics ? String(localized: "Copied") : String(localized: "Copy Diagnostics")) {
                             copyDiagnosticsToPasteboard()
                         }
                         .buttonStyle(.borderless)
@@ -295,7 +295,7 @@ struct AdvancedSettingsView: View {
                     }
 
                     if runtimeStore.diagnosticsEntries.isEmpty {
-                        Text("暂无事件记录")
+                        Text("No Events Recorded")
                             .font(.system(size: 11))
                             .foregroundColor(.secondary)
                     } else {
@@ -319,7 +319,7 @@ struct AdvancedSettingsView: View {
             }
             .padding(.top, 8)
         } label: {
-            Text("同步诊断")
+            Text("Sync Diagnostics")
                 .font(.system(size: 12, weight: .medium))
         }
         .padding(.top, 2)
@@ -327,10 +327,10 @@ struct AdvancedSettingsView: View {
 
     private var pendingSyncDescription: String {
         guard let pending = runtimeStore.diagnosticsSnapshot.pendingSyncEnabled else {
-            return "无"
+            return String(localized: "None")
         }
 
-        return pending ? "待开启" : "待关闭"
+        return pending ? String(localized: "Pending Enable") : String(localized: "Pending Disable")
     }
 
     private func color(for level: ClipboardSyncDiagnosticLevel) -> Color {
