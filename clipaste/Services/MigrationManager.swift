@@ -1,11 +1,10 @@
-import Combine
 import Foundation
 import SQLite3
 import SwiftData
 import UniformTypeIdentifiers
 
 @MainActor
-final class MigrationManager: ObservableObject {
+final class MigrationManager {
     enum MigrationSource: String, CaseIterable, Identifiable {
         case paste
         case pasteNow
@@ -111,51 +110,18 @@ final class MigrationManager: ObservableObject {
         }
     }
 
-    @Published var isMigrating: Bool = false
-    @Published private(set) var statusSource: MigrationSource?
-    @Published var migrationProgress: String = ""
-
-    func importData(from fileURL: URL, source: MigrationSource, context: ModelContext) async {
-        guard !isMigrating else { return }
-
-        isMigrating = true
-        statusSource = source
-        migrationProgress = "正在读取 \(source.displayName) 数据..."
-
-        do {
-            let importedRows: [MigratedClipboardRow]
-
-            switch source {
-            case .paste:
-                importedRows = try await migrateFromPasteSQLite(fileURL: fileURL)
-            case .pasteNow:
-                importedRows = try await migrateFromPasteNowJSON(fileURL: fileURL)
-            case .iCopy:
-                importedRows = try await migrateFromICopySQLite(fileURL: fileURL)
-            }
-
-            guard importedRows.isEmpty == false else {
-                migrationProgress = "\(source.displayName) 文件中没有找到可导入记录。"
-                isMigrating = false
-                return
-            }
-
-            migrationProgress = "已解析 \(importedRows.count) 条 \(source.displayName) 记录，正在写入 Clipaste..."
-            let report = try importRows(importedRows, source: source, into: context)
-
-            if report.didMutateStore {
-                NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
-            }
-
-            migrationProgress = "\(source.displayName) 迁移完成：导入 \(report.importedCount) 条，跳过 \(report.skippedCount) 条重复记录。"
-        } catch {
-            migrationProgress = "\(source.displayName) 迁移失败：\(error.localizedDescription)"
+    func loadRows(from fileURL: URL, source: MigrationSource) async throws -> [MigratedClipboardRow] {
+        switch source {
+        case .paste:
+            try await migrateFromPasteSQLite(fileURL: fileURL)
+        case .pasteNow:
+            try await migrateFromPasteNowJSON(fileURL: fileURL)
+        case .iCopy:
+            try await migrateFromICopySQLite(fileURL: fileURL)
         }
-
-        isMigrating = false
     }
 
-    private func importRows(
+    func persistRows(
         _ rows: [MigratedClipboardRow],
         source: MigrationSource,
         into context: ModelContext
@@ -171,7 +137,6 @@ final class MigrationManager: ObservableObject {
         )
         var importedCount = 0
         var skippedCount = 0
-        var syntheticTimestamp = Date.now
         var nextGroupSortOrder = (existingGroups.map(\.sortOrder).min() ?? 0) - 1
         var didMutateContext = false
 
@@ -192,21 +157,17 @@ final class MigrationManager: ObservableObject {
             guard existingHashes.insert(contentHash).inserted else {
                 if let existingRecord = recordsByHash[contentHash] {
                     didMutateContext = Self.assignGroup(targetGroup.id, to: existingRecord) || didMutateContext
+                    if let migratedTimestamp = row.timestamp, migratedTimestamp > existingRecord.timestamp {
+                        existingRecord.timestamp = migratedTimestamp
+                        didMutateContext = true
+                    }
                 }
                 skippedCount += 1
                 continue
             }
 
-            let timestamp: Date
-            if let rowTimestamp = row.timestamp {
-                timestamp = rowTimestamp
-            } else {
-                timestamp = syntheticTimestamp
-                syntheticTimestamp = syntheticTimestamp.addingTimeInterval(-1)
-            }
-
             let record = ClipboardRecord(
-                timestamp: timestamp,
+                timestamp: row.timestamp ?? Date(),
                 contentHash: contentHash,
                 typeRawValue: row.contentType.rawValue,
                 plainText: row.text,
@@ -223,6 +184,10 @@ final class MigrationManager: ObservableObject {
 
         if didMutateContext {
             try context.save()
+            NotificationCenter.default.post(
+                name: .didFinishDataMigration,
+                object: source
+            )
         }
 
         return MigrationReport(
@@ -235,11 +200,34 @@ final class MigrationManager: ObservableObject {
 
 // MARK: - Internal Types
 
-private extension MigrationManager {
+extension MigrationManager {
     struct MigrationReport {
         let importedCount: Int
         let skippedCount: Int
         let didMutateStore: Bool
+    }
+
+    nonisolated static let appleReferenceDateOffsetSince1970: TimeInterval = 978_307_200
+
+    nonisolated static var migratedBundleIdentifiers: Set<String> {
+        Set(MigrationSource.allCases.map(\.migratedBundleIdentifier))
+    }
+
+    nonisolated static func repairedDateIfLikelyMisdecodedReferenceTimestamp(
+        _ date: Date,
+        now: Date = Date()
+    ) -> Date? {
+        guard date < migrationTimestampLowerBound else {
+            return nil
+        }
+
+        let correctedDate = date.addingTimeInterval(appleReferenceDateOffsetSince1970)
+        guard migrationTimestampScore(for: correctedDate, now: now)
+                < migrationTimestampScore(for: date, now: now) else {
+            return nil
+        }
+
+        return correctedDate
     }
 
     func resolveGroup(
@@ -457,7 +445,7 @@ private extension MigrationManager {
         }
 
         let sql = """
-        SELECT i.ZRAWPREVIEW, l.ZTITLE
+        SELECT i.ZRAWPREVIEW, l.ZTITLE, i.ZCREATEDAT
         FROM ZITEMENTITY i
         LEFT JOIN ZLISTENTITY l ON i.ZLIST = l.Z_PK
         WHERE i.ZRAWPREVIEW IS NOT NULL;
@@ -474,7 +462,6 @@ private extension MigrationManager {
         }
 
         var rows: [MigratedClipboardRow] = []
-        var syntheticTimestamp = Date.now
 
         while true {
             let stepCode = sqlite3_step(statement)
@@ -487,6 +474,10 @@ private extension MigrationManager {
 
                 let blobData = Data(bytes: blobPointer, count: blobLength)
                 let rawGroupName = sqlite3_column_text(statement, 1).map { String(cString: $0) }
+                let createdAt = decodeSQLiteCoreDataReferenceDate(
+                    from: statement,
+                    columnIndex: 2
+                )
 
                 // Deserialize binary JSON
                 guard let jsonObject = try? JSONSerialization.jsonObject(with: blobData) as? [String: Any],
@@ -502,13 +493,12 @@ private extension MigrationManager {
                 rows.append(
                     MigratedClipboardRow(
                         text: trimmedText,
-                        timestamp: syntheticTimestamp,
+                        timestamp: createdAt,
                         sourceAppName: nil,
                         groupName: sanitizeOptionalString(rawGroupName),
                         contentType: inferContentType(from: trimmedText)
                     )
                 )
-                syntheticTimestamp = syntheticTimestamp.addingTimeInterval(-1)
                 continue
             }
 
@@ -546,9 +536,9 @@ private extension MigrationManager {
         let detectedGroupColumn = try detectICopyGroupColumn(in: database)
         let sql: String
         if let detectedGroupColumn {
-            sql = #"SELECT text, "\#(detectedGroupColumn)" FROM t_data WHERE text IS NOT NULL;"#
+            sql = #"SELECT text, createtime, "\#(detectedGroupColumn)" FROM t_data WHERE text IS NOT NULL;"#
         } else {
-            sql = "SELECT text FROM t_data WHERE text IS NOT NULL;"
+            sql = "SELECT text, createtime FROM t_data WHERE text IS NOT NULL;"
         }
         var statement: OpaquePointer?
         let prepareCode = sqlite3_prepare_v2(database, sql, -1, &statement, nil)
@@ -562,7 +552,6 @@ private extension MigrationManager {
         }
 
         var rows: [MigratedClipboardRow] = []
-        var syntheticTimestamp = Date.now
 
         while true {
             let stepCode = sqlite3_step(statement)
@@ -573,20 +562,23 @@ private extension MigrationManager {
                 let text = String(cString: rawText)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 guard text.isEmpty == false else { continue }
+                let createdAt = decodeSQLiteUnixTimestamp(
+                    from: statement,
+                    columnIndex: 1
+                )
                 let rawGroupName = detectedGroupColumn.flatMap { _ in
-                    sqlite3_column_text(statement, 1).map { String(cString: $0) }
+                    sqlite3_column_text(statement, 2).map { String(cString: $0) }
                 }
 
                 rows.append(
                     MigratedClipboardRow(
                         text: text,
-                        timestamp: syntheticTimestamp,
+                        timestamp: createdAt,
                         sourceAppName: nil,
                         groupName: sanitizeOptionalString(rawGroupName),
                         contentType: inferContentType(from: text)
                     )
                 )
-                syntheticTimestamp = syntheticTimestamp.addingTimeInterval(-1)
                 continue
             }
 
@@ -610,7 +602,7 @@ private extension MigrationManager {
                 configuration: JSONExtractorConfiguration(
                     collectionKeys: ["items", "clips", "history", "histories", "records", "data", "clipboard", "list"],
                     textKeys: ["text", "content", "value", "cliptext", "plaintext", "memo"],
-                    dateKeys: [],
+                    dateKeys: ["timestamp"],
                     appNameKeys: appNameKeyCandidates,
                     groupNameKeys: ["listname"]
                 )
@@ -716,8 +708,8 @@ private extension MigrationManager {
 
         let timestamp = configuration.dateKeys
             .compactMap({ normalizedDictionary[$0] })
-            .compactMap(decodeJSONDate(_:))
-            .first ?? Date.now
+            .compactMap(decodeUnixTimestamp(_:))
+            .first
         let sourceAppName = firstStringValue(
             in: dictionary,
             matching: Set(configuration.appNameKeys)
@@ -729,7 +721,7 @@ private extension MigrationManager {
 
         return MigratedClipboardRow(
             text: text,
-            timestamp: configuration.dateKeys.isEmpty ? nil : timestamp,
+            timestamp: timestamp,
             sourceAppName: sourceAppName,
             groupName: groupName,
             contentType: inferContentType(from: text)
@@ -737,43 +729,148 @@ private extension MigrationManager {
     }
 }
 
-// MARK: - JSON Date Decoding
+// MARK: - Timestamp Decoding
 
 private extension MigrationManager {
-    nonisolated static func decodeJSONDate(_ value: Any) -> Date? {
+    nonisolated static var migrationTimestampLowerBound: Date {
+        let calendar = Calendar(identifier: .gregorian)
+        return calendar.date(from: DateComponents(year: 2001, month: 1, day: 1)) ?? .distantPast
+    }
+
+    nonisolated static func migrationTimestampScore(
+        for date: Date,
+        now: Date = Date()
+    ) -> TimeInterval {
+        let calendar = Calendar(identifier: .gregorian)
+        let futureBound = calendar.date(byAdding: .year, value: 1, to: now) ?? now
+
+        if date >= migrationTimestampLowerBound, date <= futureBound {
+            return abs(date.timeIntervalSince(now))
+        }
+
+        if date < migrationTimestampLowerBound {
+            return 1_000_000_000_000 + migrationTimestampLowerBound.timeIntervalSince(date)
+        }
+
+        return 2_000_000_000_000 + date.timeIntervalSince(futureBound)
+    }
+
+    nonisolated static func resolveMostPlausibleMigrationDate(
+        from candidates: [Date],
+        now: Date = Date()
+    ) -> Date? {
+        let uniqueCandidates = candidates.reduce(into: [Date]()) { result, candidate in
+            let isDuplicate = result.contains {
+                abs($0.timeIntervalSinceReferenceDate - candidate.timeIntervalSinceReferenceDate) < 0.001
+            }
+            guard !isDuplicate else { return }
+            result.append(candidate)
+        }
+
+        return uniqueCandidates.min {
+            migrationTimestampScore(for: $0, now: now) < migrationTimestampScore(for: $1, now: now)
+        }
+    }
+
+    nonisolated static func decodeUnixTimestamp(_ value: Any) -> Date? {
         switch value {
         case let number as NSNumber:
-            return decodeJSONNumericDate(number.doubleValue)
+            guard CFGetTypeID(number) != CFBooleanGetTypeID() else { return nil }
+            return decodeUnixTimestamp(number.doubleValue)
 
         case let string as String:
             let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
             guard trimmed.isEmpty == false else { return nil }
-
-            if let numeric = Double(trimmed) {
-                return decodeJSONNumericDate(numeric)
-            }
-
-            let iso8601Formatter = ISO8601DateFormatter()
-            if let date = iso8601Formatter.date(from: trimmed) {
-                return date
-            }
-
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            return formatter.date(from: trimmed)
+            guard let numeric = Double(trimmed) else { return nil }
+            return decodeUnixTimestamp(numeric)
 
         default:
             return nil
         }
     }
 
-    nonisolated static func decodeJSONNumericDate(_ rawValue: Double) -> Date {
-        if rawValue > 1_000_000_000_000 || rawValue < -1_000_000_000_000 {
-            Date(timeIntervalSince1970: rawValue / 1000)
-        } else {
-            Date(timeIntervalSince1970: rawValue)
+    nonisolated static func decodeUnixTimestamp(_ rawValue: Double) -> Date? {
+        guard rawValue.isFinite else { return nil }
+
+        let absoluteRawValue = abs(rawValue)
+        let integerPortion = Int64(absoluteRawValue.rounded(.towardZero))
+        let digitCount = String(integerPortion).count
+        var candidates: [Date] = [
+            Date(timeIntervalSince1970: rawValue),
+            Date(timeIntervalSinceReferenceDate: rawValue),
+        ]
+
+        if (12...13).contains(digitCount) || absoluteRawValue >= 100_000_000_000 {
+            candidates.append(Date(timeIntervalSince1970: rawValue / 1_000))
+            candidates.append(Date(timeIntervalSinceReferenceDate: rawValue / 1_000))
         }
+
+        if (15...16).contains(digitCount) {
+            candidates.append(Date(timeIntervalSince1970: rawValue / 1_000_000))
+            candidates.append(Date(timeIntervalSinceReferenceDate: rawValue / 1_000_000))
+        }
+
+        if digitCount >= 18 {
+            candidates.append(Date(timeIntervalSince1970: rawValue / 1_000_000_000))
+            candidates.append(Date(timeIntervalSinceReferenceDate: rawValue / 1_000_000_000))
+        }
+
+        return resolveMostPlausibleMigrationDate(from: candidates)
+    }
+
+    nonisolated static func decodeSQLiteUnixTimestamp(
+        from statement: OpaquePointer,
+        columnIndex: Int32
+    ) -> Date? {
+        guard sqlite3_column_type(statement, columnIndex) != SQLITE_NULL else {
+            return nil
+        }
+
+        switch sqlite3_column_type(statement, columnIndex) {
+        case SQLITE_INTEGER:
+            return decodeUnixTimestamp(Double(sqlite3_column_int64(statement, columnIndex)))
+
+        case SQLITE_FLOAT:
+            return decodeUnixTimestamp(sqlite3_column_double(statement, columnIndex))
+
+        case SQLITE_TEXT:
+            guard let rawValue = sqlite3_column_text(statement, columnIndex) else { return nil }
+            return decodeUnixTimestamp(String(cString: rawValue))
+
+        default:
+            return nil
+        }
+    }
+
+    nonisolated static func decodeSQLiteCoreDataReferenceDate(
+        from statement: OpaquePointer,
+        columnIndex: Int32
+    ) -> Date? {
+        guard sqlite3_column_type(statement, columnIndex) != SQLITE_NULL else {
+            return nil
+        }
+
+        let rawValue: Double
+        switch sqlite3_column_type(statement, columnIndex) {
+        case SQLITE_INTEGER:
+            rawValue = Double(sqlite3_column_int64(statement, columnIndex))
+
+        case SQLITE_FLOAT:
+            rawValue = sqlite3_column_double(statement, columnIndex)
+
+        case SQLITE_TEXT:
+            guard let rawText = sqlite3_column_text(statement, columnIndex),
+                  let parsedValue = Double(String(cString: rawText).trimmingCharacters(in: .whitespacesAndNewlines)) else {
+                return nil
+            }
+            rawValue = parsedValue
+
+        default:
+            return nil
+        }
+
+        guard rawValue.isFinite else { return nil }
+        return Date(timeIntervalSinceReferenceDate: rawValue)
     }
 }
 

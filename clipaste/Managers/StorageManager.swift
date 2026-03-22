@@ -351,6 +351,10 @@ final class StorageManager {
         await storeActor.fetchAllGroups()
     }
 
+    func repairImportedMigrationTimestampsIfNeeded() async -> Int {
+        await storeActor.repairImportedMigrationTimestampsIfNeeded()
+    }
+
     @MainActor
     func fetchAllGroups() -> [ClipboardGroupItem] {
         let context = container.mainContext
@@ -846,6 +850,44 @@ actor ClipboardStoreActor {
             }
         } catch {
             print("❌ [ClipboardStoreActor] 编辑保存失败: \(error)")
+        }
+    }
+
+    func repairImportedMigrationTimestampsIfNeeded() -> Int {
+        let calendar = Calendar(identifier: .gregorian)
+        let suspiciousUpperBound = calendar.date(from: DateComponents(year: 2001, month: 1, day: 1)) ?? .distantPast
+        let descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { $0.timestamp < suspiciousUpperBound }
+        )
+
+        do {
+            let records = try modelContext.fetch(descriptor)
+            let migratedBundleIdentifiers = MigrationManager.migratedBundleIdentifiers
+            let now = Date()
+            var repairedCount = 0
+
+            for record in records {
+                guard let appBundleID = record.appBundleID,
+                      migratedBundleIdentifiers.contains(appBundleID),
+                      let repairedDate = MigrationManager.repairedDateIfLikelyMisdecodedReferenceTimestamp(
+                        record.timestamp,
+                        now: now
+                      ) else {
+                    continue
+                }
+
+                record.timestamp = repairedDate
+                repairedCount += 1
+            }
+
+            if repairedCount > 0 {
+                try modelContext.save()
+            }
+
+            return repairedCount
+        } catch {
+            print("❌ [ClipboardStoreActor] 修复迁移时间戳失败: \(error)")
+            return 0
         }
     }
 

@@ -36,21 +36,18 @@ enum PaywallPresentationSource: String {
 final class StoreManager: ObservableObject {
     static let shared = StoreManager()
 
-    static let proLifetimeProductID = "com.gangz1o.clipaste.pro.lifetime"
+    static let proProductID = "com.gangz1o.clipaste.pro"
     static let trialDuration: TimeInterval = 3 * 24 * 60 * 60
     static let historyPreviewLimit = 10
 
     @Published private(set) var remainingTrialDays: Int
     @Published private(set) var isTrialExpired: Bool
     @Published private(set) var isProUnlocked: Bool = false
-    @Published private(set) var proProduct: Product?
+    @Published var proProduct: Product?
     @Published private(set) var firstLaunchDate: Date
     @Published private(set) var highlightedFeature: ProAccessFeature?
     @Published private(set) var paywallSource: PaywallPresentationSource?
-    @Published private(set) var isPurchaseInProgress = false
-    @Published private(set) var isRestoreInProgress = false
     @Published var shouldShowPaywall = false
-    @Published var storeErrorMessage: String?
 
     private let defaults: UserDefaults
     private var transactionUpdatesTask: Task<Void, Never>?
@@ -84,7 +81,7 @@ final class StoreManager: ObservableObject {
         trialClockTask = makeTrialClockTask()
 
         Task {
-            await loadProducts()
+            try? await fetchProducts()
             await refreshEntitlements()
         }
     }
@@ -102,17 +99,8 @@ final class StoreManager: ObservableObject {
         hasFullAccess ? nil : Self.historyPreviewLimit
     }
 
-    /// StoreKit resolved price (e.g. "¥49.00") or hardcoded fallback.
-    var localizedLifetimePrice: String {
-        proProduct?.displayPrice ?? "¥49"
-    }
-
     var lifetimePriceSubtitle: String {
         String(localized: "Lifetime purchase, pay once, free updates forever.")
-    }
-
-    var purchaseButtonTitle: String {
-        String(localized: "Confirm Payment (\(localizedLifetimePrice))")
     }
 
     var accessHeadline: String {
@@ -165,78 +153,53 @@ final class StoreManager: ObservableObject {
         shouldShowPaywall = false
         paywallSource = nil
         highlightedFeature = nil
-        storeErrorMessage = nil
     }
 
-    func purchasePro() async {
-        storeErrorMessage = nil
+    func fetchProducts() async throws {
+        let products = try await Product.products(for: [Self.proProductID])
+        guard let resolvedProduct = products.first(where: { $0.id == Self.proProductID }) else {
+            proProduct = nil
+            throw StoreError.productUnavailable
+        }
 
+        proProduct = resolvedProduct
+    }
+
+    func purchase() async throws {
         if proProduct == nil {
-            await loadProducts()
+            try await fetchProducts()
         }
 
         guard let proProduct else {
-            storeErrorMessage = String(localized: "Unable to load purchase info. Please try again later.")
-            return
+            throw StoreError.productUnavailable
         }
 
-        isPurchaseInProgress = true
-        defer { isPurchaseInProgress = false }
+        let result = try await proProduct.purchase()
 
-        do {
-            let result = try await proProduct.purchase()
-
-            switch result {
-            case .success(let verification):
-                let transaction = try checkVerified(verification)
-                await transaction.finish()
-                await refreshEntitlements()
-
-                if isProUnlocked {
-                    dismissPaywall()
-                }
-            case .pending:
-                storeErrorMessage = String(localized: "Purchase is pending Apple confirmation.")
-            case .userCancelled:
-                break
-            @unknown default:
-                storeErrorMessage = String(localized: "An unrecognized purchase result occurred.")
-            }
-        } catch {
-            storeErrorMessage = String(localized: "Purchase failed: \(error.localizedDescription)")
-        }
-    }
-
-    func restorePurchases() async {
-        storeErrorMessage = nil
-        isRestoreInProgress = true
-        defer { isRestoreInProgress = false }
-
-        do {
-            try await AppStore.sync()
+        switch result {
+        case .success(let verification):
+            let transaction = try checkVerified(verification)
+            await transaction.finish()
             await refreshEntitlements()
 
             if isProUnlocked {
                 dismissPaywall()
-            } else {
-                storeErrorMessage = String(localized: "No restorable Pro purchase found for this Apple ID.")
             }
-        } catch {
-            storeErrorMessage = String(localized: "Restore failed: \(error.localizedDescription)")
+        case .userCancelled:
+            return
+        case .pending:
+            throw StoreError.purchasePending
+        @unknown default:
+            throw StoreError.unrecognizedPurchaseResult
         }
     }
 
-    func loadProducts() async {
-        do {
-            let products = try await Product.products(for: [Self.proLifetimeProductID])
-            proProduct = products.first(where: { $0.id == Self.proLifetimeProductID })
-            if proProduct != nil {
-                storeErrorMessage = nil
-            }
-        } catch {
-            if proProduct == nil {
-                storeErrorMessage = String(localized: "Product info failed to load: \(error.localizedDescription)")
-            }
+    func restorePurchases() async throws {
+        try await AppStore.sync()
+        await refreshEntitlements()
+
+        if isProUnlocked {
+            dismissPaywall()
         }
     }
 
@@ -248,7 +211,7 @@ final class StoreManager: ObservableObject {
                 continue
             }
 
-            guard transaction.productID == Self.proLifetimeProductID else {
+            guard transaction.productID == Self.proProductID else {
                 continue
             }
 
@@ -260,10 +223,6 @@ final class StoreManager: ObservableObject {
 
         isProUnlocked = unlocked
         recalculateTrialState()
-
-        if unlocked {
-            storeErrorMessage = nil
-        }
     }
 
     private func recalculateTrialState(referenceDate: Date = Date()) {
@@ -291,7 +250,7 @@ final class StoreManager: ObservableObject {
                     await transaction.finish()
                     await self.refreshEntitlements()
                 } catch {
-                    self.storeErrorMessage = String(localized: "Transaction verification failed: \(error.localizedDescription)")
+                    print("❌ StoreKit transaction update handling failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -325,10 +284,19 @@ final class StoreManager: ObservableObject {
 
 extension StoreManager {
     enum StoreError: LocalizedError {
+        case productUnavailable
+        case purchasePending
+        case unrecognizedPurchaseResult
         case verificationFailed
 
         var errorDescription: String? {
             switch self {
+            case .productUnavailable:
+                return String(localized: "Unable to load purchase info. Please try again later.")
+            case .purchasePending:
+                return String(localized: "Purchase is pending Apple confirmation.")
+            case .unrecognizedPurchaseResult:
+                return String(localized: "An unrecognized purchase result occurred.")
             case .verificationFailed:
                 return String(localized: "StoreKit transaction verification failed.")
             }

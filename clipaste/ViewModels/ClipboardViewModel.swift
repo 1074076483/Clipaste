@@ -65,13 +65,16 @@ class ClipboardViewModel: ObservableObject {
     private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
     private let storeManager: StoreManager
+    private let settingsViewModel: SettingsViewModel
     private var renderedHistoryLimit: Int?
 
     init(
         clipboardMonitor _: ClipboardMonitor? = nil,
-        storeManager: StoreManager? = nil
+        storeManager: StoreManager? = nil,
+        settingsViewModel: SettingsViewModel? = nil
     ) {
         self.storeManager = storeManager ?? StoreManager.shared
+        self.settingsViewModel = settingsViewModel ?? SettingsViewModel.shared
         ModifierKey.migrateStoredPreferences()
 
         // 保留旧的固定分组（横版 UI 兼容）
@@ -79,13 +82,7 @@ class ClipboardViewModel: ObservableObject {
             ClipboardGroup(id: UUID(), name: "链接", iconName: "link")
         ]
 
-        NotificationCenter.default.publisher(for: .clipboardDataDidChange)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.loadData()
-            }
-            .store(in: &cancellables)
-
+        setupDataSubscriptions()
         loadData()
         loadCustomGroups()
         setupFilterPipeline()
@@ -168,6 +165,27 @@ class ClipboardViewModel: ObservableObject {
     }
 
     // MARK: - Combine 防抖搜索管道
+
+    private func setupDataSubscriptions() {
+        NotificationCenter.default.publisher(for: .clipboardDataDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadData()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .didFinishDataMigration)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reloadPanelDataAfterMigration()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func reloadPanelDataAfterMigration() {
+        loadData()
+        loadCustomGroups()
+    }
 
     private func setupModifierPreferenceSync() {
         syncModifierPreferences()
@@ -741,7 +759,25 @@ class ClipboardViewModel: ObservableObject {
     // filteredItems 已迁移为 @Published 存储属性 + Combine 异步管道
 
     func loadCustomGroups() {
-        customGroups = StorageManager.shared.fetchAllGroups()
+        Task { [weak self] in
+            guard let self else { return }
+            let latestGroups = await StorageManager.shared.fetchGroups()
+            self.applyCustomGroups(latestGroups)
+        }
+    }
+
+    private func applyCustomGroups(_ latestGroups: [ClipboardGroupItem]) {
+        customGroups = latestGroups
+
+        if let selectedGroupId,
+           latestGroups.contains(where: { $0.id == selectedGroupId }) == false {
+            self.selectedGroupId = nil
+        }
+
+        if let draggedGroup,
+           latestGroups.contains(where: { $0.id == draggedGroup.id }) == false {
+            self.draggedGroup = nil
+        }
     }
 
     func moveGroup(from sourceId: String, relativeTo destinationId: String, insertAfter: Bool) {
@@ -983,13 +1019,17 @@ class ClipboardViewModel: ObservableObject {
         guard let record = StorageManager.shared.fetchRecord(id: item.id) else { return }
 
         Task { @MainActor in
-            _ = await PasteEngine.shared.writeToPasteboard(
+            let wroteToPasteboard = await PasteEngine.shared.writeToPasteboard(
                 record: record,
                 preferPlainText: shouldForcePlainTextOutput
             )
-            // 仅复制，不隐藏面板；播放音效作为操作反馈
-            NSSound(named: "Pop")?.play()
+            guard wroteToPasteboard else { return }
+            playCopySound()
         }
+    }
+
+    func playCopySound() {
+        settingsViewModel.playCopySound()
     }
 
     private var shouldForcePlainTextOutput: Bool {

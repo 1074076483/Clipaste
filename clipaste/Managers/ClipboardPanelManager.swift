@@ -23,6 +23,10 @@ class ClipboardPanelManager {
     /// Indicates whether the panel is currently visible to the user.
     private(set) var isVisible: Bool = false
 
+    /// 面板正在显示模态对话框（如 .alert）时，阻止外部点击隐藏面板。
+    /// 由 View 层在弹出/收起对话框时设置。
+    var suppressHide: Bool = false
+
     private init() {
         setupPanel()
         setupLayoutObserver()
@@ -236,10 +240,11 @@ class ClipboardPanelManager {
         panel.isMovable = layout == .vertical
     }
 
-    /// Hides the clipboard panel — intercepted when the panel is pinned.
+    /// Hides the clipboard panel — intercepted when the panel is pinned or showing a modal dialog.
     func hidePanel() {
         guard isVisible else { return }
         if isPinned { return } // 图钉固定时，拦截隐藏指令
+        if suppressHide { return } // 模态对话框（如删除确认 alert）激活时，拦截隐藏指令
         executeHide()
     }
 

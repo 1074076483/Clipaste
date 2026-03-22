@@ -1,8 +1,11 @@
-import SwiftUI
+import AppKit
 import Combine
+import SwiftUI
 
 @MainActor
 final class SettingsViewModel: ObservableObject {
+    static let shared = SettingsViewModel()
+
     let objectWillChange = ObservableObjectPublisher()
     private let preferencesStore: AppPreferencesStore
     private var cancellables = Set<AnyCancellable>()
@@ -52,7 +55,7 @@ final class SettingsViewModel: ObservableObject {
         willSet { objectWillChange.send() }
     }
 
-    @AppStorage("playSound") var playSound: Bool = true {
+    @AppStorage("isCopySoundEnabled") var isCopySoundEnabled: Bool = true {
         willSet { objectWillChange.send() }
     }
 
@@ -93,6 +96,7 @@ final class SettingsViewModel: ObservableObject {
         self.preferencesStore = preferencesStore
         self.launchAtLogin = preferencesStore.launchAtLogin
 
+        migrateCopySoundPreferenceIfNeeded()
         ModifierKey.migrateStoredPreferences()
         quickPasteModifier = ModifierKey.quickPastePreference()
         plainTextModifier = ModifierKey.plainTextPreference()
@@ -101,6 +105,11 @@ final class SettingsViewModel: ObservableObject {
         applySharedState {
             launchAtLogin = preferencesStore.launchAtLogin
         }
+    }
+
+    func playCopySound() {
+        guard isCopySoundEnabled else { return }
+        NSSound(named: "Pop")?.play()
     }
 
     // MARK: - 语言切换
@@ -131,5 +140,15 @@ final class SettingsViewModel: ObservableObject {
         isApplyingSharedState = true
         updates()
         isApplyingSharedState = false
+    }
+
+    private func migrateCopySoundPreferenceIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard defaults.object(forKey: "isCopySoundEnabled") == nil,
+              let legacyValue = defaults.object(forKey: "playSound") as? Bool else {
+            return
+        }
+
+        isCopySoundEnabled = legacyValue
     }
 }

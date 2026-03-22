@@ -232,8 +232,12 @@ final class ClipboardRuntimeStore: ObservableObject {
 
         do {
             try await bootstrapper.importLegacyStoreIfNeeded(into: currentRuntime.storage)
+            let repairedCount = await currentRuntime.storage.repairImportedMigrationTimestampsIfNeeded()
             await MainActor.run {
                 NotificationCenter.default.post(name: .clipboardDataDidChange, object: nil)
+            }
+            if repairedCount > 0 {
+                appendDiagnostic(level: .info, message: "已修复 \(repairedCount) 条迁移记录的时间戳基准错误")
             }
             appendDiagnostic(level: .info, message: "启动期旧库导入检查完成")
         } catch {

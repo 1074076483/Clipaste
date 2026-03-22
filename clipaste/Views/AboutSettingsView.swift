@@ -1,5 +1,34 @@
 import AppKit
+import StoreKit
 import SwiftUI
+
+// MARK: - Settings Card Container
+
+private struct SettingsCard<Content: View>: View {
+    let title: String
+    let systemImage: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+
+            content
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+        }
+        .background(Color(.windowBackgroundColor))
+        .clipShape(.rect(cornerRadius: 10))
+        .shadow(color: .black.opacity(0.06), radius: 2, y: 1)
+    }
+}
+
+// MARK: - About Settings View
 
 struct AboutSettingsView: View {
     @EnvironmentObject private var storeManager: StoreManager
@@ -23,21 +52,23 @@ struct AboutSettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 brandSection
-                proUpgradeSection
-                legalSection
+                proUpgradeCard
+                linksCard
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 34)
-            .padding(.top, 38)
-            .padding(.bottom, 32)
+            .padding(20)
         }
         .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
+}
 
-    private var brandSection: some View {
+// MARK: - Brand Header
+
+private extension AboutSettingsView {
+    var brandSection: some View {
         VStack(spacing: 14) {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
@@ -53,105 +84,73 @@ struct AboutSettingsView: View {
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("Quickly review, search, and re-paste recently copied content.")
-                .font(.system(size: 15))
+            Text("快速查看、搜索和重新粘贴最近复制的内容")
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 360)
                 .padding(.top, 4)
         }
+        .padding(.bottom, 4)
     }
+}
 
-    private var proUpgradeSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Top: Icon & Title
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.accentColor.opacity(0.15), Color.indigo.opacity(0.05)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 32, height: 32)
-                    
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 14, weight: .semibold))
+// MARK: - Card 1: Pro Status
+
+private extension AboutSettingsView {
+    var proUpgradeCard: some View {
+        SettingsCard(title: storeManager.isProUnlocked ? String(localized: "Clipaste Pro 已解锁") : "Clipaste Pro", systemImage: "sparkles") {
+            VStack(alignment: .leading, spacing: 14) {
+                // Subtitle
+                Text(storeManager.isProUnlocked ? String(localized: "所有核心功能已就绪") : String(localized: "享受完整的 Clipaste Pro 体验"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                // Core features
+                HStack(spacing: 24) {
+                    featureItem(icon: "paintpalette.fill", text: String(localized: "Multiple Themes"))
+                    featureItem(icon: "slider.horizontal.3", text: String(localized: "Custom Rules"))
+                    featureItem(icon: "clock.arrow.circlepath", text: String(localized: "Unlimited History"))
+                }
+                .padding(.vertical, 2)
+
+                // Action Button / Unlocked Badge
+                if storeManager.isProUnlocked {
+                    Text("已解锁")
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(storeManager.isProUnlocked ? String(localized: "Clipaste Pro Unlocked") : "Clipaste Pro")
-                        .font(.system(size: 15, weight: .bold))
-                    Text(storeManager.isProUnlocked ? String(localized: "All core features are ready.") : String(localized: "Enjoy the full Clipaste Pro experience"))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
-            }
-            
-            // Middle: Core features
-            HStack(spacing: 24) {
-                featureItem(icon: "paintpalette.fill", text: String(localized: "Multiple Themes"))
-                featureItem(icon: "slider.horizontal.3", text: String(localized: "Custom Rules"))
-                featureItem(icon: "clock.arrow.circlepath", text: String(localized: "Unlimited History"))
-            }
-            .padding(.vertical, 4)
-            .padding(.leading, 2)
-            
-            // Bottom: Action Button / Unlocked Badge
-            if storeManager.isProUnlocked {
-                Text("Unlocked")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                    .background(Color.accentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-            } else {
-                Button {
-                    storeManager.presentPaywall(from: .settings)
-                } label: {
-                    Text("Unlock Pro Experience (\(storeManager.localizedLifetimePrice) Lifetime)")
-                        .font(.system(size: 13, weight: .medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .background(Color.accentColor.opacity(0.1), in: .rect(cornerRadius: 6))
+                } else {
+                    Button {
+                        storeManager.presentPaywall(from: .settings)
+                    } label: {
+                        if let proProduct = storeManager.proProduct {
+                            Text(String(localized: "Unlock Pro Experience (\(proProduct.displayPrice) Lifetime)"))
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        } else {
+                            Text(String(localized: "Unlock Pro"))
+                                .font(.system(size: 13, weight: .medium))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 6)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.regular)
+                    .shadow(color: Color.accentColor.opacity(0.2), radius: 4, y: 2)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
-                .shadow(color: Color.accentColor.opacity(0.2), radius: 4, y: 2)
             }
         }
-        .padding(16)
-        .frame(maxWidth: 520)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor))
-                .overlay(
-                    LinearGradient(
-                        colors: [
-                            Color.accentColor.opacity(0.1),
-                            Color.indigo.opacity(0.03),
-                            Color.clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(Color.primary.opacity(0.04), lineWidth: 0.5)
-                )
-                .shadow(color: .black.opacity(0.05), radius: 6, y: 3)
-        )
     }
 
-    private func featureItem(icon: String, text: String) -> some View {
+    func featureItem(icon: String, text: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12))
@@ -163,75 +162,72 @@ struct AboutSettingsView: View {
                 .minimumScaleFactor(0.8)
         }
     }
+}
 
-    private var legalSection: some View {
-        VStack(spacing: 0) {
-            Button(action: sendFeedback) {
-                actionRowLabel(
-                    title: String(localized: "Send Feedback"),
-                    systemImage: "paperplane"
-                )
+// MARK: - Card 2: Links
+
+private extension AboutSettingsView {
+    var linksCard: some View {
+        SettingsCard(title: String(localized: "关于与支持"), systemImage: "info.circle") {
+            VStack(spacing: 0) {
+                Button(action: sendFeedback) {
+                    linkRow(
+                        title: String(localized: "Send Feedback"),
+                        systemImage: "paperplane"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.vertical, 10)
+
+                Link(destination: privacyPolicyURL) {
+                    linkRow(
+                        title: String(localized: "Privacy Policy"),
+                        systemImage: "lock.doc"
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Divider()
+                    .padding(.vertical, 10)
+
+                Link(destination: termsOfServiceURL) {
+                    linkRow(
+                        title: String(localized: "Terms of Service"),
+                        systemImage: "doc.text"
+                    )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
-
-            Divider()
-                .padding(.leading, 52)
-
-            Link(destination: privacyPolicyURL) {
-                actionRowLabel(
-                    title: String(localized: "Privacy Policy"),
-                    systemImage: "lock.doc"
-                )
-            }
-            .buttonStyle(.plain)
-
-            Divider()
-                .padding(.leading, 52)
-
-            Link(destination: termsOfServiceURL) {
-                actionRowLabel(
-                    title: String(localized: "Terms of Service"),
-                    systemImage: "doc.text"
-                )
-            }
-            .buttonStyle(.plain)
         }
-        .frame(maxWidth: 520)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(nsColor: .windowBackgroundColor).opacity(0.76))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.03), radius: 10, y: 6)
     }
 
-    private func sendFeedback() {
-        guard let url = URL(string: "mailto:your_email@example.com?subject=Clipaste%20Feedback") else {
-            return
-        }
+    func linkRow(title: String, systemImage: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
 
-        NSWorkspace.shared.open(url)
-    }
-
-    private func actionRowLabel(title: String, systemImage: String) -> some View {
-        HStack(spacing: 14) {
-            Label(title, systemImage: systemImage)
+            Text(title)
+                .font(.body)
                 .foregroundStyle(.primary)
-                .labelStyle(.titleAndIcon)
 
-            Spacer(minLength: 12)
+            Spacer()
 
             Image(systemName: "arrow.up.right")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.tertiary)
         }
-        .font(.system(size: 13, weight: .medium))
-        .padding(.horizontal, 18)
-        .padding(.vertical, 15)
         .contentShape(Rectangle())
+    }
+
+    func sendFeedback() {
+        guard let url = URL(string: "mailto:your_email@example.com?subject=Clipaste%20Feedback") else {
+            return
+        }
+        NSWorkspace.shared.open(url)
     }
 }
 

@@ -164,7 +164,6 @@ final class PasteEngine {
             ClipboardMonitor.shared.isIgnoredNextChange = true
             pasteboard.clearContents()
             pasteboard.setData(finalData, forType: pbType)
-            NSSound(named: "Pop")?.play()
         }
     }
 }

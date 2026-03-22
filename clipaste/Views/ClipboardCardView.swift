@@ -68,8 +68,9 @@ struct ClipboardCardView: View {
                         Text(item.timestamp.dateString)
                             .font(.system(size: 9))
                             .foregroundColor(.secondary.opacity(0.7))
+                            .lineLimit(1)
                     }
-                    .frame(minWidth: 44)
+                    .fixedSize(horizontal: true, vertical: false)
                     .help(item.timestamp.formatted(date: .complete, time: .standard))
                 }
                 .padding(.horizontal, 12)

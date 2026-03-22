@@ -697,6 +697,7 @@
       }
     },
     "All core features are ready." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -898,6 +899,7 @@
       }
     },
     "Appearance" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1164,6 +1166,7 @@
       }
     },
     "Clear All" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1204,6 +1207,7 @@
       }
     },
     "Clear All History?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1244,6 +1248,7 @@
       }
     },
     "Clear Clipboard History" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1284,6 +1289,7 @@
       }
     },
     "Clear History…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1527,6 +1533,9 @@
         }
       }
     },
+    "Clipaste Pro 已解锁" : {
+
+    },
     "Clipaste Settings" : {
       "localizations" : {
         "de" : {
@@ -1752,6 +1761,7 @@
       }
     },
     "Confirm Payment (%@)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2153,6 +2163,7 @@
       }
     },
     "Data Sync" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2321,6 +2332,7 @@
       }
     },
     "Display Position" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2361,6 +2373,7 @@
       }
     },
     "Display preset category tabs like Text, Links, and Images in the navigation bar." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -2489,6 +2502,7 @@
       }
     },
     "Enjoy the full Clipaste Pro experience" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2817,6 +2831,7 @@
       }
     },
     "Global Shortcuts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2956,6 +2971,7 @@
 
     },
     "History" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3036,6 +3052,7 @@
       }
     },
     "Hold %@ while copying or pasting to force plain text output." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3134,6 +3151,7 @@
       }
     },
     "Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3190,6 +3208,7 @@
       }
     },
     "Horizontal cards are better for browsing; vertical list is better for quick switching and searching." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3246,6 +3265,7 @@
       }
     },
     "If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3319,6 +3339,7 @@
       }
     },
     "Interface" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3416,6 +3437,7 @@
       }
     },
     "Language" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3456,6 +3478,7 @@
       }
     },
     "Language changes take full effect after the next launch." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3552,6 +3575,7 @@
       }
     },
     "Launch & Language" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3673,6 +3697,7 @@
       }
     },
     "Launch Clipaste at Login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3857,6 +3882,7 @@
       }
     },
     "Migration Assistant" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3889,6 +3915,7 @@
       }
     },
     "Modifier Keys" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4009,6 +4036,7 @@
       }
     },
     "Navigation & Actions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4225,6 +4253,7 @@
       }
     },
     "Next List" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4666,6 +4695,7 @@
       }
     },
     "Paste" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4890,6 +4920,7 @@
       }
     },
     "Permanently deletes all clipboard records and image caches. This cannot be undone." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5093,6 +5124,7 @@
       }
     },
     "Plain Text Mode" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5213,6 +5245,7 @@
       }
     },
     "Previous List" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5469,6 +5502,7 @@
       }
     },
     "Quick Paste" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5550,6 +5584,7 @@
       }
     },
     "Quickly review, search, and re-paste recently copied content." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5799,6 +5834,7 @@
       }
     },
     "Reset Shortcuts to Defaults" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5999,6 +6035,7 @@
       }
     },
     "Retention Period" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6168,6 +6205,7 @@
       }
     },
     "Seamlessly sync clipboard history across all Macs signed in with the same Apple ID." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -6570,6 +6608,7 @@
       }
     },
     "Show / Hide Clipboard Panel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6764,6 +6803,7 @@
       }
     },
     "Sort & Behavior" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7145,6 +7185,7 @@
       }
     },
     "Text Format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7225,6 +7266,7 @@
       }
     },
     "The View layer handles source selection, file picking, and status display; all parsing and routing is managed by MigrationManager." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -7298,6 +7340,7 @@
       }
     },
     "Toggle Vertical Clipboard" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7338,6 +7381,7 @@
       }
     },
     "Transaction verification failed: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7571,6 +7615,22 @@
         }
       }
     },
+    "Unlock Now (%@)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解锁 (%@)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即解鎖 (%@)"
+          }
+        }
+      }
+    },
     "Unlock Now %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7719,6 +7779,7 @@
       }
     },
     "Unlocked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7815,6 +7876,7 @@
       }
     },
     "Use Vertical List Layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7855,6 +7917,7 @@
       }
     },
     "Useful when you repeatedly paste the same content." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8112,6 +8175,7 @@
       }
     },
     "When disabled, double-clicking an item only copies it to the clipboard without sending the paste shortcut." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8152,6 +8216,7 @@
       }
     },
     "Window" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8231,13 +8296,148 @@
         }
       }
     },
+    "上一个列表" : {
+
+    },
+    "下一个列表" : {
+
+    },
+    "交互与行为" : {
+
+    },
+    "享受完整的 Clipaste Pro 体验" : {
+
+    },
     "今天" : {
+
+    },
+    "使用竖向列表布局" : {
+
+    },
+    "保留时长" : {
+
+    },
+    "修饰键" : {
+
+    },
+    "全局快捷键" : {
+
+    },
+    "全部清除" : {
+
+    },
+    "关于与支持" : {
+
+    },
+    "关闭自动粘贴，仅复制" : {
+
+    },
+    "切换竖向剪贴板" : {
+
+    },
+    "历史记录" : {
+
+    },
+    "反馈与声音" : {
+
+    },
+    "取消" : {
+
+    },
+    "启动与语言" : {
+
+    },
+    "在使用同一 Apple ID 登录的所有 Mac 间无缝同步剪贴板历史" : {
+
+    },
+    "在导航栏显示文本、链接、图片等分类标签" : {
+
+    },
+    "复制内容到剪贴板后播放短促提示音" : {
+
+    },
+    "复制提示音" : {
+
+    },
+    "外观" : {
+
+    },
+    "如果快捷键无法生效，请在系统设置 > 隐私与安全 > 辅助功能中允许 Clipaste。" : {
+
+    },
+    "导航与操作" : {
+
+    },
+    "已解锁" : {
+
+    },
+    "快速查看、搜索和重新粘贴最近复制的内容" : {
+
+    },
+    "快速粘贴" : {
+
+    },
+    "恢复默认快捷键" : {
+
+    },
+    "所有核心功能已就绪" : {
+
+    },
+    "按住 %@ 可强制输出纯文本" : {
+
+    },
+    "按住快速粘贴修饰键可显示 1…9 快捷编号；按住纯文本修饰键复制或粘贴时自动去除格式。" : {
+
+    },
+    "数据同步" : {
 
     },
     "昨天" : {
 
     },
+    "显示 / 隐藏剪贴板面板" : {
+
+    },
+    "显示位置" : {
+
+    },
+    "横向卡片适合浏览，竖向列表适合快速切换和搜索" : {
+
+    },
+    "永久删除所有剪贴板记录和图片缓存，此操作不可撤销" : {
+
+    },
+    "清空剪贴板历史" : {
+
+    },
+    "清除历史记录…" : {
+
+    },
+    "清除所有历史记录？" : {
+
+    },
     "点击后粘贴到当前应用" : {
+
+    },
+    "界面" : {
+
+    },
+    "登录时启动 Clipaste" : {
+
+    },
+    "窗口" : {
+
+    },
+    "纯文本模式" : {
+
+    },
+    "语言" : {
+
+    },
+    "迁移助手" : {
+
+    },
+    "适合频繁重复使用刚粘贴过的内容" : {
 
     }
   },

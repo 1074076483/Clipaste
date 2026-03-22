@@ -4,68 +4,62 @@ import SwiftUI
 
 struct MigrationView: View {
     private struct ImporterStatus {
-        let source: MigrationManager.MigrationSource
+        let source: MigrationViewModel.MigrationSource
         let message: String
     }
 
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var migrationManager = MigrationManager()
+    @StateObject private var viewModel = MigrationViewModel()
     @State private var isImporterPresented = false
     @State private var importerStatus: ImporterStatus?
-    @State private var selectedSource: MigrationManager.MigrationSource = .paste
+    @State private var selectedSource: MigrationViewModel.MigrationSource = .paste
 
     var body: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 14) {
-                Picker("Data Source", selection: $selectedSource) {
-                    ForEach(MigrationManager.MigrationSource.allCases) { source in
-                        Text(source.displayName).tag(source)
-                    }
+        VStack(alignment: .leading, spacing: 14) {
+            Picker("Data Source", selection: $selectedSource) {
+                ForEach(MigrationViewModel.MigrationSource.allCases) { source in
+                    Text(source.displayName).tag(source)
                 }
-                .pickerStyle(.segmented)
-                .disabled(migrationManager.isMigrating)
+            }
+            .pickerStyle(.segmented)
+            .disabled(viewModel.isMigrating)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(selectedSource.titleText)
-                        .font(.system(size: 14, weight: .semibold))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(selectedSource.titleText)
+                    .font(.subheadline)
+                    .bold()
 
-                    Text(selectedSource.guidanceText)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Text(selectedSource.detailText)
-                    .font(.system(size: 12))
+                Text(selectedSource.guidanceText)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-
-                if migrationManager.isMigrating {
-                    ProgressView()
-                        .controlSize(.small)
-                }
-
-                Text(statusMessage)
-                    .font(.system(size: 12))
-                    .foregroundStyle(statusColor)
-                    .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Button {
-                    isImporterPresented = true
-                } label: {
-                    Label(
-                        migrationManager.isMigrating ? String(localized: "Migration in Progress…") : selectedSource.fileButtonTitle,
-                        systemImage: "externaldrive.badge.plus"
-                    )
-                }
-                .disabled(migrationManager.isMigrating)
             }
-            .padding(.vertical, 4)
-        } header: {
-            Text("Migration Assistant")
-        } footer: {
-            Text("The View layer handles source selection, file picking, and status display; all parsing and routing is managed by MigrationManager.")
+
+            Text(selectedSource.detailText)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if viewModel.isMigrating {
+                ProgressView()
+                    .controlSize(.small)
+            }
+
+            Text(statusMessage)
+                .font(.subheadline)
+                .foregroundStyle(statusColor)
+                .textSelection(.enabled)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                isImporterPresented = true
+            } label: {
+                Label(
+                    viewModel.isMigrating ? String(localized: "Migration in Progress…") : selectedSource.fileButtonTitle,
+                    systemImage: "externaldrive.badge.plus"
+                )
+            }
+            .disabled(viewModel.isMigrating)
         }
         .fileImporter(
             isPresented: $isImporterPresented,
@@ -82,12 +76,12 @@ struct MigrationView: View {
             return .red
         }
 
-        if migrationManager.statusSource == selectedSource,
-           migrationManager.migrationProgress.contains(String(localized: "Failed")) {
+        if viewModel.statusSource == selectedSource,
+           viewModel.migrationProgress.contains(String(localized: "Failed")) {
             return .red
         }
 
-        return migrationManager.isMigrating ? .primary : .secondary
+        return viewModel.isMigrating ? .primary : .secondary
     }
 
     private var statusMessage: String {
@@ -95,9 +89,9 @@ struct MigrationView: View {
             return importerStatus.message
         }
 
-        if migrationManager.statusSource == selectedSource,
-           migrationManager.migrationProgress.isEmpty == false {
-            return migrationManager.migrationProgress
+        if viewModel.statusSource == selectedSource,
+           viewModel.migrationProgress.isEmpty == false {
+            return viewModel.migrationProgress
         }
 
         return selectedSource.idleStatusText
@@ -142,7 +136,7 @@ struct MigrationView: View {
             importerStatus = nil
             let source = selectedSource
             Task {
-                await migrationManager.importData(
+                await viewModel.importData(
                     from: fileURL,
                     source: source,
                     context: modelContext

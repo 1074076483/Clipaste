@@ -245,4 +245,5 @@ private struct ClipboardRecordPayload {
 
 extension Notification.Name {
     nonisolated static let clipboardDataDidChange = Notification.Name("clipboardDataDidChange")
+    nonisolated static let didFinishDataMigration = Notification.Name("com.clipaste.didFinishDataMigration")
 }

@@ -209,7 +209,7 @@ extension AppDelegate: NSWindowDelegate {
 struct clipasteApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var preferencesStore = AppPreferencesStore.shared
-    @StateObject private var settingsViewModel = SettingsViewModel()
+    @StateObject private var settingsViewModel = SettingsViewModel.shared
     @StateObject private var runtimeStore = ClipboardRuntimeStore.shared
     @StateObject private var storeManager = StoreManager.shared
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
@@ -224,7 +224,7 @@ struct clipasteApp: App {
                 .environmentObject(runtimeStore)
                 .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
-                .id(runtimeStore.rootIdentity)
+                .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
                 .environment(\.locale, appLanguage.locale ?? .current)
                 .preferredColorScheme(appTheme.colorScheme)
         }

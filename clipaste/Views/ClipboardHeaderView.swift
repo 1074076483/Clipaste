@@ -66,6 +66,9 @@ struct ClipboardHeaderView: View {
         } message: {
             Text("The group's clipboard records will safely return to \"All\".")
         }
+        .onChange(of: showDeleteAlert) { _, isShowing in
+            ClipboardPanelManager.shared.suppressHide = isShowing
+        }
     }
 
     @ViewBuilder
