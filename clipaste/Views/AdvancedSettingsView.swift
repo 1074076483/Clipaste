@@ -64,6 +64,7 @@ struct AdvancedSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @EnvironmentObject private var storeManager: StoreManager
+    @Environment(\.locale) private var locale
     @AppStorage("enable_smart_groups") private var isSmartGroupsEnabled: Bool = true
     @State private var showsDiagnostics = false
     @State private var copiedDiagnostics = false
@@ -87,14 +88,14 @@ struct AdvancedSettingsView: View {
 
 private extension AdvancedSettingsView {
     var coreInteractionCard: some View {
-        SettingsCard(title: "交互与行为", systemImage: "hand.tap") {
+        SettingsCard(title: "Interaction & Behavior", systemImage: "hand.tap") {
             VStack(spacing: 0) {
                 // Paste Setting
                 VStack(alignment: .leading, spacing: 8) {
                     SettingRow(
                         icon: "doc.on.clipboard",
                         title: "Auto-Paste to Active App on Double-Click",
-                        subtitle: "关闭自动粘贴，仅复制"
+                        subtitle: "When disabled, double-clicking an item only copies it to the clipboard without sending the paste shortcut."
                     ) {
                         Toggle("", isOn: $viewModel.autoPasteToActiveApp)
                             .toggleStyle(.switch)
@@ -115,7 +116,7 @@ private extension AdvancedSettingsView {
                 SettingRow(
                     icon: "arrow.up.to.line",
                     title: "Move Item to Top After Pasting",
-                    subtitle: "适合频繁重复使用刚粘贴过的内容"
+                    subtitle: "Useful when you repeatedly paste the same content."
                 ) {
                     Toggle("", isOn: $viewModel.moveToTopAfterPaste)
                         .toggleStyle(.switch)
@@ -132,9 +133,9 @@ private extension AdvancedSettingsView {
                         .frame(width: 20)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Default Text Format")
+                        Text(xcstringsLocalized("Default Text Format", locale: locale))
                             .font(.body)
-                        Text("按住 \(viewModel.plainTextModifier.pickerLabel) 可强制输出纯文本")
+                        Text(holdPlainTextOutputHint(locale: locale))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -144,7 +145,7 @@ private extension AdvancedSettingsView {
 
                     Picker("", selection: $viewModel.pasteTextFormat) {
                         ForEach(PasteTextFormat.allCases) { format in
-                            Text(format.displayName).tag(format)
+                            Text(format.localizedTitle).tag(format)
                         }
                     }
                     .pickerStyle(.menu)
@@ -160,11 +161,11 @@ private extension AdvancedSettingsView {
 
 private extension AdvancedSettingsView {
     var interfaceCard: some View {
-        SettingsCard(title: "界面", systemImage: "macwindow") {
+        SettingsCard(title: "Interface", systemImage: "macwindow") {
             SettingRow(
                 icon: "rectangle.3.group",
                 title: "Show Smart Groups",
-                subtitle: "在导航栏显示文本、链接、图片等分类标签"
+                subtitle: "Display preset category tabs like Text, Links, and Images in the navigation bar."
             ) {
                 Toggle("", isOn: $isSmartGroupsEnabled)
                     .toggleStyle(.switch)
@@ -178,7 +179,7 @@ private extension AdvancedSettingsView {
 
 private extension AdvancedSettingsView {
     var migrationCard: some View {
-        SettingsCard(title: "迁移助手", systemImage: "shippingbox") {
+        SettingsCard(title: "Migration Assistant", systemImage: "shippingbox") {
             MigrationView()
         }
     }
@@ -188,14 +189,14 @@ private extension AdvancedSettingsView {
 
 private extension AdvancedSettingsView {
     var dataSyncCard: some View {
-        SettingsCard(title: "数据同步", systemImage: "icloud") {
+        SettingsCard(title: "Data Sync", systemImage: "icloud") {
             VStack(alignment: .leading, spacing: 12) {
                 // iCloud Sync Toggle
                 Toggle(isOn: syncEnabledBinding) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Sync via iCloud")
                             .font(.body)
-                        Text("在使用同一 Apple ID 登录的所有 Mac 间无缝同步剪贴板历史")
+                        Text("Seamlessly sync clipboard history across all Macs signed in with the same Apple ID.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -311,19 +312,24 @@ private extension AdvancedSettingsView {
     @ViewBuilder
     var syncStatusText: some View {
         if runtimeStore.isSyncing {
-            Text("Syncing…")
+            Text(xcstringsLocalized("Syncing…", locale: locale))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         } else if let error = runtimeStore.syncError {
-            Text("Sync Failed: \(error)")
+            let template = xcstringsLocalized("Sync Failed: %@", locale: locale)
+            Text(String(format: template, locale: locale, arguments: [error]))
                 .font(.subheadline)
                 .foregroundStyle(.red)
         } else if let date = runtimeStore.lastSyncDate {
-            Text("Last Sync: \(date, format: .dateTime.month().day().hour().minute())")
+            let formatted = date.formatted(
+                Date.FormatStyle(date: .abbreviated, time: .shortened).locale(locale)
+            )
+            let template = xcstringsLocalized("Last Sync: %@", locale: locale)
+            Text(String(format: template, locale: locale, arguments: [formatted]))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         } else {
-            Text("Waiting for First Sync…")
+            Text(xcstringsLocalized("Waiting for First Sync…", locale: locale))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -476,6 +482,24 @@ private extension AdvancedSettingsView {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             copiedDiagnostics = false
         }
+    }
+
+    /// `String(localized:locale:)` 对含 `%@` 的部分键在运行时可能仍回退到开发语言；从对应 `.lproj` 取串更可靠。
+    private func xcstringsLocalized(_ key: String, locale: Locale) -> String {
+        let bcp47 = locale.identifier(.bcp47)
+        if let path = Bundle.main.path(forResource: bcp47, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            let value = bundle.localizedString(forKey: key, value: nil, table: nil)
+            if value != key { return value }
+        }
+        return String(localized: String.LocalizationValue(key), bundle: .main, locale: locale)
+    }
+
+    private func holdPlainTextOutputHint(locale: Locale) -> String {
+        let key = "Hold %@ while copying or pasting to force plain text output."
+        let template = xcstringsLocalized(key, locale: locale)
+        let arg = viewModel.plainTextModifier.pickerLabel(locale: locale)
+        return String(format: template, locale: locale, arguments: [arg])
     }
 }
 

@@ -11,7 +11,14 @@ struct GeneralSettingsView: View {
                 
                 Picker("语言设置", selection: $viewModel.appLanguage) {
                     ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.displayName).tag(lang)
+                        Group {
+                            if lang == .auto {
+                                Text(LocalizedStringResource("Follow System"))
+                            } else {
+                                Text(verbatim: lang.nativeDisplayName)
+                            }
+                        }
+                        .tag(lang)
                     }
                 }
             }
@@ -23,7 +30,7 @@ struct GeneralSettingsView: View {
                 if viewModel.isVerticalLayout {
                     Picker("竖屏跟随", selection: $viewModel.verticalFollowMode) {
                         ForEach(VerticalFollowMode.allCases) { mode in
-                            Text(mode.displayName).tag(mode)
+                            Text(mode.localizedTitle).tag(mode)
                         }
                     }
                 }
@@ -33,7 +40,7 @@ struct GeneralSettingsView: View {
             Section {
                 Picker("剪切板保存历史", selection: $viewModel.historyRetention) {
                     ForEach(HistoryRetention.allCases) { retention in
-                        Text(retention.displayName).tag(retention)
+                        Text(retention.localizedTitle).tag(retention)
                     }
                 }
             }

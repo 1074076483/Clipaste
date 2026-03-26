@@ -1,6 +1,7 @@
 import Combine
 import CloudKit
 import Foundation
+import os
 import SwiftData
 
 enum ClipboardSyncDiagnosticLevel: String, Sendable {
@@ -532,8 +533,19 @@ private enum CloudSyncAvailabilityService {
     }
 
     private static func fetchAccountStatus(from container: CKContainer) async throws -> CKAccountStatus {
-        try await withCheckedThrowingContinuation { continuation in
+        // CKContainer.accountStatus's completion handler can fire more than once
+        // on some macOS versions. withCheckedThrowingContinuation traps on
+        // double-resume, so we use the unsafe variant with a manual guard.
+        try await withUnsafeThrowingContinuation { continuation in
+            let resumed = OSAllocatedUnfairLock(initialState: false)
             container.accountStatus { status, error in
+                let alreadyResumed = resumed.withLock { flag -> Bool in
+                    if flag { return true }
+                    flag = true
+                    return false
+                }
+                guard !alreadyResumed else { return }
+
                 if let error {
                     continuation.resume(throwing: error)
                 } else {

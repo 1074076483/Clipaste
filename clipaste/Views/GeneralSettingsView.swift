@@ -103,11 +103,11 @@ struct GeneralSettingsView: View {
 
 private extension GeneralSettingsView {
     var launchAndLanguageCard: some View {
-        SettingsCard(title: "启动与语言", systemImage: "globe") {
+        SettingsCard(title: "Startup & Language", systemImage: "globe") {
             VStack(spacing: 0) {
                 SettingRow(
                     icon: "power",
-                    title: "登录时启动 Clipaste"
+                    title: "Launch Clipaste at Login"
                 ) {
                     Toggle("", isOn: launchAtLoginBinding)
                         .toggleStyle(.switch)
@@ -118,7 +118,7 @@ private extension GeneralSettingsView {
 
                 SettingRow(
                     icon: "paintbrush",
-                    title: "外观"
+                    title: "Appearance"
                 ) {
                     Picker("", selection: $appTheme) {
                         ForEach(AppTheme.allCases) { theme in
@@ -134,11 +134,18 @@ private extension GeneralSettingsView {
 
                 SettingRow(
                     icon: "character.bubble",
-                    title: "语言"
+                    title: "Language"
                 ) {
                     Picker("", selection: $viewModel.appLanguage) {
                         ForEach(AppLanguage.allCases) { lang in
-                            Text(lang.displayName).tag(lang)
+                            Group {
+                                if lang == .auto {
+                                    Text(LocalizedStringResource("Follow System"))
+                                } else {
+                                    Text(verbatim: lang.nativeDisplayName)
+                                }
+                            }
+                            .tag(lang)
                         }
                     }
                     .pickerStyle(.menu)
@@ -154,12 +161,12 @@ private extension GeneralSettingsView {
 
 private extension GeneralSettingsView {
     var windowCard: some View {
-        SettingsCard(title: "窗口", systemImage: "macwindow") {
+        SettingsCard(title: "Window", systemImage: "macwindow") {
             VStack(spacing: 0) {
                 SettingRow(
                     icon: "rectangle.split.2x1",
-                    title: "使用竖向列表布局",
-                    subtitle: "横向卡片适合浏览，竖向列表适合快速切换和搜索"
+                    title: "Use Vertical List Layout",
+                    subtitle: "Horizontal cards are better for browsing; vertical list is better for quick switching and searching."
                 ) {
                     Toggle("", isOn: $viewModel.isVerticalLayout)
                         .toggleStyle(.switch)
@@ -171,11 +178,11 @@ private extension GeneralSettingsView {
 
                     SettingRow(
                         icon: "arrow.up.and.down",
-                        title: "显示位置"
+                        title: "Display Position"
                     ) {
                         Picker("", selection: $viewModel.verticalFollowMode) {
                             ForEach(VerticalFollowMode.allCases) { mode in
-                                Text(mode.displayName).tag(mode)
+                                Text(mode.localizedTitle).tag(mode)
                             }
                         }
                         .pickerStyle(.menu)
@@ -193,11 +200,11 @@ private extension GeneralSettingsView {
 
 private extension GeneralSettingsView {
     var feedbackCard: some View {
-        SettingsCard(title: "反馈与声音", systemImage: "speaker.wave.2") {
+        SettingsCard(title: "Feedback & Sound", systemImage: "speaker.wave.2") {
             SettingRow(
                 icon: "speaker.badge.exclamationmark",
-                title: "复制提示音",
-                subtitle: "复制内容到剪贴板后播放短促提示音"
+                title: "Copy Notification Sound",
+                subtitle: "Play a short sound after copying to the clipboard."
             ) {
                 Toggle("", isOn: $viewModel.isCopySoundEnabled)
                     .toggleStyle(.switch)
@@ -211,15 +218,15 @@ private extension GeneralSettingsView {
 
 private extension GeneralSettingsView {
     var historyCard: some View {
-        SettingsCard(title: "历史记录", systemImage: "clock.arrow.circlepath") {
+        SettingsCard(title: "History", systemImage: "clock.arrow.circlepath") {
             VStack(spacing: 0) {
                 SettingRow(
                     icon: "calendar",
-                    title: "保留时长"
+                    title: "Retention Period"
                 ) {
                     Picker("", selection: $viewModel.historyRetention) {
                         ForEach(HistoryRetention.allCases) { retention in
-                            Text(retention.displayName).tag(retention)
+                            Text(retention.localizedTitle).tag(retention)
                         }
                     }
                     .pickerStyle(.menu)
@@ -235,26 +242,26 @@ private extension GeneralSettingsView {
                     Button(role: .destructive) {
                         showingClearAlert = true
                     } label: {
-                        Label("清除历史记录…", systemImage: "trash")
+                        Label("Clear History…", systemImage: "trash")
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
 
-                Text("永久删除所有剪贴板记录和图片缓存，此操作不可撤销")
+                Text("Permanently deletes all clipboard records and image caches. This cannot be undone.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
             }
         }
-        .alert("清除所有历史记录？", isPresented: $showingClearAlert) {
-            Button("取消", role: .cancel) { }
-            Button("全部清除", role: .destructive) {
+        .alert("Clear All History?", isPresented: $showingClearAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All", role: .destructive) {
                 StorageManager.shared.clearAllHistory()
             }
         } message: {
-            Text("永久删除所有剪贴板记录和图片缓存，此操作不可撤销")
+            Text("Permanently deletes all clipboard records and image caches. This cannot be undone.")
         }
     }
 }

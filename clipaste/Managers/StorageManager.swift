@@ -951,7 +951,7 @@ actor ClipboardStoreActor {
         }
 
         let existingRecords = (try? modelContext.fetch(FetchDescriptor<ClipboardRecord>())) ?? []
-        var recordsByHash = Dictionary(uniqueKeysWithValues: existingRecords.map { ($0.contentHash, $0) })
+        var recordsByHash = Dictionary(existingRecords.map { ($0.contentHash, $0) }, uniquingKeysWith: { _, latest in latest })
 
         for incomingRecord in payload.records {
             if let existingRecord = recordsByHash[incomingRecord.contentHash] {

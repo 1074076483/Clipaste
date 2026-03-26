@@ -16,15 +16,15 @@ enum ClipboardContentType: String, Codable {
     case link      // 智能嗅探：合法 URL
     case code      // 智能嗅探：代码特征匹配
 
-    /// Filter Bar 显示文本
-    var filterLabel: String {
+    /// Filter Bar / 溢出菜单中的智能分类标题（随 SwiftUI 语言环境解析）。
+    var localizedFilterTitle: LocalizedStringResource {
         switch self {
-        case .text:    return "文本"
-        case .image:   return "图片"
-        case .fileURL: return "文件"
-        case .color:   return "颜色"
-        case .link:    return "链接"
-        case .code:    return "代码"
+        case .text: return LocalizedStringResource("Smart Filter Text")
+        case .image: return LocalizedStringResource("Smart Filter Image")
+        case .fileURL: return LocalizedStringResource("Smart Filter File")
+        case .color: return LocalizedStringResource("Smart Filter Color")
+        case .link: return LocalizedStringResource("Smart Filter Link")
+        case .code: return LocalizedStringResource("Smart Filter Code")
         }
     }
 
@@ -138,7 +138,7 @@ struct ClipboardItem: Identifiable, Hashable, @unchecked Sendable {
         if let text = sourceText {
             if text.utf8.count > 3000 {
                 // 超大文本：物理截断，直接封死正则和链接判断
-                self.previewText = String(text.prefix(1000)) + "\n... (文本过长，已折叠)"
+                self.previewText = String(text.prefix(1000)) + "\n" + String(localized: "Text preview truncated for performance.")
                 self.isFastLink = false
                 self.fastParsedColor = nil
             } else {
@@ -211,6 +211,21 @@ extension ClipboardItem {
 }
 
 extension ClipboardItem {
+    /// 卡片角标等内容类型文案（与筛选标签共用同一套 String Catalog 键）。
+    func typeBadgeTitle(isCodeHeuristic: Bool) -> LocalizedStringResource {
+        switch contentType {
+        case .text:
+            if isFastLink { return LocalizedStringResource("Smart Filter Link") }
+            if isCodeHeuristic { return LocalizedStringResource("Smart Filter Code") }
+            return LocalizedStringResource("Smart Filter Text")
+        case .image: return LocalizedStringResource("Smart Filter Image")
+        case .fileURL: return LocalizedStringResource("Smart Filter File")
+        case .color: return LocalizedStringResource("Smart Filter Color")
+        case .link: return LocalizedStringResource("Smart Filter Link")
+        case .code: return LocalizedStringResource("Smart Filter Code")
+        }
+    }
+
     var groupId: String? {
         groupIDs.first
     }

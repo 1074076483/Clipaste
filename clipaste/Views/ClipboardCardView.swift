@@ -310,24 +310,10 @@ private struct TypeBadgeView: View {
         }
     }
 
-    private var badgeLabel: String {
-        switch item.contentType {
-        case .image:    return "图片"
-        case .fileURL:  return "文件"
-        case .link:     return "链接"
-        case .code:     return "代码"
-        case .color:    return "颜色"
-        case .text:
-            if item.isFastLink { return "链接" }
-            if isCodeContent { return "代码" }
-            return "文本"
-        }
-    }
-
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: badgeIcon)
-            Text(badgeLabel)
+            Text(item.typeBadgeTitle(isCodeHeuristic: isCodeContent))
         }
         .font(.system(size: 10, weight: .semibold))
         .foregroundStyle(.secondary)

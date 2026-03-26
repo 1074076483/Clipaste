@@ -10,7 +10,7 @@ struct ClipboardVerticalView: View {
                 ForEach(items) { item in
                     ClipboardCardView(item: item, viewModel: viewModel)
                         .contentShape(RoundedRectangle(cornerRadius: 16))
-                        .help("点击后粘贴到当前应用")
+                        .help("Click to paste to the active app")
                 }
             }
             .frame(maxWidth: .infinity)

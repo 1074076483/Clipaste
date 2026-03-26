@@ -23,7 +23,7 @@ struct ClipboardQuickLookView: View {
                 let fullText = item.rawText ?? item.textPreview
                 let safeText: String = {
                     if fullText.utf8.count > 200_000 {
-                        return String(fullText.prefix(100_000)) + "\n\n... (文本过于巨大，为保护内存已折叠预览，粘贴时不受影响)"
+                        return String(fullText.prefix(100_000)) + "\n\n" + String(localized: "Preview truncated to protect memory. Pasting is not affected.")
                     }
                     return fullText
                 }()

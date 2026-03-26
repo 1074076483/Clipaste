@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// Legacy settings models still referenced by the current tab-based settings UI.
 enum PasteBehavior: String, CaseIterable, Identifiable {
@@ -42,18 +43,13 @@ enum HistoryLimit: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var displayName: String {
+    var localizedTitle: LocalizedStringResource {
         switch self {
-        case .day:
-            return String(localized: "1 Day")
-        case .week:
-            return String(localized: "1 Week")
-        case .month:
-            return String(localized: "1 Month")
-        case .year:
-            return String(localized: "1 Year")
-        case .unlimited:
-            return String(localized: "Unlimited")
+        case .day: return LocalizedStringResource("1 Day")
+        case .week: return LocalizedStringResource("1 Week")
+        case .month: return LocalizedStringResource("1 Month")
+        case .year: return LocalizedStringResource("1 Year")
+        case .unlimited: return LocalizedStringResource("Unlimited")
         }
     }
 }

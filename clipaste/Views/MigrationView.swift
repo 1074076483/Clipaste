@@ -21,7 +21,7 @@ struct MigrationView: View {
                     Text(source.displayName).tag(source)
                 }
             }
-            .pickerStyle(.segmented)
+            .fixedSize()
             .disabled(viewModel.isMigrating)
 
             VStack(alignment: .leading, spacing: 4) {

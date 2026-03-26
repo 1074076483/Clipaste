@@ -17,6 +17,16 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// 侧边栏等位置使用 `LocalizedStringResource`，确保随 `\.locale` 即时刷新。
+    var localizedTitle: LocalizedStringResource {
+        switch self {
+        case .general: return LocalizedStringResource("General")
+        case .shortcuts: return LocalizedStringResource("Shortcuts")
+        case .advanced: return LocalizedStringResource("Advanced")
+        case .about: return LocalizedStringResource("About")
+        }
+    }
+
     var navigationTitle: LocalizedStringKey { title }
 
     var iconName: String {
@@ -37,7 +47,9 @@ struct SettingsView: View {
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
 
     var body: some View {
-        HStack(spacing: 0) {
+        let resolvedLocale = appLanguage.locale ?? .current
+
+        return HStack(spacing: 0) {
             // ── 左侧：极窄纵向侧边栏 ──
             VStack(spacing: 12) {
                 // 顶部：App Icon
@@ -84,11 +96,10 @@ struct SettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(nsColor: .controlBackgroundColor))
         }
+        .environment(\.locale, resolvedLocale)
         .frame(minWidth: 560, idealWidth: 620, maxWidth: .infinity,
                minHeight: 540, idealHeight: 580, maxHeight: .infinity)
-        .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
-        .environment(\.locale, appLanguage.locale ?? .current)
-        .background(SettingsWindowObserver(appLanguage: appLanguage))
+        .background(SettingsWindowObserver())
         .background(WindowAppearanceObserver(theme: appTheme))
         .sheet(
             isPresented: Binding(
@@ -104,6 +115,7 @@ struct SettingsView: View {
         ) {
             PaywallView()
                 .environmentObject(storeManager)
+                .environment(\.locale, resolvedLocale)
         }
     }
 }
@@ -124,7 +136,7 @@ private struct SettingsSidebarItem: View {
                     .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
                     .frame(width: 22, height: 20)
 
-                Text(tab.title)
+                Text(tab.localizedTitle)
                     .font(.system(size: 10, weight: .medium))
                     .lineLimit(1)
             }

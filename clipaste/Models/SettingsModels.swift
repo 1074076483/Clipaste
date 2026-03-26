@@ -13,15 +13,6 @@ enum ModifierKey: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var displayName: String {
-        switch self {
-        case .command: return String(localized: "Command")
-        case .option: return String(localized: "Option")
-        case .control: return String(localized: "Control")
-        case .shift: return String(localized: "Shift")
-        }
-    }
-
     var symbol: String {
         switch self {
         case .command: return "⌘"
@@ -31,8 +22,18 @@ enum ModifierKey: String, CaseIterable, Identifiable {
         }
     }
 
-    var pickerLabel: String {
-        "\(symbol) \(displayName)"
+    func localizedDisplayName(locale: Locale?) -> String {
+        let resolved = locale ?? .current
+        switch self {
+        case .command: return String(localized: "Command", locale: resolved)
+        case .option: return String(localized: "Option", locale: resolved)
+        case .control: return String(localized: "Control", locale: resolved)
+        case .shift: return String(localized: "Shift", locale: resolved)
+        }
+    }
+
+    func pickerLabel(locale: Locale?) -> String {
+        "\(symbol) \(localizedDisplayName(locale: locale))"
     }
 
     var eventFlags: NSEvent.ModifierFlags {
@@ -111,9 +112,10 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     var id: String { self.rawValue }
 
-    var displayName: String {
+    /// 语言选择器中展示的原生文案（非本地化键）。
+    var nativeDisplayName: String {
         switch self {
-        case .auto:   return String(localized: "Follow System")
+        case .auto:   return ""
         case .zhHans: return "简体中文"
         case .zhHant: return "繁體中文"
         case .en:     return "English"
@@ -145,11 +147,11 @@ enum VerticalFollowMode: String, CaseIterable, Identifiable {
 
     var id: String { self.rawValue }
 
-    var displayName: String {
+    var localizedTitle: LocalizedStringResource {
         switch self {
-        case .statusBar: return String(localized: "Near Status Bar Icon")
-        case .mouse: return String(localized: "Near Mouse Cursor")
-        case .lastPosition: return String(localized: "Last Position")
+        case .statusBar: return LocalizedStringResource("Near Status Bar Icon")
+        case .mouse: return LocalizedStringResource("Near Mouse Cursor")
+        case .lastPosition: return LocalizedStringResource("Last Position")
         }
     }
 }
@@ -163,14 +165,14 @@ enum HistoryRetention: String, CaseIterable, Identifiable {
     case unlimited = "unlimited"
     var id: String { self.rawValue }
     
-    var displayName: String {
+    var localizedTitle: LocalizedStringResource {
         switch self {
-        case .threeDays: return String(localized: "3 Days")
-        case .oneWeek: return String(localized: "1 Week")
-        case .oneMonth: return String(localized: "1 Month")
-        case .sixMonths: return String(localized: "6 Months")
-        case .oneYear: return String(localized: "1 Year")
-        case .unlimited: return String(localized: "Forever")
+        case .threeDays: return LocalizedStringResource("3 Days")
+        case .oneWeek: return LocalizedStringResource("1 Week")
+        case .oneMonth: return LocalizedStringResource("1 Month")
+        case .sixMonths: return LocalizedStringResource("6 Months")
+        case .oneYear: return LocalizedStringResource("1 Year")
+        case .unlimited: return LocalizedStringResource("Forever")
         }
     }
 }
@@ -198,10 +200,10 @@ enum PasteTextFormat: String, CaseIterable, Identifiable {
 
     var id: String { self.rawValue }
 
-    var displayName: String {
+    var localizedTitle: LocalizedStringResource {
         switch self {
-        case .original:  return String(localized: "Keep Original Formatting")
-        case .plainText: return String(localized: "Always Plain Text")
+        case .original: return LocalizedStringResource("Keep Original Formatting")
+        case .plainText: return LocalizedStringResource("Always Plain Text")
         }
     }
 }

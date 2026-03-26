@@ -14,6 +14,7 @@ struct ClipboardHeaderView: View {
     @FocusState var focusedField: ClipboardPanelFocusField?
     @FocusState private var focusedHeaderInput: HeaderInputField?
     @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
+    @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
     @AppStorage("isPanelPinned") private var isPanelPinned: Bool = false
     @AppStorage("isMonitoringPaused") private var isMonitoringPaused: Bool = false
     @AppStorage("monitorInterval") private var monitorInterval: Double = 0.5
@@ -34,6 +35,11 @@ struct ClipboardHeaderView: View {
     @State private var groupToDelete: ClipboardGroupItem? = nil
     @State private var showDeleteAlert = false
 
+    /// 剪贴板面板上的 Popover 在独立窗口中呈现，往往拿不到根视图的 `\.locale`，需与 `ClipboardPanelRootView` 一致显式注入。
+    private var panelLocale: Locale {
+        appLanguage.locale ?? .current
+    }
+
     var body: some View {
         Group {
             if isVerticalLayout {
@@ -46,6 +52,7 @@ struct ClipboardHeaderView: View {
         .background(headerBackground)
         .popover(isPresented: $showEditPopover, arrowEdge: .bottom) {
             editGroupPopover
+                .environment(\.locale, panelLocale)
         }
         .onChange(of: isShowingNewGroupPopover) { _, isShowing in
             updatePopoverInputState(isShowing: isShowing, field: .newGroupName)
@@ -191,7 +198,7 @@ struct ClipboardHeaderView: View {
     // 固定区域：溢出菜单 ⋯
     private var allGroupTabButton: some View {
         MinimalGroupTabButton(
-            title: String(localized: "All"),
+            title: .localized(LocalizedStringResource("All")),
             icon: "tray.2.fill",
             isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil
         ) {
@@ -234,7 +241,7 @@ struct ClipboardHeaderView: View {
 
         ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
             MinimalGroupTabButton(
-                title: type.filterLabel,
+                title: .localized(type.localizedFilterTitle),
                 icon: type.systemImage,
                 isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil
             ) {
@@ -263,7 +270,7 @@ struct ClipboardHeaderView: View {
                         selectSmartFilter(type)
                     }) {
                         HStack {
-                            Label(type.filterLabel, systemImage: type.systemImage)
+                            Label(type.localizedFilterTitle, systemImage: type.systemImage)
                             if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
                                 Spacer()
                                 Image(systemName: "checkmark")
@@ -313,6 +320,7 @@ struct ClipboardHeaderView: View {
         .help("All Groups")
         .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
             newGroupPopover
+                .environment(\.locale, panelLocale)
         }
     }
 
@@ -360,7 +368,7 @@ struct ClipboardHeaderView: View {
         let insertionEdge = reorderTarget?.groupID == group.id ? reorderTarget?.edge : nil
 
         MinimalGroupTabButton(
-            title: group.name,
+            title: .verbatim(group.name),
             icon: group.systemIconName,
             isSelected: isSelected || isDropTarget,
             maxTextWidth: isVerticalLayout ? 60 : 80
@@ -630,6 +638,7 @@ struct ClipboardHeaderView: View {
                 .buttonStyle(.plain)
                 .popover(isPresented: $showIconPicker) {
                     GroupIconPicker(selectedIcon: $newGroupIcon)
+                        .environment(\.locale, panelLocale)
                 }
 
                 TextField("Group Name", text: $newGroupName)
@@ -682,6 +691,7 @@ struct ClipboardHeaderView: View {
                 .buttonStyle(.plain)
                 .popover(isPresented: $showEditIconPicker) {
                     GroupIconPicker(selectedIcon: $editGroupIcon)
+                        .environment(\.locale, panelLocale)
                 }
 
                 TextField("Group Name", text: $editGroupName)
@@ -790,7 +800,12 @@ private struct ClipboardHeaderPreview: View {
 // MARK: - 极简原生 Tab 按钮子组件
 
 struct MinimalGroupTabButton: View {
-    let title: String
+    enum Title {
+        case localized(LocalizedStringResource)
+        case verbatim(String)
+    }
+
+    let title: Title
     let icon: String
     let isSelected: Bool
     var maxTextWidth: CGFloat? = nil
@@ -812,7 +827,14 @@ struct MinimalGroupTabButton: View {
                     Image(systemName: icon)
                         .frame(width: 11, height: 11)
                 }
-                Text(title)
+                Group {
+                    switch title {
+                    case .localized(let resource):
+                        Text(resource)
+                    case .verbatim(let string):
+                        Text(verbatim: string)
+                    }
+                }
                     .font(.system(size: 12, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.tail)

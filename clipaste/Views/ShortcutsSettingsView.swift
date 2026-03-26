@@ -52,17 +52,17 @@ struct ShortcutsSettingsView: View {
 private extension ShortcutsSettingsView {
     var globalShortcutsCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SettingsCard(title: "全局快捷键", systemImage: "command") {
+            SettingsCard(title: "Global Shortcuts", systemImage: "command") {
                 VStack(spacing: 0) {
-                    ShortcutRecorderRow("显示 / 隐藏剪贴板面板", name: .toggleClipboardPanel)
+                    ShortcutRecorderRow("Show / Hide Clipboard Panel", name: .toggleClipboardPanel)
 
                     cardDivider
 
-                    ShortcutRecorderRow("切换竖向剪贴板", name: .toggleVerticalClipboard)
+                    ShortcutRecorderRow("Toggle Vertical Clipboard", name: .toggleVerticalClipboard)
                 }
             }
 
-            Text("如果快捷键无法生效，请在系统设置 > 隐私与安全 > 辅助功能中允许 Clipaste。")
+            Text("If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
@@ -74,17 +74,17 @@ private extension ShortcutsSettingsView {
 
 private extension ShortcutsSettingsView {
     var navigationCard: some View {
-        SettingsCard(title: "导航与操作", systemImage: "arrow.left.arrow.right") {
+        SettingsCard(title: "Navigation & Actions", systemImage: "arrow.left.arrow.right") {
             VStack(spacing: 0) {
-                ShortcutRecorderRow("下一个列表", name: .nextList)
+                ShortcutRecorderRow("Next List", name: .nextList)
 
                 cardDivider
 
-                ShortcutRecorderRow("上一个列表", name: .prevList)
+                ShortcutRecorderRow("Previous List", name: .prevList)
 
                 cardDivider
 
-                ShortcutRecorderRow("清空剪贴板历史", name: .clearHistory)
+                ShortcutRecorderRow("Clear Clipboard History", name: .clearHistory)
             }
         }
     }
@@ -95,10 +95,10 @@ private extension ShortcutsSettingsView {
 private extension ShortcutsSettingsView {
     var modifiersCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SettingsCard(title: "修饰键", systemImage: "option") {
+            SettingsCard(title: "Modifier Keys", systemImage: "option") {
                 VStack(spacing: 0) {
                     ModifierPickerView(
-                        title: "快速粘贴",
+                        title: "Quick Paste",
                         suffix: "+ 1…9",
                         selection: $viewModel.quickPasteModifier
                     )
@@ -106,14 +106,14 @@ private extension ShortcutsSettingsView {
                     cardDivider
 
                     ModifierPickerView(
-                        title: "纯文本模式",
+                        title: "Plain Text Mode",
                         suffix: "",
                         selection: $viewModel.plainTextModifier
                     )
                 }
             }
 
-            Text("按住快速粘贴修饰键可显示 1…9 快捷编号；按住纯文本修饰键复制或粘贴时自动去除格式。")
+            Text("Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
@@ -134,7 +134,7 @@ private extension ShortcutsSettingsView {
                 .clearHistory
             )
         } label: {
-            Label("恢复默认快捷键", systemImage: "arrow.counterclockwise")
+            Label("Reset Shortcuts to Defaults", systemImage: "arrow.counterclockwise")
                 .frame(maxWidth: .infinity)
         }
         .controlSize(.regular)

@@ -5,6 +5,7 @@ struct ModifierPickerView: View {
     let title: LocalizedStringKey
     let suffix: String
     @Binding var selection: ModifierKey
+    @Environment(\.locale) private var locale
 
     var body: some View {
         HStack {
@@ -16,7 +17,8 @@ struct ModifierPickerView: View {
             Spacer()
             Picker("", selection: $selection) {
                 ForEach(ModifierKey.allCases) { option in
-                    Text(option.pickerLabel).tag(option)
+                    Text(verbatim: option.pickerLabel(locale: locale))
+                        .tag(option)
                 }
             }
             .labelsHidden()

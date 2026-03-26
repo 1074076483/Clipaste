@@ -7,6 +7,12 @@ enum SettingsWindowCoordinator {
     private static var closeObservers: [ObjectIdentifier: NSObjectProtocol] = [:]
     private static var shouldRestoreAccessoryPolicy = false
 
+    /// SwiftUI `Settings` 场景里 representable 拿到的 `window` 即设置窗口；弱引用避免仅靠 identifier 扫描不到的情况。
+    private static weak var trackedSettingsWindow: NSWindow?
+
+    /// 合并短时间内的多次刷新请求（如 `UserDefaults` 通知 + 其它路径），只保留最新一次延迟重试序列。
+    private static var settingsTitleRefreshGeneration = 0
+
     @MainActor
     static func open(using openSettings: @escaping () -> Void) {
         promoteToRegularIfNeeded()
@@ -20,6 +26,7 @@ enum SettingsWindowCoordinator {
 
     @MainActor
     static func register(window: NSWindow) {
+        trackedSettingsWindow = window
         window.identifier = windowIdentifier
         window.collectionBehavior.insert(.moveToActiveSpace)
         attachCloseObserver(to: window)
@@ -104,31 +111,111 @@ enum SettingsWindowCoordinator {
     private static var shouldUseAccessoryPolicy: Bool {
         UserDefaults.standard.bool(forKey: onboardingDefaultsKey)
     }
+
+    /// 与 `UserDefaults` 中 `appLanguage` 一致；显式语言用 `LocalizedStringResource(locale:)`，减轻与 `AppleLanguages` 进程内缓存不一致的问题。
+    @MainActor
+    fileprivate static func resolvedSettingsWindowTitle() -> String {
+        let lang = AppLanguage(rawValue: UserDefaults.standard.string(forKey: "appLanguage") ?? "") ?? .auto
+        if lang == .auto {
+            return String(localized: "Clipaste Settings", locale: .current)
+        }
+        guard let locale = lang.locale else {
+            return String(localized: "Clipaste Settings", locale: .current)
+        }
+        let resource = LocalizedStringResource("Clipaste Settings", locale: locale, bundle: .main)
+        return String(localized: resource)
+    }
+
+    /// 语言切换后系统 Settings 宿主有时会再次改写标题，故在数帧内多次应用。
+    @MainActor
+    static func refreshAllSettingsWindowTitles() {
+        settingsTitleRefreshGeneration += 1
+        let generation = settingsTitleRefreshGeneration
+        let delays: [TimeInterval] = [0, 0.03, 0.08, 0.16, 0.32, 0.55, 1.0, 1.6]
+        for delay in delays {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                Task { @MainActor in
+                    guard generation == settingsTitleRefreshGeneration else { return }
+                    applySettingsWindowTitleToKnownWindows()
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private static func applySettingsWindowTitleToKnownWindows() {
+        let title = resolvedSettingsWindowTitle()
+        var touched = Set<ObjectIdentifier>()
+
+        func apply(_ window: NSWindow) {
+            let oid = ObjectIdentifier(window)
+            guard !touched.contains(oid) else { return }
+            touched.insert(oid)
+            window.title = title
+        }
+
+        if let window = trackedSettingsWindow, window.isVisible {
+            apply(window)
+        }
+        for window in NSApp.windows where window.identifier == windowIdentifier {
+            apply(window)
+        }
+
+        // 仍未命中时：SwiftUI Settings 窗口类名通常含 Settings，且不应误伤仅标题为「Clipaste」的引导窗。
+        guard touched.isEmpty else { return }
+
+        for window in NSApp.windows where window.isVisible && window.styleMask.contains(.titled) {
+            guard window.title != "Clipaste" else { continue }
+            let typeName = String(describing: type(of: window))
+            guard typeName.contains("Settings") else { continue }
+            apply(window)
+            break
+        }
+    }
 }
 
 struct SettingsWindowObserver: NSViewRepresentable {
-    let appLanguage: AppLanguage
-
     func makeNSView(context: Context) -> NSView {
         TrackingView()
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
-        guard let window = nsView.window else { return }
-        let inAppLocale = appLanguage.locale ?? .current
-        window.title = String(localized: "Clipaste Settings", locale: inAppLocale)
+        guard let trackingView = nsView as? TrackingView else { return }
+        // 布局阶段 window 常为 nil，仅在此处 return 会导致标题永远不随语言更新。
+        trackingView.scheduleApplyWindowTitle()
     }
 
     private final class TrackingView: NSView {
+        private var pendingTitleWorkItem: DispatchWorkItem?
+
+        deinit {
+            pendingTitleWorkItem?.cancel()
+        }
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
 
             guard let window else { return }
             window.titlebarSeparatorStyle = .none
 
-            Task { @MainActor in
-                SettingsWindowCoordinator.register(window: window)
+            SettingsWindowCoordinator.register(window: window)
+
+            applyWindowTitleIfNeeded()
+        }
+
+        func scheduleApplyWindowTitle() {
+            applyWindowTitleIfNeeded()
+            pendingTitleWorkItem?.cancel()
+            let item = DispatchWorkItem { [weak self] in
+                self?.applyWindowTitleIfNeeded()
             }
+            pendingTitleWorkItem = item
+            DispatchQueue.main.async(execute: item)
+        }
+
+        private func applyWindowTitleIfNeeded() {
+            guard let window else { return }
+            window.title = SettingsWindowCoordinator.resolvedSettingsWindowTitle()
         }
     }
 }

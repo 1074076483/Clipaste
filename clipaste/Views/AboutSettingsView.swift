@@ -5,7 +5,7 @@ import SwiftUI
 // MARK: - Settings Card Container
 
 private struct SettingsCard<Content: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     let systemImage: String
     @ViewBuilder let content: Content
 
@@ -32,6 +32,7 @@ private struct SettingsCard<Content: View>: View {
 
 struct AboutSettingsView: View {
     @EnvironmentObject private var storeManager: StoreManager
+    @Environment(\.locale) private var locale
 
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
@@ -80,11 +81,14 @@ private extension AboutSettingsView {
                 .font(.system(size: 34, weight: .bold))
                 .tracking(-0.8)
 
-            Text("\(String(localized: "Version")) \(shortVersion) (\(buildNumber))")
+            HStack(spacing: 0) {
+                Text("Version")
+                Text(verbatim: " \(shortVersion) (\(buildNumber))")
+            }
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.secondary)
 
-            Text("快速查看、搜索和重新粘贴最近复制的内容")
+            Text("Quickly review, search, and re-paste recently copied content.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -99,24 +103,27 @@ private extension AboutSettingsView {
 
 private extension AboutSettingsView {
     var proUpgradeCard: some View {
-        SettingsCard(title: storeManager.isProUnlocked ? String(localized: "Clipaste Pro 已解锁") : "Clipaste Pro", systemImage: "sparkles") {
+        SettingsCard(
+            title: storeManager.isProUnlocked ? "Clipaste Pro Unlocked" : "Clipaste Pro",
+            systemImage: "sparkles"
+        ) {
             VStack(alignment: .leading, spacing: 14) {
                 // Subtitle
-                Text(storeManager.isProUnlocked ? String(localized: "所有核心功能已就绪") : String(localized: "享受完整的 Clipaste Pro 体验"))
+                Text(storeManager.isProUnlocked ? "All core features are ready." : "Enjoy the full Clipaste Pro experience")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
                 // Core features
                 HStack(spacing: 24) {
-                    featureItem(icon: "paintpalette.fill", text: String(localized: "Multiple Themes"))
-                    featureItem(icon: "slider.horizontal.3", text: String(localized: "Custom Rules"))
-                    featureItem(icon: "clock.arrow.circlepath", text: String(localized: "Unlimited History"))
+                    featureItem(icon: "paintpalette.fill", title: "Multiple Themes")
+                    featureItem(icon: "slider.horizontal.3", title: "Custom Rules")
+                    featureItem(icon: "clock.arrow.circlepath", title: "Unlimited History")
                 }
                 .padding(.vertical, 2)
 
                 // Action Button / Unlocked Badge
                 if storeManager.isProUnlocked {
-                    Text("已解锁")
+                    Text("Unlocked")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                         .frame(maxWidth: .infinity)
@@ -127,14 +134,18 @@ private extension AboutSettingsView {
                         storeManager.presentPaywall(from: .settings)
                     } label: {
                         if let proProduct = storeManager.proProduct {
-                            Text(String(localized: "Unlock Pro Experience (\(proProduct.displayPrice) Lifetime)"))
+                            Text(String(
+                                format: String(localized: "Unlock Pro Experience (%@ Lifetime)", locale: locale),
+                                locale: locale,
+                                proProduct.displayPrice
+                            ))
                                 .font(.system(size: 13, weight: .medium))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 6)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                         } else {
-                            Text(String(localized: "Unlock Pro"))
+                            Text("Unlock Pro")
                                 .font(.system(size: 13, weight: .medium))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 6)
@@ -150,12 +161,12 @@ private extension AboutSettingsView {
         }
     }
 
-    func featureItem(icon: String, text: String) -> some View {
+    func featureItem(icon: String, title: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12))
                 .foregroundStyle(Color.accentColor)
-            Text(text)
+            Text(title)
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -168,11 +179,11 @@ private extension AboutSettingsView {
 
 private extension AboutSettingsView {
     var linksCard: some View {
-        SettingsCard(title: String(localized: "关于与支持"), systemImage: "info.circle") {
+        SettingsCard(title: "About & Support", systemImage: "info.circle") {
             VStack(spacing: 0) {
                 Button(action: sendFeedback) {
                     linkRow(
-                        title: String(localized: "Send Feedback"),
+                        title: "Send Feedback",
                         systemImage: "paperplane"
                     )
                 }
@@ -183,7 +194,7 @@ private extension AboutSettingsView {
 
                 Link(destination: privacyPolicyURL) {
                     linkRow(
-                        title: String(localized: "Privacy Policy"),
+                        title: "Privacy Policy",
                         systemImage: "lock.doc"
                     )
                 }
@@ -194,7 +205,7 @@ private extension AboutSettingsView {
 
                 Link(destination: termsOfServiceURL) {
                     linkRow(
-                        title: String(localized: "Terms of Service"),
+                        title: "Terms of Service",
                         systemImage: "doc.text"
                     )
                 }
@@ -203,7 +214,7 @@ private extension AboutSettingsView {
         }
     }
 
-    func linkRow(title: String, systemImage: String) -> some View {
+    func linkRow(title: LocalizedStringKey, systemImage: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: systemImage)
                 .font(.body)

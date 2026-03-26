@@ -18,8 +18,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     ]
     private var onboardingStateObserver: NSObjectProtocol?
     private var lastKnownOnboardingState = false
+    private var lastObservedAppLanguageRaw: String?
     private var onboardingWindow: NSWindow?
     private var hasRegisteredGlobalShortcuts = false
+
+    private func normalizedAppLanguageStorageRaw() -> String {
+        let raw = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+        return raw.isEmpty ? AppLanguage.auto.rawValue : raw
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Pre-warm the panel so the first global shortcut does not block on panel construction.
@@ -41,12 +47,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // event before our monitor sees it.
         checkAndRequestAccessibility()
 
+        lastObservedAppLanguageRaw = normalizedAppLanguageStorageRaw()
+
         onboardingStateObserver = NotificationCenter.default.addObserver(
             forName: UserDefaults.didChangeNotification,
             object: UserDefaults.standard,
             queue: .main
         ) { [weak self] _ in
             guard let self else { return }
+            let langRaw = self.normalizedAppLanguageStorageRaw()
+            if langRaw != self.lastObservedAppLanguageRaw {
+                self.lastObservedAppLanguageRaw = langRaw
+                Task { @MainActor in
+                    SettingsWindowCoordinator.refreshAllSettingsWindowTitles()
+                }
+            }
+
             let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: self.onboardingDefaultsKey)
             guard hasCompletedOnboarding != self.lastKnownOnboardingState else { return }
 
@@ -224,7 +240,7 @@ struct clipasteApp: App {
                 .environmentObject(runtimeStore)
                 .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
-                .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
+                .id(appLanguage.rawValue)
                 .environment(\.locale, appLanguage.locale ?? .current)
                 .preferredColorScheme(appTheme.colorScheme)
         }

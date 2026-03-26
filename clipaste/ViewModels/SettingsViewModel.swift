@@ -122,6 +122,9 @@ final class SettingsViewModel: ObservableObject {
             UserDefaults.standard.set([language.rawValue], forKey: "AppleLanguages")
         }
         UserDefaults.standard.synchronize()
+        Task { @MainActor in
+            SettingsWindowCoordinator.refreshAllSettingsWindowTitles()
+        }
     }
 
     private func bindPreferences() {

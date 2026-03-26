@@ -6,6 +6,7 @@ struct SubscriptionModalView: View {
     let onClose: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
     @EnvironmentObject private var storeManager: StoreManager
     @StateObject private var viewModel = ProPurchaseViewModel()
 
@@ -258,7 +259,11 @@ struct SubscriptionModalView: View {
                             .tint(.white)
                     }
 
-                    Text("Unlock Now (\(proProduct.displayPrice))")
+                    Text(String(
+                        format: String(localized: "Unlock Now (%@)", locale: locale),
+                        locale: locale,
+                        proProduct.displayPrice
+                    ))
                         .font(.system(size: 17, weight: .semibold))
                         .tracking(-0.2)
                 }

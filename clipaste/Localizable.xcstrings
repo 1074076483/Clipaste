@@ -44,16 +44,6 @@
         }
       }
     },
-    "%@ %@ (%@)" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$@ (%3$@)"
-          }
-        }
-      }
-    },
     "%@ %lld" : {
       "localizations" : {
         "en" : {
@@ -463,6 +453,46 @@
         }
       }
     },
+    "About & Support" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info & Support"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À propos et assistance"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "情報とサポート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정보 및 지원"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于与支持"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關於與支援"
+          }
+        }
+      }
+    },
     "About Clipaste" : {
       "localizations" : {
         "de" : {
@@ -720,7 +750,6 @@
       }
     },
     "All core features are ready." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -922,7 +951,6 @@
       }
     },
     "Appearance" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1189,7 +1217,6 @@
       }
     },
     "Clear All" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1230,7 +1257,6 @@
       }
     },
     "Clear All History?" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1271,7 +1297,6 @@
       }
     },
     "Clear Clipboard History" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1312,7 +1337,6 @@
       }
     },
     "Clear History…" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1395,6 +1419,30 @@
     },
     "Click to paste to the active app" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klicken, um in die aktive App einzufügen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cliquer pour coller dans l’app active"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリックでアクティブなアプリに貼り付け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클릭하여 활성 앱에 붙여넣기"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1476,6 +1524,9 @@
         }
       }
     },
+    "Clipaste Pro" : {
+
+    },
     "Clipaste Pro Lifetime Membership" : {
       "localizations" : {
         "de" : {
@@ -1555,9 +1606,6 @@
           }
         }
       }
-    },
-    "Clipaste Pro 已解锁" : {
-
     },
     "Clipaste Settings" : {
       "localizations" : {
@@ -1993,6 +2041,46 @@
         }
       }
     },
+    "Copy Notification Sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopierton"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de copie"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピー通知音"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사 알림음"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制提示音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複製提示音"
+          }
+        }
+      }
+    },
     "Copy to Clipboard Only" : {
       "localizations" : {
         "de" : {
@@ -2186,8 +2274,31 @@
       }
     },
     "Data Sync" : {
-      "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datensynchronisierung"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisation des données"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データ同期"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 동기화"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2203,6 +2314,7 @@
       }
     },
     "Default Text Format" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2231,7 +2343,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "預设文字格式"
+            "value" : "预设文字格式"
           }
         },
         "zh-Hant" : {
@@ -2283,7 +2395,32 @@
       }
     },
     "Delete %lld Items" : {
+      "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Einträge löschen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer %lld éléments"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 件を削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld개 항목 삭제"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2356,7 +2493,6 @@
       }
     },
     "Display Position" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2397,8 +2533,31 @@
       }
     },
     "Display preset category tabs like Text, Links, and Images in the navigation bar." : {
-      "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt voreingestellte Kategorien wie Text, Links und Bilder in der Navigationsleiste."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Affiche des onglets de catégories prédéfinies (texte, liens, images) dans la barre de navigation."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ナビゲーションバーにテキスト、リンク、画像などのプリセット分類タブを表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내비게이션 바에 텍스트, 링크, 이미지 등 프리셋 분류 탭을 표시합니다."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2482,7 +2641,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "編輯內容"
+            "value" : "编辑内容"
           }
         },
         "zh-Hant" : {
@@ -2511,6 +2670,30 @@
     },
     "Edit Image" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild bearbeiten"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier l’image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像を編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지 편집"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2526,7 +2709,6 @@
       }
     },
     "Enjoy the full Clipaste Pro experience" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2579,6 +2761,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "失敗"
+          }
+        }
+      }
+    },
+    "Feedback & Sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feedback & Ton"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retour sonore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィードバックとサウンド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피드백 및 소리"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "反馈与声音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回饋與聲音"
           }
         }
       }
@@ -2856,7 +3078,6 @@
       }
     },
     "Global Shortcuts" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2978,6 +3199,30 @@
     },
     "Groups" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gruppen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Groupes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2996,7 +3241,6 @@
 
     },
     "History" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3079,6 +3323,30 @@
     "Hold %@ while copying or pasting to force plain text output." : {
       "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Halten Sie %@ beim Kopieren oder Einfügen gedrückt, um reinen Text zu erzwingen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenez %@ pendant la copie ou le collage pour forcer le texte brut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーまたは貼り付け中に %@ を押したままにするとプレーンテキストを強制します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복사 또는 붙여넣을 때 %@을(를) 누른 채로 두면 서식 없는 텍스트로 강제합니다."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3176,7 +3444,6 @@
       }
     },
     "Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting." : {
-      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3233,7 +3500,6 @@
       }
     },
     "Horizontal cards are better for browsing; vertical list is better for quick switching and searching." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3290,7 +3556,6 @@
       }
     },
     "If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3363,9 +3628,72 @@
         }
       }
     },
-    "Interface" : {
-      "extractionState" : "stale",
+    "Interaction & Behavior" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interaktion & Verhalten"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interaction et comportement"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "操作と挙動"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상호작용 및 동작"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "交互与行为"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "互動與行為"
+          }
+        }
+      }
+    },
+    "Interface" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oberfläche"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interface"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インターフェース"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "인터페이스"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3462,7 +3790,6 @@
       }
     },
     "Language" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3584,6 +3911,7 @@
       }
     },
     "Last Sync: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -3722,7 +4050,6 @@
       }
     },
     "Launch Clipaste at Login" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3891,7 +4218,32 @@
       }
     },
     "Merge and Copy %lld Items" : {
+      "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Einträge zusammenführen und kopieren"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fusionner et copier %lld éléments"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 件を結合してコピー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld개 항목 병합 후 복사"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3907,8 +4259,31 @@
       }
     },
     "Migration Assistant" : {
-      "extractionState" : "stale",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Migrationsassistent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistant de migration"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移行アシスタント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "마이그레이션 도우미"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3940,7 +4315,6 @@
       }
     },
     "Modifier Keys" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4061,7 +4435,6 @@
       }
     },
     "Navigation & Actions" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4278,7 +4651,6 @@
       }
     },
     "Next List" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4376,6 +4748,30 @@
     },
     "No Groups" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Gruppen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun groupe"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループなし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹 없음"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4945,7 +5341,6 @@
       }
     },
     "Permanently deletes all clipboard records and image caches. This cannot be undone." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5149,7 +5544,6 @@
       }
     },
     "Plain Text Mode" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5229,6 +5623,46 @@
         }
       }
     },
+    "Play a short sound after copying to the clipboard." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurzer Ton nach dem Kopieren in die Zwischenablage."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joue un bref son après la copie dans le presse-papiers."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボードへコピーした直後に短い音を再生します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드로 복사한 뒤 짧은 알림음을 재생합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制内容到剪贴板后播放短促提示音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複製內容到剪貼簿後播放短促提示音。"
+          }
+        }
+      }
+    },
     "Preview" : {
       "localizations" : {
         "de" : {
@@ -5269,8 +5703,47 @@
         }
       }
     },
+    "Preview truncated to protect memory. Pasting is not affected." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (Vorschau aus Speichergründen gekürzt; Einfügen unverändert.)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (Aperçu tronqué pour la mémoire ; le collage n’est pas affecté.)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "…（メモリ保護のためプレビューを省略。貼り付けには影響しません。）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (메모리 보호를 위해 미리보기를 줄였습니다. 붙여넣기에는 영향 없습니다.)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (文本过于巨大，为保护内存已折叠预览，粘贴时不受影响)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "…（文字過大，為保護記憶體已摺疊預覽，貼上不影響）"
+          }
+        }
+      }
+    },
     "Previous List" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5312,6 +5785,30 @@
     },
     "Privacy Policy" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzrichtlinie"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Politique de confidentialité"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プライバシーポリシー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개인정보 처리방침"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5527,7 +6024,6 @@
       }
     },
     "Quick Paste" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5597,7 +6093,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更快地回顧、搜索及重新粘贴最近复制的內容。"
+            "value" : "更快回顾、搜索并重新粘贴最近复制的内容。"
           }
         },
         "zh-Hant" : {
@@ -5609,7 +6105,6 @@
       }
     },
     "Quickly review, search, and re-paste recently copied content." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5859,7 +6354,6 @@
       }
     },
     "Reset Shortcuts to Defaults" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6060,7 +6554,6 @@
       }
     },
     "Retention Period" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6230,7 +6723,6 @@
       }
     },
     "Seamlessly sync clipboard history across all Macs signed in with the same Apple ID." : {
-      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -6371,7 +6863,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "传送意見反应"
+            "value" : "发送反馈"
           }
         },
         "zh-Hant" : {
@@ -6633,7 +7125,6 @@
       }
     },
     "Show / Hide Clipboard Panel" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6757,6 +7248,30 @@
     },
     "Show Smart Groups" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intelligente Gruppen anzeigen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les groupes intelligents"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スマートグループを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스마트 그룹 표시"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6771,8 +7286,272 @@
         }
       }
     },
+    "Smart Filter Code" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "코드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "代码"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "程式碼"
+          }
+        }
+      }
+    },
+    "Smart Filter Color" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Farbe"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カラー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "색상"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "颜色"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顏色"
+          }
+        }
+      }
+    },
+    "Smart Filter File" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datei"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fichier"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ファイル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파일"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案"
+          }
+        }
+      }
+    },
+    "Smart Filter Image" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "图片"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "圖片"
+          }
+        }
+      }
+    },
+    "Smart Filter Link" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lien"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "링크"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "链接"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連結"
+          }
+        }
+      }
+    },
+    "Smart Filter Text" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキスト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "텍스트"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字"
+          }
+        }
+      }
+    },
     "Smart Filters" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intelligente Filter"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtres intelligents"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スマートフィルタ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스마트 필터"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6905,6 +7684,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入後直接在選單列待命，不打斷你的工作流程。"
+          }
+        }
+      }
+    },
+    "Startup & Language" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start & Sprache"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage et langue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "起動と言語"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작 및 언어"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动与语言"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "啟動與語言"
           }
         }
       }
@@ -7048,6 +7867,7 @@
       }
     },
     "Sync Failed: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -7097,6 +7917,7 @@
       }
     },
     "Syncing…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -7195,6 +8016,30 @@
     },
     "Terms of Service" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzungsbedingungen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions d’utilisation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "利用規約"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "서비스 약관"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7246,6 +8091,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文字格式"
+          }
+        }
+      }
+    },
+    "Text preview truncated for performance." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (Text zu lang, Vorschau gekürzt)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (Texte trop long, aperçu tronqué)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "…（テキストが長いためプレビューを省略）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (텍스트가 길어 미리보기를 줄였습니다)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "… (文本过长，已折叠)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "…（文字過長，已摺疊）"
           }
         }
       }
@@ -7365,7 +8250,6 @@
       }
     },
     "Toggle Vertical Clipboard" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7642,6 +8526,30 @@
     },
     "Unlock Now (%@)" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt freischalten (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débloquer maintenant (%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今すぐ解除（%@）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 잠금 해제 (%@)"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7804,7 +8712,6 @@
       }
     },
     "Unlocked" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7901,7 +8808,6 @@
       }
     },
     "Use Vertical List Layout" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7942,7 +8848,6 @@
       }
     },
     "Useful when you repeatedly paste the same content." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7971,7 +8876,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "適合频繁重复使用剛粘贴过的內容。"
+            "value" : "适合频繁重复使用刚粘贴过的内容。"
           }
         },
         "zh-Hant" : {
@@ -8144,6 +9049,7 @@
       }
     },
     "Waiting for First Sync…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -8200,7 +9106,6 @@
       }
     },
     "When disabled, double-clicking an item only copies it to the clipboard without sending the paste shortcut." : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8229,7 +9134,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "关闭后，双击条目只會将內容复制到系统剪贴板，不會自動發出粘贴快速键。"
+            "value" : "关闭后，双击条目只会将内容复制到系统剪贴板，不会自动发送粘贴快捷键。"
           }
         },
         "zh-Hant" : {
@@ -8241,7 +9146,6 @@
       }
     },
     "Window" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8321,76 +9225,10 @@
         }
       }
     },
-    "上一个列表" : {
-
-    },
-    "下一个列表" : {
-
-    },
-    "交互与行为" : {
-
-    },
-    "享受完整的 Clipaste Pro 体验" : {
-
-    },
     "今天" : {
 
     },
     "从 %@ 迁移数据" : {
-
-    },
-    "使用竖向列表布局" : {
-
-    },
-    "保留时长" : {
-
-    },
-    "修饰键" : {
-
-    },
-    "全局快捷键" : {
-
-    },
-    "全部清除" : {
-
-    },
-    "关于与支持" : {
-
-    },
-    "关闭自动粘贴，仅复制" : {
-
-    },
-    "切换竖向剪贴板" : {
-
-    },
-    "历史记录" : {
-
-    },
-    "反馈与声音" : {
-
-    },
-    "取消" : {
-
-    },
-    "启动与语言" : {
-
-    },
-    "在使用同一 Apple ID 登录的所有 Mac 间无缝同步剪贴板历史" : {
-
-    },
-    "在导航栏显示文本、链接、图片等分类标签" : {
-
-    },
-    "复制内容到剪贴板后播放短促提示音" : {
-
-    },
-    "复制提示音" : {
-
-    },
-    "外观" : {
-
-    },
-    "如果快捷键无法生效，请在系统设置 > 隐私与安全 > 辅助功能中允许 Clipaste。" : {
 
     },
     "导入器会读取 JSON 结构中的历史条目，并映射到 Clipaste 的 SwiftData 模型。" : {
@@ -8400,9 +9238,6 @@
 
     },
     "导入器将使用原生 SQLite3 读取 ZRAWPREVIEW 二进制 JSON，不依赖任何第三方数据库库。" : {
-
-    },
-    "导航与操作" : {
 
     },
     "已解析 %lld 条 %@ 记录，正在写入 Clipaste..." : {
@@ -8415,73 +9250,10 @@
         }
       }
     },
-    "已解锁" : {
-
-    },
-    "快速查看、搜索和重新粘贴最近复制的内容" : {
-
-    },
-    "快速粘贴" : {
-
-    },
-    "恢复默认快捷键" : {
-
-    },
-    "所有核心功能已就绪" : {
-
-    },
-    "按住 %@ 可强制输出纯文本" : {
-
-    },
-    "按住快速粘贴修饰键可显示 1…9 快捷编号；按住纯文本修饰键复制或粘贴时自动去除格式。" : {
-
-    },
-    "数据同步" : {
-
-    },
     "昨天" : {
 
     },
-    "显示 / 隐藏剪贴板面板" : {
-
-    },
-    "显示位置" : {
-
-    },
-    "横向卡片适合浏览，竖向列表适合快速切换和搜索" : {
-
-    },
     "正在读取 %@ 数据..." : {
-
-    },
-    "永久删除所有剪贴板记录和图片缓存，此操作不可撤销" : {
-
-    },
-    "清空剪贴板历史" : {
-
-    },
-    "清除历史记录…" : {
-
-    },
-    "清除所有历史记录？" : {
-
-    },
-    "点击后粘贴到当前应用" : {
-
-    },
-    "界面" : {
-
-    },
-    "登录时启动 Clipaste" : {
-
-    },
-    "窗口" : {
-
-    },
-    "纯文本模式" : {
-
-    },
-    "语言" : {
 
     },
     "请选择 %@ 导出的 JSON 文件。Clipaste 会按 PasteNow 专用 JSON 路由解析。" : {
@@ -8497,12 +9269,6 @@
 
     },
     "请选择 PasteNow 导出的 JSON 文件。" : {
-
-    },
-    "迁移助手" : {
-
-    },
-    "适合频繁重复使用刚粘贴过的内容" : {
 
     },
     "选择 JSON 导出文件" : {

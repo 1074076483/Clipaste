@@ -309,7 +309,7 @@ private struct PreferencesView: View {
 
                         Picker("History Capacity", selection: $historyLimit) {
                             ForEach(HistoryLimit.allCases) { limit in
-                                Text(limit.displayName).tag(limit)
+                                Text(limit.localizedTitle).tag(limit)
                             }
                         }
                         .labelsHidden()

@@ -1,5 +1,24 @@
 import SwiftUI
 
+/// 右键菜单中带数量的标题，使用 `String Catalog` 中的 `%lld` 占位符并尊重 `\.locale`。
+private struct ClipboardCountMenuLabel: View {
+    let formatKey: String
+    let count: Int
+    let systemImage: String
+
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        let format = String(localized: String.LocalizationValue(formatKey), locale: locale)
+        let title = String(format: format, locale: locale, count)
+        Label {
+            Text(verbatim: title)
+        } icon: {
+            Image(systemName: systemImage)
+        }
+    }
+}
+
 extension View {
     /// Attach context-aware right-click context menu to any clipboard item.
     /// Automatically switches between batch mode (multi-select) and single-item mode.
@@ -30,7 +49,11 @@ extension View {
         Button {
             viewModel.batchCopy()
         } label: {
-            Label("Merge and Copy \(count) Items", systemImage: "doc.on.doc")
+            ClipboardCountMenuLabel(
+                formatKey: "Merge and Copy %lld Items",
+                count: count,
+                systemImage: "doc.on.doc"
+            )
         }
 
         Divider()
@@ -65,7 +88,11 @@ extension View {
         Button(role: .destructive) {
             viewModel.batchDelete()
         } label: {
-            Label("Delete \(count) Items", systemImage: "trash")
+            ClipboardCountMenuLabel(
+                formatKey: "Delete %lld Items",
+                count: count,
+                systemImage: "trash"
+            )
         }
     }
 
