@@ -5,7 +5,7 @@ import Foundation
 final class ProPurchaseViewModel: ObservableObject {
     @Published private(set) var isPurchasing = false
     @Published private(set) var isRestoring = false
-    @Published var errorMessage: String?
+    @Published var errorMessage: LocalizedStringResource?
 
     private var storeManager: StoreManager?
 
@@ -21,7 +21,7 @@ final class ProPurchaseViewModel: ObservableObject {
         do {
             try await storeManager.fetchProducts()
         } catch {
-            errorMessage = String(localized: "Product info failed to load: \(error.localizedDescription)")
+            errorMessage = LocalizedStringResource("Product info failed to load: \(error.localizedDescription)")
         }
     }
 
@@ -50,19 +50,18 @@ final class ProPurchaseViewModel: ObservableObject {
             try await storeManager.restorePurchases()
 
             if storeManager.isProUnlocked == false {
-                errorMessage = String(localized: "No restorable Pro purchase found for this Apple ID.")
+                errorMessage = "No restorable Pro purchase found for this Apple ID."
             }
         } catch {
-            errorMessage = String(localized: "Restore failed: \(error.localizedDescription)")
+            errorMessage = LocalizedStringResource("Restore failed: \(error.localizedDescription)")
         }
     }
 
-    private func purchaseMessage(for error: Error) -> String {
-        if let storeError = error as? StoreManager.StoreError,
-           let description = storeError.errorDescription {
-            return description
+    private func purchaseMessage(for error: Error) -> LocalizedStringResource {
+        if let storeError = error as? StoreManager.StoreError {
+            return storeError.localizedResource
         }
 
-        return String(localized: "Purchase failed: \(error.localizedDescription)")
+        return LocalizedStringResource("Purchase failed: \(error.localizedDescription)")
     }
 }

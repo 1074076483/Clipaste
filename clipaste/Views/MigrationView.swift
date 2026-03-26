@@ -5,7 +5,7 @@ import SwiftUI
 struct MigrationView: View {
     private struct ImporterStatus {
         let source: MigrationViewModel.MigrationSource
-        let message: String
+        let message: LocalizedStringResource
     }
 
     @Environment(\.modelContext) private var modelContext
@@ -55,8 +55,16 @@ struct MigrationView: View {
                 isImporterPresented = true
             } label: {
                 Label(
-                    viewModel.isMigrating ? String(localized: "Migration in Progress…") : selectedSource.fileButtonTitle,
-                    systemImage: "externaldrive.badge.plus"
+                    title: {
+                        if viewModel.isMigrating {
+                            Text("Migration in Progress…")
+                        } else {
+                            Text(selectedSource.fileButtonTitle)
+                        }
+                    },
+                    icon: {
+                        Image(systemName: "externaldrive.badge.plus")
+                    }
                 )
             }
             .disabled(viewModel.isMigrating)
@@ -76,22 +84,17 @@ struct MigrationView: View {
             return .red
         }
 
-        if viewModel.statusSource == selectedSource,
-           viewModel.migrationProgress.contains(String(localized: "Failed")) {
-            return .red
-        }
-
         return viewModel.isMigrating ? .primary : .secondary
     }
 
-    private var statusMessage: String {
+    private var statusMessage: LocalizedStringResource {
         if let importerStatus, importerStatus.source == selectedSource {
             return importerStatus.message
         }
 
         if viewModel.statusSource == selectedSource,
-           viewModel.migrationProgress.isEmpty == false {
-            return viewModel.migrationProgress
+           let progress = viewModel.migrationProgress {
+            return progress
         }
 
         return selectedSource.idleStatusText
@@ -147,7 +150,7 @@ struct MigrationView: View {
             guard (error as NSError).code != NSUserCancelledError else { return }
             importerStatus = ImporterStatus(
                 source: selectedSource,
-                message: String(localized: "File selection failed: \(error.localizedDescription)")
+                message: LocalizedStringResource("File selection failed: \(error.localizedDescription)")
             )
         }
     }

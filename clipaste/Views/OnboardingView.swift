@@ -224,10 +224,16 @@ private struct PermissionView: View {
                 }
 
                 Label(
-                    hasAccessibilityPermission
-                        ? String(localized: "Authorized — Continue")
-                        : String(localized: "Authorization Required — Enable in System Settings"),
-                    systemImage: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill"
+                    title: {
+                        if hasAccessibilityPermission {
+                            Text("Authorized — Continue")
+                        } else {
+                            Text("Authorization Required — Enable in System Settings")
+                        }
+                    },
+                    icon: {
+                        Image(systemName: hasAccessibilityPermission ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    }
                 )
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(hasAccessibilityPermission ? Color.green : Color.red)

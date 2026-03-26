@@ -8,7 +8,7 @@ final class MigrationViewModel: ObservableObject {
 
     @Published var isMigrating: Bool = false
     @Published private(set) var statusSource: MigrationSource?
-    @Published var migrationProgress: String = ""
+    @Published var migrationProgress: LocalizedStringResource?
 
     private let migrationManager: MigrationManager
 
@@ -21,7 +21,7 @@ final class MigrationViewModel: ObservableObject {
 
         isMigrating = true
         statusSource = source
-        migrationProgress = "正在读取 \(source.displayName) 数据..."
+        migrationProgress = LocalizedStringResource("正在读取 \(source.displayName) 数据...")
 
         defer {
             isMigrating = false
@@ -31,16 +31,16 @@ final class MigrationViewModel: ObservableObject {
             let importedRows = try await migrationManager.loadRows(from: fileURL, source: source)
 
             guard importedRows.isEmpty == false else {
-                migrationProgress = "\(source.displayName) 文件中没有找到可导入记录。"
+                migrationProgress = LocalizedStringResource("\(source.displayName) 文件中没有找到可导入记录。")
                 return
             }
 
-            migrationProgress = "已解析 \(importedRows.count) 条 \(source.displayName) 记录，正在写入 Clipaste..."
+            migrationProgress = LocalizedStringResource("已解析 \(importedRows.count) 条 \(source.displayName) 记录，正在写入 Clipaste...")
             let report = try migrationManager.persistRows(importedRows, source: source, into: context)
 
-            migrationProgress = "\(source.displayName) 迁移完成：导入 \(report.importedCount) 条，跳过 \(report.skippedCount) 条重复记录。"
+            migrationProgress = LocalizedStringResource("\(source.displayName) 迁移完成：导入 \(report.importedCount) 条，跳过 \(report.skippedCount) 条重复记录。")
         } catch {
-            migrationProgress = "\(source.displayName) 迁移失败：\(error.localizedDescription)"
+            migrationProgress = LocalizedStringResource("\(source.displayName) 迁移失败：\(error.localizedDescription)")
         }
     }
 }

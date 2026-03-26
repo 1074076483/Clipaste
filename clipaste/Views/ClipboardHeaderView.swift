@@ -142,7 +142,7 @@ struct ClipboardHeaderView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
 
-            TextField(String(localized: "Search History…"), text: searchTextBinding)
+            TextField("Search History…", text: searchTextBinding)
                 .font(.system(size: 13))
                 .textFieldStyle(.plain)
                 .autocorrectionDisabled(true)
@@ -250,7 +250,7 @@ struct ClipboardHeaderView: View {
                     selectAllGroup()
                 }) {
                     HStack {
-                        Label(String(localized: "All"), systemImage: "tray.2.fill")
+                        Label("All", systemImage: "tray.2.fill")
                         if viewModel.currentFilter == nil && viewModel.selectedGroupId == nil {
                             Spacer()
                             Image(systemName: "checkmark")
@@ -298,7 +298,7 @@ struct ClipboardHeaderView: View {
                 newGroupIcon = "folder"
                 isShowingNewGroupPopover = true
             }) {
-                Label(String(localized: "New Group…"), systemImage: "plus")
+                Label("New Group…", systemImage: "plus")
             }
         } label: {
             Image(systemName: "ellipsis")
@@ -310,7 +310,7 @@ struct ClipboardHeaderView: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .frame(width: 24)
-        .help(String(localized: "All Groups"))
+        .help("All Groups")
         .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
             newGroupPopover
         }
@@ -478,7 +478,7 @@ struct ClipboardHeaderView: View {
                 .animation(.spring(), value: isPanelPinned)
         }
         .buttonStyle(.plain)
-        .help(isPanelPinned ? String(localized: "Unpin Panel") : String(localized: "Pin Panel"))
+        .help(isPanelPinned ? Text("Unpin Panel") : Text("Pin Panel"))
     }
 
     // MARK: - 设置下拉菜单
@@ -488,7 +488,7 @@ struct ClipboardHeaderView: View {
                 Text(isMonitoringPaused ? "Resume Monitoring" : "Pause Monitoring")
             }
 
-            Menu(String(localized: "Clipboard Monitoring Interval")) {
+            Menu("Clipboard Monitoring Interval") {
                 Button(action: { monitorInterval = 0.1 }) {
                     HStack {
                         Text("Very Frequent (0.1s)")
@@ -511,7 +511,7 @@ struct ClipboardHeaderView: View {
 
             Divider()
 
-            Button(String(localized: "Settings…")) {
+            Button("Settings…") {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("HidePanelForce"),
                     object: nil
@@ -521,11 +521,11 @@ struct ClipboardHeaderView: View {
                 }
             }
 
-            Toggle(String(localized: "Launch at Login"), isOn: launchAtLoginBinding)
+            Toggle("Launch at Login", isOn: launchAtLoginBinding)
 
             Divider()
 
-            Button(String(localized: "About Clipaste")) {
+            Button("About Clipaste") {
                 NSApp.orderFrontStandardAboutPanel()
                 NotificationCenter.default.post(
                     name: NSNotification.Name("HidePanelForce"),
@@ -533,7 +533,7 @@ struct ClipboardHeaderView: View {
                 )
             }
 
-            Button(String(localized: "Send Feedback")) {
+            Button("Send Feedback") {
                 if let url = URL(string: "mailto:your_email@example.com?subject=clipaste%20Feedback") {
                     NSWorkspace.shared.open(url)
                 }
@@ -541,7 +541,7 @@ struct ClipboardHeaderView: View {
 
             Divider()
 
-            Button(String(localized: "Quit")) {
+            Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
         } label: {
@@ -573,7 +573,7 @@ struct ClipboardHeaderView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
-                TextField(String(localized: "Search…"), text: searchTextBinding)
+                TextField("Search…", text: searchTextBinding)
                     .font(.system(size: 13))
                     .textFieldStyle(.plain)
                     .autocorrectionDisabled(true)
@@ -632,7 +632,7 @@ struct ClipboardHeaderView: View {
                     GroupIconPicker(selectedIcon: $newGroupIcon)
                 }
 
-                TextField(String(localized: "Group Name"), text: $newGroupName)
+                TextField("Group Name", text: $newGroupName)
                     .textFieldStyle(.roundedBorder)
                     .tint(.primary)
                     .frame(width: 150)
@@ -640,7 +640,7 @@ struct ClipboardHeaderView: View {
                     .onSubmit { commitNewGroup() }
             }
 
-            Button(String(localized: "Create")) { commitNewGroup() }
+            Button("Create") { commitNewGroup() }
                 .buttonStyle(.borderedProminent)
                 .disabled(newGroupName.isEmpty)
         }
@@ -684,7 +684,7 @@ struct ClipboardHeaderView: View {
                     GroupIconPicker(selectedIcon: $editGroupIcon)
                 }
 
-                TextField(String(localized: "Group Name"), text: $editGroupName)
+                TextField("Group Name", text: $editGroupName)
                     .textFieldStyle(.roundedBorder)
                     .tint(.primary)
                     .frame(width: 150)
@@ -692,7 +692,7 @@ struct ClipboardHeaderView: View {
                     .onSubmit { commitEditGroup() }
             }
 
-            Button(String(localized: "Save")) { commitEditGroup() }
+            Button("Save") { commitEditGroup() }
                 .buttonStyle(.borderedProminent)
                 .disabled(editGroupName.isEmpty)
         }

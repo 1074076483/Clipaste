@@ -32,7 +32,9 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
 struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .general
     @EnvironmentObject private var storeManager: StoreManager
+    @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
 
     var body: some View {
         HStack(spacing: 0) {
@@ -84,7 +86,9 @@ struct SettingsView: View {
         }
         .frame(minWidth: 560, idealWidth: 620, maxWidth: .infinity,
                minHeight: 540, idealHeight: 580, maxHeight: .infinity)
-        .background(SettingsWindowObserver())
+        .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
+        .environment(\.locale, appLanguage.locale ?? .current)
+        .background(SettingsWindowObserver(appLanguage: appLanguage))
         .background(WindowAppearanceObserver(theme: appTheme))
         .sheet(
             isPresented: Binding(

@@ -11,18 +11,18 @@ enum ProAccessFeature: String, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    var title: LocalizedStringResource {
         switch self {
         case .unlimitedHistory:
-            return String(localized: "Unlimited History")
+            return "Unlimited History"
         case .globalSearch:
-            return String(localized: "Global Search")
+            return "Global Search"
         case .plainTextPaste:
-            return String(localized: "Plain Text Quick Paste")
+            return "Plain Text Quick Paste"
         case .smartGroups:
-            return String(localized: "Smart Group Switching")
+            return "Smart Group Switching"
         case .cloudSync:
-            return String(localized: "CloudKit Private Sync")
+            return "CloudKit Private Sync"
         }
     }
 }
@@ -99,32 +99,32 @@ final class StoreManager: ObservableObject {
         hasFullAccess ? nil : Self.historyPreviewLimit
     }
 
-    var lifetimePriceSubtitle: String {
-        String(localized: "Lifetime purchase, pay once, free updates forever.")
+    var lifetimePriceSubtitle: LocalizedStringResource {
+        "Lifetime purchase, pay once, free updates forever."
     }
 
-    var accessHeadline: String {
+    var accessHeadline: LocalizedStringResource {
         if isProUnlocked {
-            return String(localized: "Clipaste Pro Unlocked")
+            return "Clipaste Pro Unlocked"
         }
 
         if isTrialExpired {
-            return String(localized: "3-Day Trial Has Ended")
+            return "3-Day Trial Has Ended"
         }
 
-        return String(localized: "\(remainingTrialDays) Trial Days Remaining")
+        return LocalizedStringResource("\(remainingTrialDays) Trial Days Remaining")
     }
 
-    var accessFootnote: String {
+    var accessFootnote: LocalizedStringResource {
         if isProUnlocked {
-            return String(localized: "Purchase verified with your current Apple ID.")
+            return "Purchase verified with your current Apple ID."
         }
 
         if isTrialExpired {
-            return String(localized: "Unlock Pro for unlimited history, advanced search, and sync.")
+            return "Unlock Pro for unlimited history, advanced search, and sync."
         }
 
-        return String(localized: "Purchase once, unlock all premium features of Clipaste forever.")
+        return "Purchase once, unlock all premium features of Clipaste forever."
     }
 
     func requestAccess(
@@ -299,6 +299,19 @@ extension StoreManager {
                 return String(localized: "An unrecognized purchase result occurred.")
             case .verificationFailed:
                 return String(localized: "StoreKit transaction verification failed.")
+            }
+        }
+
+        var localizedResource: LocalizedStringResource {
+            switch self {
+            case .productUnavailable:
+                return "Unable to load purchase info. Please try again later."
+            case .purchasePending:
+                return "Purchase is pending Apple confirmation."
+            case .unrecognizedPurchaseResult:
+                return "An unrecognized purchase result occurred."
+            case .verificationFailed:
+                return "StoreKit transaction verification failed."
             }
         }
     }

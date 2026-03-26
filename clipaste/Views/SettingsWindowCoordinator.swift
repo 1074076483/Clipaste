@@ -107,11 +107,17 @@ enum SettingsWindowCoordinator {
 }
 
 struct SettingsWindowObserver: NSViewRepresentable {
+    let appLanguage: AppLanguage
+
     func makeNSView(context: Context) -> NSView {
         TrackingView()
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {}
+    func updateNSView(_ nsView: NSView, context: Context) {
+        guard let window = nsView.window else { return }
+        let inAppLocale = appLanguage.locale ?? .current
+        window.title = String(localized: "Clipaste Settings", locale: inAppLocale)
+    }
 
     private final class TrackingView: NSView {
         override func viewDidMoveToWindow() {
@@ -119,11 +125,6 @@ struct SettingsWindowObserver: NSViewRepresentable {
 
             guard let window else { return }
             window.titlebarSeparatorStyle = .none
-
-            // Override macOS auto-generated title (which uses system locale)
-            // with a properly localized title using the in-app locale.
-            let title = String(localized: "Clipaste Settings")
-            window.title = title
 
             Task { @MainActor in
                 SettingsWindowCoordinator.register(window: window)

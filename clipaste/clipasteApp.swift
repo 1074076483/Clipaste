@@ -238,7 +238,8 @@ struct clipasteApp: App {
                 .environmentObject(runtimeStore)
                 .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
-                .id(runtimeStore.rootIdentity)
+                .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
+                .environment(\.locale, appLanguage.locale ?? .current)
         }
     }
 }

@@ -258,7 +258,7 @@ struct SubscriptionModalView: View {
                             .tint(.white)
                     }
 
-                    Text(String(localized: "Unlock Now (\(proProduct.displayPrice))"))
+                    Text("Unlock Now (\(proProduct.displayPrice))")
                         .font(.system(size: 17, weight: .semibold))
                         .tracking(-0.2)
                 }

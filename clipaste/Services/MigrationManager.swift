@@ -34,49 +34,49 @@ final class MigrationManager {
             }
         }
 
-        nonisolated var titleText: String {
-            "从 \(displayName) 迁移数据"
+        nonisolated var titleText: LocalizedStringResource {
+            LocalizedStringResource("从 \(displayName) 迁移数据")
         }
 
-        nonisolated var guidanceText: String {
+        nonisolated var guidanceText: LocalizedStringResource {
             switch self {
             case .paste:
-                "请选择 \(displayName) 的 SQLite 数据库。"
+                LocalizedStringResource("请选择 \(displayName) 的 SQLite 数据库。")
             case .pasteNow:
-                "请选择 \(displayName) 导出的 JSON 文件。Clipaste 会按 PasteNow 专用 JSON 路由解析。"
+                LocalizedStringResource("请选择 \(displayName) 导出的 JSON 文件。Clipaste 会按 PasteNow 专用 JSON 路由解析。")
             case .iCopy:
-                "请选择 \(displayName) 的 SQLite 数据库。"
+                LocalizedStringResource("请选择 \(displayName) 的 SQLite 数据库。")
             }
         }
 
-        nonisolated var detailText: String {
+        nonisolated var detailText: LocalizedStringResource {
             switch self {
             case .paste:
-                "导入器将使用原生 SQLite3 读取 ZRAWPREVIEW 二进制 JSON，不依赖任何第三方数据库库。"
+                LocalizedStringResource("导入器将使用原生 SQLite3 读取 ZRAWPREVIEW 二进制 JSON，不依赖任何第三方数据库库。")
             case .pasteNow:
-                "导入器会读取 JSON 结构中的历史条目，并映射到 Clipaste 的 SwiftData 模型。"
+                LocalizedStringResource("导入器会读取 JSON 结构中的历史条目，并映射到 Clipaste 的 SwiftData 模型。")
             case .iCopy:
-                "导入器将使用原生 SQLite3 读取 t_data 表的纯文本记录，不依赖任何第三方数据库库。"
+                LocalizedStringResource("导入器将使用原生 SQLite3 读取 t_data 表的纯文本记录，不依赖任何第三方数据库库。")
             }
         }
 
-        nonisolated var fileButtonTitle: String {
+        nonisolated var fileButtonTitle: LocalizedStringResource {
             switch self {
             case .paste, .iCopy:
-                "选择 SQLite 数据库"
+                LocalizedStringResource("选择 SQLite 数据库")
             case .pasteNow:
-                "选择 JSON 导出文件"
+                LocalizedStringResource("选择 JSON 导出文件")
             }
         }
 
-        nonisolated var idleStatusText: String {
+        nonisolated var idleStatusText: LocalizedStringResource {
             switch self {
             case .paste:
-                "请选择 Paste 的 SQLite 数据库文件。"
+                LocalizedStringResource("请选择 Paste 的 SQLite 数据库文件。")
             case .pasteNow:
-                "请选择 PasteNow 导出的 JSON 文件。"
+                LocalizedStringResource("请选择 PasteNow 导出的 JSON 文件。")
             case .iCopy:
-                "请选择 iCopy 的 SQLite 数据库文件。"
+                LocalizedStringResource("请选择 iCopy 的 SQLite 数据库文件。")
             }
         }
 
