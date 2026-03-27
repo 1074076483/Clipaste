@@ -10,6 +10,7 @@ final class SettingsViewModel: ObservableObject {
     private let preferencesStore: AppPreferencesStore
     private var cancellables = Set<AnyCancellable>()
     private var isApplyingSharedState = false
+    @Published var ignoredApps: [IgnoredAppItem] = []
 
     var launchAtLogin: Bool {
         willSet { objectWillChange.send() }
@@ -101,6 +102,7 @@ final class SettingsViewModel: ObservableObject {
         quickPasteModifier = ModifierKey.quickPastePreference()
         plainTextModifier = ModifierKey.plainTextPreference()
         bindPreferences()
+        reloadIgnoredApps()
         preferencesStore.refreshLaunchAtLoginStatus()
         applySharedState {
             launchAtLogin = preferencesStore.launchAtLogin

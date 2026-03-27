@@ -64,6 +64,7 @@ class ClipboardViewModel: ObservableObject {
     private var keyDownMonitor: Any?
     private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
+    private var shouldResetSelectionToFirstDisplayedItem = false
     private let storeManager: StoreManager
     private let settingsViewModel: SettingsViewModel
     private var renderedHistoryLimit: Int?
@@ -393,14 +394,28 @@ class ClipboardViewModel: ObservableObject {
     }
 
     private func setupFilterPipeline() {
-        // 搜索词变化：防抖 200ms，避免高频输入时大量无意义过滤
-        let debouncedSearch = $searchInput
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+        // 搜索词变化：普通输入延迟 200ms，清空搜索立即生效。
+        // switchToLatest 可在用户继续输入或立刻清空时取消旧的延迟任务，避免陈旧搜索结果回弹。
+        let searchQueries = $searchInput
+            .map { query -> AnyPublisher<String, Never> in
+                let isEffectivelyEmpty = query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+                if isEffectivelyEmpty {
+                    return Just(query)
+                        .eraseToAnyPublisher()
+                }
+
+                return Just(query)
+                    .delay(for: .milliseconds(200), scheduler: DispatchQueue.main)
+                    .eraseToAnyPublisher()
+            }
+            .switchToLatest()
+            .removeDuplicates()
 
         // 数据源 / 分组 / 智能分类 变化：立即响应
         let dataChanges = Publishers.CombineLatest3($items, $selectedGroupId, $currentFilter)
 
-        Publishers.CombineLatest(debouncedSearch, dataChanges)
+        Publishers.CombineLatest(searchQueries, dataChanges)
             .sink { [weak self] (query, triple) in
                 guard let self else { return }
                 let (allItems, groupId, filter) = triple
@@ -421,7 +436,7 @@ class ClipboardViewModel: ObservableObject {
         // 无搜索词且无分组且无类型过滤 → 直接还原全部，避免线程切换开销
         if cleanQuery.isEmpty && groupId == nil && typeFilter == nil {
             self.filteredItems = items
-            clampSelectionToDisplayedItems()
+            reconcileSelectionAfterDisplayedItemsChange()
             return
         }
 
@@ -457,7 +472,7 @@ class ClipboardViewModel: ObservableObject {
                 // 若已有更新的过滤请求，丢弃此次过期结果
                 guard let self, self.filterGeneration == thisGeneration else { return }
                 self.filteredItems = result
-                self.clampSelectionToDisplayedItems()
+                self.reconcileSelectionAfterDisplayedItemsChange()
             }
         }
     }
@@ -489,7 +504,7 @@ class ClipboardViewModel: ObservableObject {
             // 避免 Combine 防抖管道 200ms 延迟导致列表短暂显示残缺数据
             if self.searchInput.isEmpty && self.currentFilter == nil && self.selectedGroupId == nil {
                 self.filteredItems = mappedItems
-                self.clampSelectionToDisplayedItems()
+                self.reconcileSelectionAfterDisplayedItemsChange()
             }
 
             // 清理失效的选中 ID：移除已不在数据源中的 ID
@@ -502,7 +517,7 @@ class ClipboardViewModel: ObservableObject {
                 self.lastSelectedID = nil
             }
 
-            self.clampSelectionToDisplayedItems()
+            self.reconcileSelectionAfterDisplayedItemsChange()
         }
     }
 
@@ -511,7 +526,7 @@ class ClipboardViewModel: ObservableObject {
             renderedHistoryLimit = limit
         }
 
-        clampSelectionToDisplayedItems()
+        reconcileSelectionAfterDisplayedItemsChange()
     }
 
     func handleAccessRestrictionChange(isRestricted: Bool) {
@@ -527,7 +542,7 @@ class ClipboardViewModel: ObservableObject {
             }
         }
 
-        clampSelectionToDisplayedItems()
+        reconcileSelectionAfterDisplayedItemsChange()
     }
 
     // MARK: - 多选核心运算引擎
@@ -629,6 +644,7 @@ class ClipboardViewModel: ObservableObject {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(merged, forType: .string)
+        playCopySound()
 
         print("✅ 批量复制 \(orderedItems.count) 条记录到剪贴板")
         clearSelection()
@@ -887,18 +903,28 @@ class ClipboardViewModel: ObservableObject {
     private func applySlot(_ slot: UnifiedGroupSlot) {
         switch slot {
         case .all:
-            currentFilter = nil
-            selectedGroupId = nil
+            showAllItems()
         case .smartFilter(let type):
-            guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
-                return
-            }
-            currentFilter = type
-            selectedGroupId = nil
+            showSmartFilter(type)
         case .userGroup(let id):
-            selectedGroupId = id
-            currentFilter = nil
+            showCustomGroup(id)
         }
+    }
+
+    func showAllItems() {
+        activateDisplayedScope(filter: nil, groupID: nil)
+    }
+
+    func showCustomGroup(_ groupID: String) {
+        activateDisplayedScope(filter: nil, groupID: groupID)
+    }
+
+    func showSmartFilter(_ type: ClipboardContentType) {
+        guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
+            return
+        }
+
+        activateDisplayedScope(filter: type, groupID: nil)
     }
 
     /// 切换到下一个分组（无缝循环）
@@ -1061,9 +1087,6 @@ class ClipboardViewModel: ObservableObject {
 
         // 2. 后台持久化（不会发通知，不会触发 loadData）
         StorageManager.shared.togglePin(hash: item.contentHash, isPinned: newPinState)
-
-        // 3. 音效反馈
-        NSSound(named: "Pop")?.play()
     }
 
     func editItemContent(item: ClipboardItem) {
@@ -1356,6 +1379,26 @@ class ClipboardViewModel: ObservableObject {
         }
 
         return Array(filteredItems.prefix(renderedHistoryLimit))
+    }
+
+    private func activateDisplayedScope(filter: ClipboardContentType?, groupID: String?) {
+        guard currentFilter != filter || selectedGroupId != groupID else {
+            return
+        }
+
+        shouldResetSelectionToFirstDisplayedItem = true
+        currentFilter = filter
+        selectedGroupId = groupID
+    }
+
+    private func reconcileSelectionAfterDisplayedItemsChange() {
+        if shouldResetSelectionToFirstDisplayedItem {
+            shouldResetSelectionToFirstDisplayedItem = false
+            selectFirstDisplayedItem()
+            return
+        }
+
+        clampSelectionToDisplayedItems()
     }
 
     private func clampSelectionToDisplayedItems() {

@@ -755,26 +755,19 @@ struct ClipboardHeaderView: View {
 
     private func selectAllGroup() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            viewModel.currentFilter = nil
-            viewModel.selectedGroupId = nil
+            viewModel.showAllItems()
         }
     }
 
     private func selectCustomGroup(_ groupID: String) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            viewModel.selectedGroupId = groupID
-            viewModel.currentFilter = nil
+            viewModel.showCustomGroup(groupID)
         }
     }
 
     private func selectSmartFilter(_ type: ClipboardContentType) {
-        guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
-            return
-        }
-
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            viewModel.currentFilter = type
-            viewModel.selectedGroupId = nil
+            viewModel.showSmartFilter(type)
         }
     }
 }

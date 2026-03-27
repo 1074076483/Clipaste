@@ -3,6 +3,7 @@ import SwiftUI
 enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
     case general = "general"
     case shortcuts = "shortcuts"
+    case ignoredApps = "ignoredApps"
     case advanced = "advanced"
     case about = "about"
 
@@ -12,6 +13,7 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .general: return "General"
         case .shortcuts: return "Shortcuts"
+        case .ignoredApps: return "Ignored Apps"
         case .advanced: return "Advanced"
         case .about: return "About"
         }
@@ -22,6 +24,7 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .general: return LocalizedStringResource("General")
         case .shortcuts: return LocalizedStringResource("Shortcuts")
+        case .ignoredApps: return LocalizedStringResource("Ignored Apps")
         case .advanced: return LocalizedStringResource("Advanced")
         case .about: return LocalizedStringResource("About")
         }
@@ -33,6 +36,7 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .general: return "gearshape"
         case .shortcuts: return "keyboard"
+        case .ignoredApps: return "nosign"
         case .advanced: return "slider.horizontal.3"
         case .about: return "info.circle"
         }
@@ -87,6 +91,8 @@ struct SettingsView: View {
                     GeneralSettingsView()
                 case .shortcuts:
                     ShortcutsSettingsView()
+                case .ignoredApps:
+                    IgnoredAppsSettingsView()
                 case .advanced:
                     AdvancedSettingsView()
                 case .about:

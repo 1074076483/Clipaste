@@ -82,7 +82,7 @@ struct GeneralSettingsView: View {
     @State private var showingClearAlert = false
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 launchAndLanguageCard
                 windowCard
@@ -91,7 +91,7 @@ struct GeneralSettingsView: View {
             }
             .padding(20)
         }
-        .scrollIndicators(.hidden)
+        .settingsScrollChromeHidden()
         .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
         .onAppear {
             preferencesStore.refreshLaunchAtLoginStatus()
@@ -138,14 +138,8 @@ private extension GeneralSettingsView {
                 ) {
                     Picker("", selection: $viewModel.appLanguage) {
                         ForEach(AppLanguage.allCases) { lang in
-                            Group {
-                                if lang == .auto {
-                                    Text(LocalizedStringResource("Follow System"))
-                                } else {
-                                    Text(verbatim: lang.nativeDisplayName)
-                                }
-                            }
-                            .tag(lang)
+                            Text(lang.localizedDisplayName)
+                                .tag(lang)
                         }
                     }
                     .pickerStyle(.menu)

@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct ClipboardMainView: View {
+    private enum PendingListFocusRequest {
+        case selectFirstItem
+    }
+
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openSettings) private var openSettings
@@ -10,6 +14,9 @@ struct ClipboardMainView: View {
     @FocusState private var focusedField: ClipboardPanelFocusField?
 
     @State private var viewRebuildToken: Bool = false
+    @State private var isPanelKeyWindow = false
+    @State private var pendingListFocusRequest: PendingListFocusRequest?
+    @State private var pendingListFocusGeneration: UInt = 0
     private let searchService = TypeToSearchService.shared
 
     var body: some View {
@@ -59,8 +66,8 @@ struct ClipboardMainView: View {
             .background(VisualEffectView(material: .popover, blendingMode: .behindWindow))
             .background(
                 ClipboardPanelWindowObserver(
-                    onWindowDidBecomeKey: activatePanelInputHandling,
-                    onWindowDidResignKey: deactivatePanelInputHandling
+                    onWindowDidBecomeKey: handlePanelDidBecomeKey,
+                    onWindowDidResignKey: handlePanelDidResignKey
                 )
             )
             .background(WindowAppearanceObserver(theme: appTheme))
@@ -75,15 +82,23 @@ struct ClipboardMainView: View {
                 DispatchQueue.main.async {
                     viewRebuildToken.toggle()
                 }
-                scheduleDefaultListFocus()
+                requestDefaultListFocus()
             }
             .onChange(of: focusedField) { _, newValue in
                 searchService.isTextFieldFocused = (newValue == .searchBar)
             }
             .onChange(of: displayedItemIDs) { _, _ in
+                if applyPendingListFocusIfPossible() {
+                    return
+                }
+
                 if focusedField == .clipList {
                     viewModel.ensureListSelection()
                 }
+            }
+            .onChange(of: viewModel.searchInput) { oldValue, newValue in
+                guard !oldValue.isEmpty, newValue.isEmpty else { return }
+                requestListFocusAfterSearchExit()
             }
             .onAppear {
                 searchService.onInterceptedKey = { [weak viewModel] char in
@@ -97,7 +112,7 @@ struct ClipboardMainView: View {
                     return shouldEnterSearch
                 }
                 syncAccessState()
-                scheduleDefaultListFocus()
+                requestDefaultListFocus()
             }
             .onDisappear {
                 searchService.onInterceptedKey = nil
@@ -159,6 +174,8 @@ struct ClipboardMainView: View {
     }
 
     private func focusSearchField() {
+        pendingListFocusGeneration &+= 1
+        pendingListFocusRequest = nil
         focusedField = .searchBar
     }
 
@@ -171,14 +188,17 @@ struct ClipboardMainView: View {
     }
 
     private func activatePanelInputHandling() {
+        isPanelKeyWindow = true
         viewModel.startKeyboardMonitoring()
         // 先启动面板级键盘监听，再启动盲打搜索，确保特殊按键优先被 ViewModel 消费。
         searchService.start()
-        searchService.isTextFieldFocused = (focusedField == .searchBar)
-        scheduleDefaultListFocus()
+        requestDefaultListFocus()
     }
 
     private func deactivatePanelInputHandling() {
+        isPanelKeyWindow = false
+        pendingListFocusGeneration &+= 1
+        pendingListFocusRequest = nil
         searchService.stop()
         viewModel.stopKeyboardMonitoring()
     }
@@ -188,15 +208,49 @@ struct ClipboardMainView: View {
         viewModel.handleAccessRestrictionChange(isRestricted: !storeManager.hasFullAccess)
     }
 
-    private func scheduleDefaultListFocus() {
-        focusedField = nil
+    private func handlePanelDidBecomeKey() {
+        activatePanelInputHandling()
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            guard NSApp.keyWindow != nil else { return }
-            guard focusedField != .searchBar else { return }
-            focusedField = .clipList
-            viewModel.selectFirstDisplayedItem()
+    private func handlePanelDidResignKey() {
+        deactivatePanelInputHandling()
+    }
+
+    private func requestDefaultListFocus() {
+        pendingListFocusGeneration &+= 1
+        pendingListFocusRequest = .selectFirstItem
+        focusedField = nil
+        searchService.isTextFieldFocused = false
+
+        DispatchQueue.main.async {
+            _ = applyPendingListFocusIfPossible()
         }
+    }
+
+    private func requestListFocusAfterSearchExit() {
+        pendingListFocusGeneration &+= 1
+        let generation = pendingListFocusGeneration
+
+        pendingListFocusRequest = .selectFirstItem
+        focusedField = nil
+        searchService.isTextFieldFocused = false
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            guard pendingListFocusGeneration == generation else { return }
+            _ = applyPendingListFocusIfPossible()
+        }
+    }
+
+    @discardableResult
+    private func applyPendingListFocusIfPossible() -> Bool {
+        guard pendingListFocusRequest != nil else { return false }
+        guard isPanelKeyWindow else { return false }
+        guard !displayedItems.isEmpty else { return false }
+
+        viewModel.selectFirstDisplayedItem()
+        focusedField = .clipList
+        pendingListFocusRequest = nil
+        return true
     }
 
     private var displayedItems: [ClipboardItem] {

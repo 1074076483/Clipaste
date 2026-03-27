@@ -33,7 +33,7 @@ struct ShortcutsSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 globalShortcutsCard
                 navigationCard
@@ -42,7 +42,7 @@ struct ShortcutsSettingsView: View {
             }
             .padding(20)
         }
-        .scrollIndicators(.hidden)
+        .settingsScrollChromeHidden()
         .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
     }
 }

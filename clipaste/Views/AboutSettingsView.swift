@@ -52,7 +52,7 @@ struct AboutSettingsView: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 brandSection
                 proUpgradeCard
@@ -61,7 +61,7 @@ struct AboutSettingsView: View {
             .frame(maxWidth: .infinity)
             .padding(20)
         }
-        .scrollIndicators(.hidden)
+        .settingsScrollChromeHidden()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }

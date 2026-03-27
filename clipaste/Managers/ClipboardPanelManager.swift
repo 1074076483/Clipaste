@@ -171,8 +171,23 @@ class ClipboardPanelManager {
 
     // MARK: - Show / Hide
 
+    private func ensureMainThread(_ action: @escaping () -> Void) {
+        if Thread.isMainThread {
+            action()
+        } else {
+            DispatchQueue.main.async(execute: action)
+        }
+    }
+
     /// Toggles the visibility of the clipboard panel.
     func togglePanel() {
+        guard Thread.isMainThread else {
+            ensureMainThread { [weak self] in
+                self?.togglePanel()
+            }
+            return
+        }
+
         if isVisible {
             hidePanel()
         } else {
@@ -182,6 +197,13 @@ class ClipboardPanelManager {
 
     /// Shows the panel sized for the current layout mode, then animates it in.
     func showPanel() {
+        guard Thread.isMainThread else {
+            ensureMainThread { [weak self] in
+                self?.showPanel()
+            }
+            return
+        }
+
         guard !isVisible, let panel else { return }
 
         // 0. 拍照留底：在呼出面板之前，记下当前正活跃的 App
@@ -242,6 +264,13 @@ class ClipboardPanelManager {
 
     /// Hides the clipboard panel — intercepted when the panel is pinned or showing a modal dialog.
     func hidePanel() {
+        guard Thread.isMainThread else {
+            ensureMainThread { [weak self] in
+                self?.hidePanel()
+            }
+            return
+        }
+
         guard isVisible else { return }
         if isPinned { return } // 图钉固定时，拦截隐藏指令
         if suppressHide { return } // 模态对话框（如删除确认 alert）激活时，拦截隐藏指令
@@ -250,6 +279,13 @@ class ClipboardPanelManager {
 
     /// Force-hides the panel regardless of pin state (used by paste/settings/about).
     func forceHidePanel() {
+        guard Thread.isMainThread else {
+            ensureMainThread { [weak self] in
+                self?.forceHidePanel()
+            }
+            return
+        }
+
         guard isVisible else { return }
         executeHide()
     }

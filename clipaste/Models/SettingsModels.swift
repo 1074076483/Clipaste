@@ -126,6 +126,19 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         }
     }
 
+    var localizedDisplayName: LocalizedStringResource {
+        switch self {
+        case .auto: return LocalizedStringResource("Follow System")
+        case .zhHans: return LocalizedStringResource("Simplified Chinese")
+        case .zhHant: return LocalizedStringResource("Traditional Chinese")
+        case .en: return LocalizedStringResource("English")
+        case .ja: return LocalizedStringResource("Japanese")
+        case .ko: return LocalizedStringResource("Korean")
+        case .de: return LocalizedStringResource("German")
+        case .fr: return LocalizedStringResource("French")
+        }
+    }
+
     var locale: Locale? {
         switch self {
         case .auto:   return nil

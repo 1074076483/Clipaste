@@ -6,32 +6,118 @@ final class ClipboardMonitor {
     static let shared = ClipboardMonitor()
 
     private let pasteboard = NSPasteboard.general
+    private let defaults: UserDefaults
     private var lastChangeCount: Int = 0
     private var monitoringTask: Task<Void, Never>?
+    private var defaultsObserver: NSObjectProtocol?
     private let fileURLType = NSPasteboard.PasteboardType("public.file-url")
     private let utf8PlainTextType = NSPasteboard.PasteboardType("public.utf8-plain-text")
+    private var isMonitoringLifecycleActive = false
+    private var isMonitoringPaused = false
+    private var pollingInterval: TimeInterval
+    private var ignoredBundleIdentifiers: Set<String>
     var isIgnoredNextChange: Bool = false
 
-    private init() {}
+    private init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.isMonitoringPaused = defaults.bool(forKey: Keys.isMonitoringPaused)
+        self.pollingInterval = Self.sanitizedPollingInterval(
+            defaults.object(forKey: Keys.monitorInterval) as? Double
+        )
+        self.ignoredBundleIdentifiers = IgnoredAppsService.ignoredBundleIdentifierSet(defaults: defaults)
+        observePreferences()
+    }
 
     deinit {
         monitoringTask?.cancel()
+        if let defaultsObserver {
+            NotificationCenter.default.removeObserver(defaultsObserver)
+        }
     }
 
     func startMonitoring() {
-        guard monitoringTask == nil else { return }
+        isMonitoringLifecycleActive = true
+        refreshMonitoringLoop(resetChangeBaseline: false)
+    }
+
+    func stopMonitoring() {
+        isMonitoringLifecycleActive = false
+        cancelMonitoringLoop()
+    }
+
+    private func observePreferences() {
+        defaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: defaults,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.applyPersistedPreferences()
+            }
+        }
+    }
+
+    private func applyPersistedPreferences() {
+        let persistedPauseState = defaults.bool(forKey: Keys.isMonitoringPaused)
+        let persistedInterval = Self.sanitizedPollingInterval(
+            defaults.object(forKey: Keys.monitorInterval) as? Double
+        )
+        let persistedIgnoredBundleIdentifiers = IgnoredAppsService.ignoredBundleIdentifierSet(defaults: defaults)
+
+        let pauseStateChanged = persistedPauseState != isMonitoringPaused
+        let intervalChanged = persistedInterval != pollingInterval
+        let ignoredAppsChanged = persistedIgnoredBundleIdentifiers != ignoredBundleIdentifiers
+
+        guard pauseStateChanged || intervalChanged || ignoredAppsChanged else { return }
+
+        isMonitoringPaused = persistedPauseState
+        pollingInterval = persistedInterval
+        ignoredBundleIdentifiers = persistedIgnoredBundleIdentifiers
+
+        // Resume 时需要丢弃暂停期间的剪贴板变化，避免把“暂停期间产生的最新剪贴板”补录进历史。
+        let shouldResetBaseline = pauseStateChanged && persistedPauseState == false
+        refreshMonitoringLoop(resetChangeBaseline: shouldResetBaseline)
+    }
+
+    private func refreshMonitoringLoop(resetChangeBaseline: Bool) {
+        if resetChangeBaseline {
+            lastChangeCount = pasteboard.changeCount
+            isIgnoredNextChange = false
+        }
+
+        let shouldMonitor = isMonitoringLifecycleActive && !isMonitoringPaused
+        guard shouldMonitor else {
+            cancelMonitoringLoop()
+            return
+        }
+
+        let intervalNanoseconds = Self.nanoseconds(for: pollingInterval)
+        cancelMonitoringLoop()
 
         monitoringTask = Task.detached(priority: .background) { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 500_000_000)
+                try? await Task.sleep(nanoseconds: intervalNanoseconds)
                 await self?.pollPasteboardIfNeeded()
             }
         }
     }
 
-    func stopMonitoring() {
+    private func cancelMonitoringLoop() {
         monitoringTask?.cancel()
         monitoringTask = nil
+    }
+
+    private static func sanitizedPollingInterval(_ rawValue: Double?) -> TimeInterval {
+        let candidate = rawValue ?? DefaultValues.monitorInterval
+        guard candidate.isFinite, candidate >= 0.1 else {
+            return DefaultValues.monitorInterval
+        }
+
+        return candidate
+    }
+
+    private static func nanoseconds(for interval: TimeInterval) -> UInt64 {
+        UInt64((interval * 1_000_000_000).rounded())
     }
 
     private func pollPasteboardIfNeeded() {
@@ -49,11 +135,15 @@ final class ClipboardMonitor {
     }
 
     private func processPasteboardItems() {
-        guard let pasteboardItems = pasteboard.pasteboardItems, !pasteboardItems.isEmpty else { return }
-
         let sourceApplication = NSWorkspace.shared.frontmostApplication
         let appID = sourceApplication?.bundleIdentifier
         let appName = sourceApplication?.localizedName
+
+        if let appID, ignoredBundleIdentifiers.contains(appID) {
+            return
+        }
+
+        guard let pasteboardItems = pasteboard.pasteboardItems, !pasteboardItems.isEmpty else { return }
 
         for pasteboardItem in pasteboardItems {
             if let imageData = imageData(from: pasteboardItem) {
@@ -232,6 +322,17 @@ final class ClipboardMonitor {
             }
             StorageManager.shared.processSyntaxHighlight(hash: payload.hash, text: text)
         }
+    }
+}
+
+private extension ClipboardMonitor {
+    enum Keys {
+        static let isMonitoringPaused = "isMonitoringPaused"
+        static let monitorInterval = "monitorInterval"
+    }
+
+    enum DefaultValues {
+        static let monitorInterval: TimeInterval = 0.5
     }
 }
 

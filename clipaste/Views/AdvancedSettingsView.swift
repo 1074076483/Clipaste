@@ -6,16 +6,38 @@ import SwiftUI
 private struct SettingsCard<Content: View>: View {
     let title: LocalizedStringKey
     let systemImage: String
+    let subtitle: LocalizedStringKey?
     @ViewBuilder let content: Content
+
+    init(
+        title: LocalizedStringKey,
+        systemImage: String,
+        subtitle: LocalizedStringKey? = nil,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.title = title
+        self.systemImage = systemImage
+        self.subtitle = subtitle
+        self.content = content()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Label(title, systemImage: systemImage)
-                .font(.headline)
-                .foregroundStyle(.primary)
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+            VStack(alignment: .leading, spacing: 4) {
+                Label(title, systemImage: systemImage)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
 
             content
                 .padding(.horizontal, 16)
@@ -70,7 +92,7 @@ struct AdvancedSettingsView: View {
     @State private var copiedDiagnostics = false
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 coreInteractionCard
                 interfaceCard
@@ -79,7 +101,7 @@ struct AdvancedSettingsView: View {
             }
             .padding(20)
         }
-        .scrollIndicators(.hidden)
+        .settingsScrollChromeHidden()
         .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
     }
 }
