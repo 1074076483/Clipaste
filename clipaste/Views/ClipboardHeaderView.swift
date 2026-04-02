@@ -9,7 +9,6 @@ struct ClipboardHeaderView: View {
 
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
-    @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @FocusState var focusedField: ClipboardPanelFocusField?
     @FocusState private var focusedHeaderInput: HeaderInputField?
@@ -738,18 +737,7 @@ struct ClipboardHeaderView: View {
     private var searchTextBinding: Binding<String> {
         Binding(
             get: { viewModel.searchInput },
-            set: { newValue in
-                if newValue.isEmpty || newValue.count < viewModel.searchInput.count {
-                    viewModel.searchInput = newValue
-                    return
-                }
-
-                guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
-                    return
-                }
-
-                viewModel.searchInput = newValue
-            }
+            set: { viewModel.searchInput = $0 }
         )
     }
 
@@ -785,7 +773,6 @@ private struct ClipboardHeaderPreview: View {
             focusedField: _focusedField
         )
         .environmentObject(AppPreferencesStore.shared)
-        .environmentObject(StoreManager.shared)
         .frame(width: 380)
     }
 }

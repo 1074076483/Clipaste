@@ -6,7 +6,6 @@ struct ClipboardMainView: View {
     }
 
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
-    @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.openSettings) private var openSettings
     @StateObject var viewModel = ClipboardViewModel()
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
@@ -17,6 +16,7 @@ struct ClipboardMainView: View {
     @State private var isPanelKeyWindow = false
     @State private var pendingListFocusRequest: PendingListFocusRequest?
     @State private var pendingListFocusGeneration: UInt = 0
+    @State private var pendingSearchFocusGeneration: UInt = 0
     private let searchService = TypeToSearchService.shared
 
     var body: some View {
@@ -31,11 +31,6 @@ struct ClipboardMainView: View {
                     ClipboardHeaderView(viewModel: viewModel, focusedField: _focusedField)
                     mainContent
                 }
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    if isShowingFreeTierHistoryPreview {
-                        historyPreviewFooter
-                    }
-                }
             } else {
                 mainContent
                     .safeAreaInset(edge: .top, spacing: 0) {
@@ -48,18 +43,8 @@ struct ClipboardMainView: View {
         }
     }
 
-    private var showPanelPaywall: Bool {
-        storeManager.shouldShowPaywall && storeManager.paywallSource == .panel
-    }
-
     private var configuredContent: some View {
         panelLayoutContent
-            .overlay {
-                if showPanelPaywall {
-                    panelPaywallOverlay
-                }
-            }
-            .animation(.easeInOut(duration: 0.25), value: showPanelPaywall)
             .id("\(runtimeStore.rootIdentity)-\(viewRebuildToken)")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.clear)
@@ -85,7 +70,14 @@ struct ClipboardMainView: View {
                 requestDefaultListFocus()
             }
             .onChange(of: focusedField) { _, newValue in
-                searchService.isTextFieldFocused = (newValue == .searchBar)
+                guard newValue == .searchBar else {
+                    searchService.isTextFieldFocused = false
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    searchService.isTextFieldFocused = isActiveTextInputResponder
+                }
             }
             .onChange(of: displayedItemIDs) { _, _ in
                 if applyPendingListFocusIfPossible() {
@@ -101,28 +93,24 @@ struct ClipboardMainView: View {
                 requestListFocusAfterSearchExit()
             }
             .onAppear {
-                searchService.onInterceptedKey = { [weak viewModel] char in
+                searchService.onInterceptedKey = { [weak viewModel] event in
                     guard let viewModel else { return false }
 
-                    let shouldEnterSearch = viewModel.handleGlobalKeyPress(char)
+                    let shouldEnterSearch = viewModel.shouldStartTypeToSearch(with: event)
                     if shouldEnterSearch {
-                        focusSearchField()
+                        focusSearchField(
+                            interceptedEvent: event,
+                            collapseSelectionToInsertionPoint: true
+                        )
                     }
 
                     return shouldEnterSearch
                 }
-                syncAccessState()
                 requestDefaultListFocus()
             }
             .onDisappear {
                 searchService.onInterceptedKey = nil
                 deactivatePanelInputHandling()
-            }
-            .onChange(of: storeManager.isTrialExpired) { _, _ in
-                syncAccessState()
-            }
-            .onChange(of: storeManager.isProUnlocked) { _, _ in
-                syncAccessState()
             }
             // ── ⌘, 意图通知 → 调用 SwiftUI 原生 openSettings ───────────
             .onReceive(NotificationCenter.default.publisher(for: .openSettingsIntent)) { _ in
@@ -133,22 +121,6 @@ struct ClipboardMainView: View {
             .onReceive(NotificationCenter.default.publisher(for: .focusSearchFieldIntent)) { _ in
                 requestSearchFocus()
             }
-    }
-
-    private var panelPaywallOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.4)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture { }
-
-            SubscriptionModalView(onClose: {
-                storeManager.dismissPaywall()
-            })
-            .environmentObject(storeManager)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .transition(.opacity.combined(with: .scale(scale: 0.95)))
     }
 
     @ViewBuilder
@@ -173,17 +145,29 @@ struct ClipboardMainView: View {
         }
     }
 
-    private func focusSearchField() {
+    private func focusSearchField(
+        interceptedEvent: NSEvent? = nil,
+        collapseSelectionToInsertionPoint: Bool = false
+    ) {
         pendingListFocusGeneration &+= 1
         pendingListFocusRequest = nil
-        focusedField = .searchBar
+        pendingSearchFocusGeneration &+= 1
+        let generation = pendingSearchFocusGeneration
+
+        focusedField = nil
+        searchService.isTextFieldFocused = false
+
+        DispatchQueue.main.async {
+            applySearchFieldFocusIfPossible(
+                generation: generation,
+                remainingAttempts: 3,
+                collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint,
+                interceptedEvent: interceptedEvent
+            )
+        }
     }
 
     private func requestSearchFocus() {
-        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
-            return
-        }
-
         focusSearchField()
     }
 
@@ -198,14 +182,10 @@ struct ClipboardMainView: View {
     private func deactivatePanelInputHandling() {
         isPanelKeyWindow = false
         pendingListFocusGeneration &+= 1
+        pendingSearchFocusGeneration &+= 1
         pendingListFocusRequest = nil
         searchService.stop()
         viewModel.stopKeyboardMonitoring()
-    }
-
-    private func syncAccessState() {
-        viewModel.updateDisplayedHistoryLimit(storeManager.historyLimitForFreeTier)
-        viewModel.handleAccessRestrictionChange(isRestricted: !storeManager.hasFullAccess)
     }
 
     private func handlePanelDidBecomeKey() {
@@ -218,6 +198,7 @@ struct ClipboardMainView: View {
 
     private func requestDefaultListFocus() {
         pendingListFocusGeneration &+= 1
+        pendingSearchFocusGeneration &+= 1
         pendingListFocusRequest = .selectFirstItem
         focusedField = nil
         searchService.isTextFieldFocused = false
@@ -229,6 +210,7 @@ struct ClipboardMainView: View {
 
     private func requestListFocusAfterSearchExit() {
         pendingListFocusGeneration &+= 1
+        pendingSearchFocusGeneration &+= 1
         let generation = pendingListFocusGeneration
 
         pendingListFocusRequest = .selectFirstItem
@@ -253,11 +235,91 @@ struct ClipboardMainView: View {
         return true
     }
 
-    private var displayedItems: [ClipboardItem] {
-        if let historyLimit = storeManager.historyLimitForFreeTier {
-            return Array(viewModel.filteredItems.prefix(historyLimit))
+    private func applySearchFieldFocusIfPossible(
+        generation: UInt,
+        remainingAttempts: Int,
+        collapseSelectionToInsertionPoint: Bool,
+        interceptedEvent: NSEvent?
+    ) {
+        guard pendingSearchFocusGeneration == generation else { return }
+        guard isPanelKeyWindow else { return }
+
+        focusedField = .searchBar
+
+        DispatchQueue.main.async {
+            guard pendingSearchFocusGeneration == generation else { return }
+            guard isPanelKeyWindow else { return }
+
+            if isActiveTextInputResponder {
+                if collapseSelectionToInsertionPoint {
+                    collapseActiveTextSelectionToInsertionPoint()
+                }
+                searchService.isTextFieldFocused = true
+                if let interceptedEvent {
+                    replayInterceptedSearchEvent(interceptedEvent)
+                }
+                return
+            }
+
+            guard remainingAttempts > 0 else { return }
+
+            focusedField = nil
+            searchService.isTextFieldFocused = false
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+                applySearchFieldFocusIfPossible(
+                    generation: generation,
+                    remainingAttempts: remainingAttempts - 1,
+                    collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint,
+                    interceptedEvent: interceptedEvent
+                )
+            }
+        }
+    }
+
+    private func collapseActiveTextSelectionToInsertionPoint() {
+        guard let textView = NSApp.keyWindow?.firstResponder as? NSTextView else {
+            return
         }
 
+        guard !textView.hasMarkedText() else {
+            return
+        }
+
+        let stringLength = textView.string.count
+        textView.setSelectedRange(NSRange(location: stringLength, length: 0))
+    }
+
+    private func replayInterceptedSearchEvent(_ event: NSEvent) {
+        guard let textView = activeTextInputView else {
+            return
+        }
+
+        textView.interpretKeyEvents([event])
+    }
+
+    private var isActiveTextInputResponder: Bool {
+        guard let responder = NSApp.keyWindow?.firstResponder else {
+            return false
+        }
+
+        return responder is NSTextView || responder is NSTextField
+    }
+
+    private var activeTextInputView: NSTextView? {
+        if let textView = NSApp.keyWindow?.firstResponder as? NSTextView {
+            return textView
+        }
+
+        if let textField = NSApp.keyWindow?.firstResponder as? NSTextField,
+           let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
+            return fieldEditor
+        }
+
+        return nil
+    }
+
+    private var displayedItems: [ClipboardItem] {
         return viewModel.filteredItems
     }
 
@@ -265,32 +327,14 @@ struct ClipboardMainView: View {
         displayedItems.map(\.id)
     }
 
-    private var isShowingFreeTierHistoryPreview: Bool {
-        (storeManager.historyLimitForFreeTier != nil) && (viewModel.filteredItems.count > displayedItems.count)
-    }
-
     @ViewBuilder
     private var historyPreviewFooter: some View {
         HStack {
-            if isShowingFreeTierHistoryPreview {
-                Text("Free plan shows latest 10 records only")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-            } else {
-                Text("\(displayedItems.count) Items")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-            }
+            Text("\(displayedItems.count) Items")
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
 
             Spacer()
-
-            if isShowingFreeTierHistoryPreview {
-                Button(String(localized: "Unlock Pro")) {
-                    storeManager.presentPaywall(from: .panel, highlighting: .unlimitedHistory)
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 11, weight: .semibold))
-            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
@@ -303,5 +347,4 @@ struct ClipboardMainView: View {
     ClipboardMainView()
         .environmentObject(AppPreferencesStore.shared)
         .environmentObject(ClipboardRuntimeStore.shared)
-        .environmentObject(StoreManager.shared)
 }

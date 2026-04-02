@@ -45,7 +45,6 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
 
 struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .general
-    @EnvironmentObject private var storeManager: StoreManager
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
@@ -108,22 +107,6 @@ struct SettingsView: View {
                minHeight: 540, idealHeight: 580, maxHeight: .infinity)
         .background(SettingsWindowObserver())
         .background(WindowAppearanceObserver(theme: appTheme))
-        .sheet(
-            isPresented: Binding(
-                get: {
-                    storeManager.shouldShowPaywall && storeManager.paywallSource == .settings
-                },
-                set: { isPresented in
-                    if !isPresented {
-                        storeManager.dismissPaywall()
-                    }
-                }
-            )
-        ) {
-            PaywallView()
-                .environmentObject(storeManager)
-                .environment(\.locale, resolvedLocale)
-        }
     }
 }
 

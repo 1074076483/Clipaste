@@ -65,16 +65,12 @@ class ClipboardViewModel: ObservableObject {
     private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
     private var shouldResetSelectionToFirstDisplayedItem = false
-    private let storeManager: StoreManager
     private let settingsViewModel: SettingsViewModel
-    private var renderedHistoryLimit: Int?
 
     init(
         clipboardMonitor _: ClipboardMonitor? = nil,
-        storeManager: StoreManager? = nil,
         settingsViewModel: SettingsViewModel? = nil
     ) {
-        self.storeManager = storeManager ?? StoreManager.shared
         self.settingsViewModel = settingsViewModel ?? SettingsViewModel.shared
         ModifierKey.migrateStoredPreferences()
 
@@ -90,7 +86,6 @@ class ClipboardViewModel: ObservableObject {
         setupGroupSwitchSubscriptions()
         setupSmartGroupsGuard()
         setupModifierPreferenceSync()
-        updateDisplayedHistoryLimit(self.storeManager.historyLimitForFreeTier)
     }
 
     deinit {
@@ -142,8 +137,8 @@ class ClipboardViewModel: ObservableObject {
         quickPasteModifier.eventFlags.union(plainTextModifier.eventFlags)
     }
 
-    func handleGlobalKeyPress(_ character: String) -> Bool {
-        let modifiers = currentModifierFlags.intersection(.deviceIndependentFlagsMask)
+    func shouldStartTypeToSearch(with event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
 
         if modifiers.contains(.command) || modifiers.contains(.control) || modifiers.contains(.option) {
             return false
@@ -153,16 +148,7 @@ class ClipboardViewModel: ObservableObject {
             return false
         }
 
-        guard let acceptedInput = acceptedSearchInput(from: character) else {
-            return false
-        }
-
-        guard storeManager.requestAccess(to: .globalSearch, from: .panel) else {
-            return false
-        }
-
-        searchInput.append(contentsOf: acceptedInput)
-        return true
+        return acceptedSearchInput(from: event.characters ?? "") != nil
     }
 
     // MARK: - Combine 防抖搜索管道
@@ -521,30 +507,6 @@ class ClipboardViewModel: ObservableObject {
         }
     }
 
-    func updateDisplayedHistoryLimit(_ limit: Int?) {
-        if renderedHistoryLimit != limit {
-            renderedHistoryLimit = limit
-        }
-
-        reconcileSelectionAfterDisplayedItemsChange()
-    }
-
-    func handleAccessRestrictionChange(isRestricted: Bool) {
-        if isRestricted {
-            if !searchInput.isEmpty {
-                searchInput = ""
-            }
-            if !activeSearchQuery.isEmpty {
-                activeSearchQuery = ""
-            }
-            if currentFilter != nil {
-                currentFilter = nil
-            }
-        }
-
-        reconcileSelectionAfterDisplayedItemsChange()
-    }
-
     // MARK: - 多选核心运算引擎
 
     /// 处理来自 View 层的选择意图（View 层仅嗅探修饰键，绝不做集合运算）
@@ -740,14 +702,6 @@ class ClipboardViewModel: ObservableObject {
             items.firstIndex(where: { $0.id == lid })
         }
 
-        if let renderedHistoryLimit,
-           filteredItems.count > renderedHistoryLimit,
-           direction > 0,
-           currentIndex == items.indices.last {
-            storeManager.presentPaywall(from: .panel, highlighting: .unlimitedHistory)
-            return
-        }
-
         let nextIndex: Int
         if let idx = currentIndex {
             nextIndex = min(max(idx + direction, 0), items.count - 1)
@@ -920,10 +874,6 @@ class ClipboardViewModel: ObservableObject {
     }
 
     func showSmartFilter(_ type: ClipboardContentType) {
-        guard storeManager.requestAccess(to: .smartGroups, from: .panel) else {
-            return
-        }
-
         activateDisplayedScope(filter: type, groupID: nil)
     }
 
@@ -975,7 +925,6 @@ class ClipboardViewModel: ObservableObject {
     // MARK: - 右键菜单动作接口
 
     func pasteToActiveApp(item: ClipboardItem) {
-        guard canUsePlainTextFeaturesIfNeeded() else { return }
         print("🚀 触发双击事件: \(item.id)")
 
         // 1. 先同步 UI 选中态（强制单选）
@@ -1024,10 +973,6 @@ class ClipboardViewModel: ObservableObject {
     }
 
     func pasteAsPlainText(item: ClipboardItem) {
-        guard storeManager.requestAccess(to: .plainTextPaste, from: .panel) else {
-            return
-        }
-
         guard let record = StorageManager.shared.fetchRecord(id: item.id),
               let text = record.plainText else { return }
         // 1. 纯文本写入系统剪贴板（抹除一切格式）
@@ -1041,7 +986,6 @@ class ClipboardViewModel: ObservableObject {
     }
 
     func copyToClipboard(item: ClipboardItem) {
-        guard canUsePlainTextFeaturesIfNeeded() else { return }
         guard let record = StorageManager.shared.fetchRecord(id: item.id) else { return }
 
         Task { @MainActor in
@@ -1064,14 +1008,6 @@ class ClipboardViewModel: ObservableObject {
         }
 
         return pasteTextFormat == .plainText
-    }
-
-    private func canUsePlainTextFeaturesIfNeeded() -> Bool {
-        guard shouldForcePlainTextOutput else {
-            return true
-        }
-
-        return storeManager.requestAccess(to: .plainTextPaste, from: .panel)
     }
 
     func pinItem(item: ClipboardItem) {
@@ -1374,11 +1310,7 @@ class ClipboardViewModel: ObservableObject {
     }
 
     private var displayedItemsForInteraction: [ClipboardItem] {
-        guard let renderedHistoryLimit else {
-            return filteredItems
-        }
-
-        return Array(filteredItems.prefix(renderedHistoryLimit))
+        filteredItems
     }
 
     private func activateDisplayedScope(filter: ClipboardContentType?, groupID: String?) {

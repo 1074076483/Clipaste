@@ -23,8 +23,8 @@ final class TypeToSearchService {
 
     // MARK: - 回调
 
-    /// 代理给上层的可见字符输入，返回 true 表示上层已消费该事件。
-    var onInterceptedKey: ((String) -> Bool)?
+    /// 代理给上层的键盘事件，返回 true 表示上层已消费该事件。
+    var onInterceptedKey: ((NSEvent) -> Bool)?
 
     // MARK: - 内部状态
 
@@ -73,7 +73,7 @@ final class TypeToSearchService {
         }
 
         // 4. 是否消费完全交给上层决定；服务层不承担任何业务判断。
-        let isHandled = onInterceptedKey?(chars) ?? false
+        let isHandled = onInterceptedKey?(event) ?? false
         return isHandled ? nil : event
     }
 }

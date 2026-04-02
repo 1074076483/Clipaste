@@ -79,7 +79,6 @@ private struct SettingRow<Trailing: View>: View {
 struct AdvancedSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
-    @EnvironmentObject private var storeManager: StoreManager
     @Environment(\.locale) private var locale
     @AppStorage("enable_smart_groups") private var isSmartGroupsEnabled: Bool = true
     @State private var showsDiagnostics = false
@@ -221,27 +220,6 @@ private extension AdvancedSettingsView {
                 .toggleStyle(.switch)
                 .disabled(runtimeStore.isSyncing)
 
-                // Pro Lock Notice
-                if !storeManager.hasFullAccess {
-                    HStack(spacing: 8) {
-                        Image(systemName: "lock.fill")
-                            .foregroundStyle(.secondary)
-
-                        Text("CloudKit Private Database sync requires Clipaste Pro after the trial ends.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-
-                        Spacer()
-
-                        Button("Unlock Pro") {
-                            storeManager.presentPaywall(from: .settings, highlighting: .cloudSync)
-                        }
-                        .buttonStyle(.plain)
-                        .font(.subheadline)
-                        .bold()
-                    }
-                }
-
                 // Sync Console
                 if runtimeStore.isSyncEnabled {
                     Divider()
@@ -304,18 +282,7 @@ private extension AdvancedSettingsView {
     var syncEnabledBinding: Binding<Bool> {
         Binding(
             get: { runtimeStore.isSyncEnabled },
-            set: { newValue in
-                if !newValue {
-                    runtimeStore.setSyncEnabled(false)
-                    return
-                }
-
-                guard storeManager.requestAccess(to: .cloudSync, from: .settings) else {
-                    return
-                }
-
-                runtimeStore.setSyncEnabled(true)
-            }
+            set: { runtimeStore.setSyncEnabled($0) }
         )
     }
 
@@ -523,5 +490,4 @@ private extension AdvancedSettingsView {
     AdvancedSettingsView()
         .environmentObject(SettingsViewModel())
         .environmentObject(ClipboardRuntimeStore.shared)
-        .environmentObject(StoreManager.shared)
 }

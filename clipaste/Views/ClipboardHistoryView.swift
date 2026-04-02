@@ -6,7 +6,6 @@ struct ClipboardHistoryView: View {
         ClipboardMainView()
             .environmentObject(AppPreferencesStore.shared)
             .environmentObject(ClipboardRuntimeStore.shared)
-            .environmentObject(StoreManager.shared)
             .modelContainer(ClipboardRuntimeStore.shared.container)
             .id(ClipboardRuntimeStore.shared.rootIdentity)
     }

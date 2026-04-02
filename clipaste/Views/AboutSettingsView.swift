@@ -1,5 +1,4 @@
 import AppKit
-import StoreKit
 import SwiftUI
 
 // MARK: - Settings Card Container
@@ -24,9 +23,6 @@ private struct SettingsCard<Content: View>: View {
 // MARK: - About Settings View
 
 struct AboutSettingsView: View {
-    @EnvironmentObject private var storeManager: StoreManager
-    @Environment(\.locale) private var locale
-
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
 
@@ -48,7 +44,7 @@ struct AboutSettingsView: View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 brandSection
-                proUpgradeCard
+                featureOverviewCard
                 linksCard
             }
             .frame(maxWidth: .infinity)
@@ -92,64 +88,32 @@ private extension AboutSettingsView {
     }
 }
 
-// MARK: - Card 1: Pro Status
+// MARK: - Card 1: Feature Overview
 
 private extension AboutSettingsView {
-    var proUpgradeCard: some View {
+    var featureOverviewCard: some View {
         SettingsCard(
-            title: storeManager.isProUnlocked ? "Clipaste Pro Unlocked" : "Clipaste Pro",
+            title: "Feature Overview",
             systemImage: "sparkles"
         ) {
             VStack(alignment: .leading, spacing: 14) {
-                // Subtitle
-                Text(storeManager.isProUnlocked ? "All core features are ready." : "Enjoy the full Clipaste Pro experience")
+                Text("All core capabilities are available in the open-source build.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                // Core features
                 HStack(spacing: 24) {
-                    featureItem(icon: "paintpalette.fill", title: "Multiple Themes")
-                    featureItem(icon: "slider.horizontal.3", title: "Custom Rules")
                     featureItem(icon: "clock.arrow.circlepath", title: "Unlimited History")
+                    featureItem(icon: "magnifyingglass", title: "Search")
+                    featureItem(icon: "icloud.fill", title: "iCloud Sync")
                 }
                 .padding(.vertical, 2)
 
-                // Action Button / Unlocked Badge
-                if storeManager.isProUnlocked {
-                    Text("Unlocked")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.accentColor)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
-                        .background(Color.accentColor.opacity(0.1), in: .rect(cornerRadius: 6))
-                } else {
-                    Button {
-                        storeManager.presentPaywall(from: .settings)
-                    } label: {
-                        if let proProduct = storeManager.proProduct {
-                            Text(String(
-                                format: String(localized: "Unlock Pro Experience (%@ Lifetime)", locale: locale),
-                                locale: locale,
-                                proProduct.displayPrice
-                            ))
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        } else {
-                            Text("Unlock Pro")
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 6)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.regular)
-                    .shadow(color: Color.accentColor.opacity(0.2), radius: 4, y: 2)
+                HStack(spacing: 24) {
+                    featureItem(icon: "doc.plaintext", title: "Plain Text Paste")
+                    featureItem(icon: "slider.horizontal.3", title: "Custom Rules")
+                    featureItem(icon: "paintpalette.fill", title: "Multiple Themes")
                 }
+                .padding(.vertical, 2)
             }
         }
     }
@@ -237,5 +201,4 @@ private extension AboutSettingsView {
 
 #Preview {
     AboutSettingsView()
-        .environmentObject(StoreManager.shared)
 }

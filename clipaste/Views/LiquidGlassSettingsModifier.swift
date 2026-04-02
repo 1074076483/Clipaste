@@ -24,7 +24,7 @@ struct LiquidGlassCardModifier: ViewModifier {
 }
 
 extension View {
-    /// Applies a premium Liquid Glass card style suitable for modern macOS interfaces.
+    /// Applies a polished Liquid Glass card style suitable for modern macOS interfaces.
     func liquidGlassCard() -> some View {
         self.modifier(LiquidGlassCardModifier())
     }

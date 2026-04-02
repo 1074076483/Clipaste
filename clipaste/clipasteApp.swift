@@ -227,7 +227,6 @@ struct clipasteApp: App {
     @StateObject private var preferencesStore = AppPreferencesStore.shared
     @StateObject private var settingsViewModel = SettingsViewModel.shared
     @StateObject private var runtimeStore = ClipboardRuntimeStore.shared
-    @StateObject private var storeManager = StoreManager.shared
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
 
@@ -238,7 +237,6 @@ struct clipasteApp: App {
                 .environmentObject(preferencesStore)
                 .environmentObject(settingsViewModel)
                 .environmentObject(runtimeStore)
-                .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
                 .id(appLanguage.rawValue)
                 .environment(\.locale, appLanguage.locale ?? .current)
@@ -252,7 +250,6 @@ struct clipasteApp: App {
             MenuBarExtraContent()
                 .environmentObject(preferencesStore)
                 .environmentObject(runtimeStore)
-                .environmentObject(storeManager)
                 .modelContainer(runtimeStore.container)
                 .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
                 .environment(\.locale, appLanguage.locale ?? .current)
