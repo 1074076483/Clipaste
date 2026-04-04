@@ -61,8 +61,8 @@ class ClipboardViewModel: ObservableObject {
     private var quickLookLoadTask: Task<Void, Never>? = nil
     private var quickLookLoadGeneration: UInt = 0
     private var quickLookRequestedItemID: UUID? = nil
-    private var keyDownMonitor: Any?
-    private var flagsChangedMonitor: Any?
+    nonisolated(unsafe) private var keyDownMonitor: Any?
+    nonisolated(unsafe) private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
     private var shouldResetSelectionToFirstDisplayedItem = false
     private let settingsViewModel: SettingsViewModel

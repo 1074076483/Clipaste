@@ -20,7 +20,7 @@ final class SyntaxHighlightService: @unchecked Sendable {
     }
 
     // 注意：Highlightr 实例的创建开销较大，保持为单例复用
-    private let highlightr: Highlightr?
+    nonisolated(unsafe) private let highlightr: Highlightr?
 
     /// UserDefaults 中的高亮主题键名（暂保留，未来可在设置中覆盖自动检测）
     static let themeKey = "codeHighlightTheme"

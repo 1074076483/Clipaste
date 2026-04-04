@@ -22,8 +22,8 @@ struct ClipboardPanelWindowObserver: NSViewRepresentable {
         var onWindowDidResignKey: (() -> Void)?
 
         private weak var observedWindow: NSWindow?
-        private var becomeKeyObserver: NSObjectProtocol?
-        private var resignKeyObserver: NSObjectProtocol?
+        nonisolated(unsafe) private var becomeKeyObserver: NSObjectProtocol?
+        nonisolated(unsafe) private var resignKeyObserver: NSObjectProtocol?
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
@@ -31,7 +31,12 @@ struct ClipboardPanelWindowObserver: NSViewRepresentable {
         }
 
         deinit {
-            stopObservingWindow()
+            if let becomeKeyObserver {
+                NotificationCenter.default.removeObserver(becomeKeyObserver)
+            }
+            if let resignKeyObserver {
+                NotificationCenter.default.removeObserver(resignKeyObserver)
+            }
         }
 
         private func observeWindow(_ window: NSWindow?) {
@@ -47,7 +52,9 @@ struct ClipboardPanelWindowObserver: NSViewRepresentable {
                 object: window,
                 queue: .main
             ) { [weak self] _ in
-                self?.onWindowDidBecomeKey?()
+                Task { @MainActor [weak self] in
+                    self?.onWindowDidBecomeKey?()
+                }
             }
 
             resignKeyObserver = NotificationCenter.default.addObserver(
@@ -55,7 +62,9 @@ struct ClipboardPanelWindowObserver: NSViewRepresentable {
                 object: window,
                 queue: .main
             ) { [weak self] _ in
-                self?.onWindowDidResignKey?()
+                Task { @MainActor [weak self] in
+                    self?.onWindowDidResignKey?()
+                }
             }
 
             if window.isKeyWindow {

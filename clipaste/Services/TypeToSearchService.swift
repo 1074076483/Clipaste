@@ -7,6 +7,7 @@ import AppKit
 ///
 /// ⚠️ 与 SwiftUI View 完全解耦，不持有任何 View/ViewModel 引用。
 /// ⚠️ 必须在主线程调用 start()/stop()，生命周期由调用方管理。
+@MainActor
 final class TypeToSearchService {
 
     static let shared = TypeToSearchService()
@@ -46,10 +47,6 @@ final class TypeToSearchService {
             NSEvent.removeMonitor(monitor)
             localMonitor = nil
         }
-    }
-
-    deinit {
-        stop()
     }
 
     // MARK: - 核心拦截逻辑

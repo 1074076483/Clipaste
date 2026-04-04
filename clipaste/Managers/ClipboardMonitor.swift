@@ -9,7 +9,7 @@ final class ClipboardMonitor {
     private let defaults: UserDefaults
     private var lastChangeCount: Int = 0
     private var monitoringTask: Task<Void, Never>?
-    private var defaultsObserver: NSObjectProtocol?
+    nonisolated(unsafe) private var defaultsObserver: NSObjectProtocol?
     private let fileURLType = NSPasteboard.PasteboardType("public.file-url")
     private let utf8PlainTextType = NSPasteboard.PasteboardType("public.utf8-plain-text")
     private var isMonitoringLifecycleActive = false

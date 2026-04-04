@@ -3,7 +3,7 @@ import Combine
 import SwiftUI
 
 @MainActor
-final class SettingsViewModel: ObservableObject {
+final class SettingsViewModel: @preconcurrency ObservableObject {
     static let shared = SettingsViewModel()
 
     let objectWillChange = ObservableObjectPublisher()

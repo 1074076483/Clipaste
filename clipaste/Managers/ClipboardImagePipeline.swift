@@ -1,20 +1,27 @@
 import AppKit
 import Foundation
 
-final class ClipboardImagePipeline: @unchecked Sendable {
-    nonisolated static let shared = ClipboardImagePipeline()
+@MainActor
+final class ClipboardImagePipeline {
+    static let shared = ClipboardImagePipeline()
 
-    nonisolated(unsafe) private let cache = NSCache<NSString, NSImage>()
+    private static let thumbnailQueue = DispatchQueue(
+        label: "clipaste.thumbnail-pipeline",
+        qos: .userInitiated,
+        attributes: .concurrent
+    )
+
+    private let cache = NSCache<NSString, NSImage>()
 
     private init() {
         cache.countLimit = 256
     }
 
-    nonisolated func invalidateAll() {
+    func invalidateAll() {
         cache.removeAllObjects()
     }
 
-    nonisolated func thumbnail(for itemID: UUID, maxPixelSize: Int) async -> NSImage? {
+    func thumbnail(for itemID: UUID, maxPixelSize: Int) async -> NSImage? {
         let cacheKey = "thumb-\(itemID.uuidString)-\(maxPixelSize)" as NSString
         if let cached = cache.object(forKey: cacheKey) {
             return cached
@@ -29,9 +36,7 @@ final class ClipboardImagePipeline: @unchecked Sendable {
             return nil
         }
 
-        let image = await Task.detached(priority: .userInitiated) {
-            ImageProcessor.downsampleImage(from: data, maxPixelSize: maxPixelSize)
-        }.value
+        let image = await Self.downsampleImageOffMain(data, maxPixelSize: maxPixelSize)
 
         if let image {
             cache.setObject(image, forKey: cacheKey)
@@ -40,22 +45,44 @@ final class ClipboardImagePipeline: @unchecked Sendable {
         return image
     }
 
-    nonisolated func thumbnail(forFileURL fileURL: URL, maxPixelSize: Int) async -> NSImage? {
+    func thumbnail(forFileURL fileURL: URL, maxPixelSize: Int) async -> NSImage? {
         let cacheKey = "file-thumb-\(fileURL.standardizedFileURL.path)-\(maxPixelSize)" as NSString
         if let cached = cache.object(forKey: cacheKey) {
             return cached
         }
 
-        let imageTask = Task.detached(priority: .userInitiated) { () -> NSImage? in
-            guard let data = ClipboardFileReference.loadImageData(from: fileURL) else { return nil }
-            return ImageProcessor.downsampleImage(from: data, maxPixelSize: maxPixelSize)
-        }
-        let image = await imageTask.value
+        let image = await Self.loadAndDownsampleFileImageOffMain(
+            fileURL: fileURL,
+            maxPixelSize: maxPixelSize
+        )
 
         if let image {
             cache.setObject(image, forKey: cacheKey)
         }
 
         return image
+    }
+
+    private static func downsampleImageOffMain(_ data: Data, maxPixelSize: Int) async -> NSImage? {
+        await withCheckedContinuation { continuation in
+            thumbnailQueue.async {
+                let image = ImageProcessor.downsampleImage(from: data, maxPixelSize: maxPixelSize)
+                continuation.resume(returning: image)
+            }
+        }
+    }
+
+    private static func loadAndDownsampleFileImageOffMain(fileURL: URL, maxPixelSize: Int) async -> NSImage? {
+        await withCheckedContinuation { continuation in
+            thumbnailQueue.async {
+                guard let data = ClipboardFileReference.loadImageData(from: fileURL) else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let image = ImageProcessor.downsampleImage(from: data, maxPixelSize: maxPixelSize)
+                continuation.resume(returning: image)
+            }
+        }
     }
 }

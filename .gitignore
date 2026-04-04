@@ -30,4 +30,9 @@ Carthage/Build/
 openspec/
 .codex/
 .cursor/
+.agents/
+.gemini/
+.claude/
+.vscode/
+.adal/
 

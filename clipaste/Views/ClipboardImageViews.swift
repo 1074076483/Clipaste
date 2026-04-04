@@ -29,7 +29,7 @@ struct ClipboardThumbnailView<Placeholder: View>: View {
                 placeholder
             }
         }
-        .task(id: cacheIdentity) {
+        .task(id: cacheIdentity) { @MainActor in
             image = await ClipboardImagePipeline.shared.thumbnail(
                 for: itemID,
                 maxPixelSize: maxPixelSize
@@ -70,7 +70,7 @@ struct ClipboardFileThumbnailView<Placeholder: View>: View {
                 placeholder
             }
         }
-        .task(id: cacheIdentity) {
+        .task(id: cacheIdentity) { @MainActor in
             image = await ClipboardImagePipeline.shared.thumbnail(
                 forFileURL: fileURL,
                 maxPixelSize: maxPixelSize

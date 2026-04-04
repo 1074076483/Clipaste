@@ -251,7 +251,7 @@ struct ClipboardHeaderView: View {
 
     private var groupOverflowMenu: some View {
         Menu {
-            Section("Smart Filters") {
+            Section {
                 Button(action: {
                     selectAllGroup()
                 }) {
@@ -277,10 +277,12 @@ struct ClipboardHeaderView: View {
                         }
                     }
                 }
+            } header: {
+                Text("Smart Filters")
             }
 
             if !viewModel.customGroups.isEmpty {
-                Section("Groups") {
+                Section {
                     ForEach(viewModel.customGroups) { group in
                         Button(action: {
                             selectCustomGroup(group.id)
@@ -294,6 +296,8 @@ struct ClipboardHeaderView: View {
                             }
                         }
                     }
+                } header: {
+                    Text("Groups")
                 }
             }
 

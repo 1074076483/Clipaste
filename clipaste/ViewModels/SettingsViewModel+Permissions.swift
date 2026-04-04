@@ -2,7 +2,7 @@ import Cocoa
 
 enum AccessibilityPermissionCoordinator {
     static func requestPermissionPrompt() {
-        let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as NSString: true]
+        let options: NSDictionary = ["AXTrustedCheckOptionPrompt": true]
         _ = AXIsProcessTrustedWithOptions(options)
     }
 

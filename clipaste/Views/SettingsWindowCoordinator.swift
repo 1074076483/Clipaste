@@ -186,7 +186,7 @@ struct SettingsWindowObserver: NSViewRepresentable {
     }
 
     private final class TrackingView: NSView {
-        private var pendingTitleWorkItem: DispatchWorkItem?
+        nonisolated(unsafe) private var pendingTitleWorkItem: DispatchWorkItem?
 
         deinit {
             pendingTitleWorkItem?.cancel()

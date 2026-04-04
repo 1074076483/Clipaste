@@ -4,6 +4,7 @@ import SwiftData
 
 /// ClipboardPanelManager is responsible for managing the floating clipboard history panel.
 /// It uses a borderless panel that follows the mouse's screen and presents in front of the Dock.
+@MainActor
 class ClipboardPanelManager {
     static let shared = ClipboardPanelManager()
     private static let panelLevel = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.dockWindow)) + 1)
@@ -71,8 +72,11 @@ class ClipboardPanelManager {
             object: nil,
             queue: .main
         ) { [weak self] notification in
-            guard let self, let layout = notification.object as? AppLayoutMode else { return }
-            self.updatePanelSize(layout: layout, animated: true)
+            guard let layout = notification.object as? AppLayoutMode else { return }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                self.updatePanelSize(layout: layout, animated: true)
+            }
         }
     }
 
@@ -82,8 +86,9 @@ class ClipboardPanelManager {
             object: nil,
             queue: .main
         ) { [weak self] notification in
-            guard let self else { return }
-            if let pinned = notification.object as? Bool {
+            guard let pinned = notification.object as? Bool else { return }
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 self.isPinned = pinned
                 // 固定时保持原有层级（dockWindow+1），始终在 Dock 之上
                 // 注意：.floating (level 3) 远低于 Dock 层级，不可使用
@@ -98,7 +103,9 @@ class ClipboardPanelManager {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.forceHidePanel()
+            Task { @MainActor [weak self] in
+                self?.forceHidePanel()
+            }
         }
     }
 
@@ -170,23 +177,8 @@ class ClipboardPanelManager {
 
     // MARK: - Show / Hide
 
-    private func ensureMainThread(_ action: @escaping () -> Void) {
-        if Thread.isMainThread {
-            action()
-        } else {
-            DispatchQueue.main.async(execute: action)
-        }
-    }
-
     /// Toggles the visibility of the clipboard panel.
     func togglePanel() {
-        guard Thread.isMainThread else {
-            ensureMainThread { [weak self] in
-                self?.togglePanel()
-            }
-            return
-        }
-
         if isVisible {
             hidePanel()
         } else {
@@ -196,13 +188,6 @@ class ClipboardPanelManager {
 
     /// Shows the panel sized for the current layout mode, then animates it in.
     func showPanel() {
-        guard Thread.isMainThread else {
-            ensureMainThread { [weak self] in
-                self?.showPanel()
-            }
-            return
-        }
-
         guard !isVisible, let panel else { return }
 
         // 0. 拍照留底：在呼出面板之前，记下当前正活跃的 App
@@ -250,8 +235,10 @@ class ClipboardPanelManager {
             panel.animator().setFrame(visibleFrame, display: true)
             panel.animator().alphaValue = 1.0
         }) { [weak self] in
-            self?.isVisible = true
-            self?.setupEventMonitor()
+            Task { @MainActor [weak self] in
+                self?.isVisible = true
+                self?.setupEventMonitor()
+            }
         }
 
     }
@@ -263,13 +250,6 @@ class ClipboardPanelManager {
 
     /// Hides the clipboard panel — intercepted when the panel is pinned or showing a modal dialog.
     func hidePanel() {
-        guard Thread.isMainThread else {
-            ensureMainThread { [weak self] in
-                self?.hidePanel()
-            }
-            return
-        }
-
         guard isVisible else { return }
         if isPinned { return } // 图钉固定时，拦截隐藏指令
         if suppressHide { return } // 模态对话框（如删除确认 alert）激活时，拦截隐藏指令
@@ -278,13 +258,6 @@ class ClipboardPanelManager {
 
     /// Force-hides the panel regardless of pin state (used by paste/settings/about).
     func forceHidePanel() {
-        guard Thread.isMainThread else {
-            ensureMainThread { [weak self] in
-                self?.forceHidePanel()
-            }
-            return
-        }
-
         guard isVisible else { return }
         executeHide()
     }
@@ -323,9 +296,11 @@ class ClipboardPanelManager {
     private func setupEventMonitor() {
         guard eventMonitor == nil else { return }
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            guard let self, self.isVisible else { return }
-            // 始终走 hidePanel()，内部会检查图钉状态
-            self.hidePanel()
+            Task { @MainActor [weak self] in
+                guard let self, self.isVisible else { return }
+                // 始终走 hidePanel()，内部会检查图钉状态
+                self.hidePanel()
+            }
         }
     }
 

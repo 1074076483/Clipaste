@@ -7,6 +7,7 @@ extension Notification.Name {
     static let openSettingsIntent = Notification.Name("openSettingsIntent")
 }
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboardingDefaultsKey = "hasCompletedOnboarding"
     private let globalShortcutNames: [KeyboardShortcuts.Name] = [
@@ -16,7 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         .prevList,
         .clearHistory
     ]
-    private var onboardingStateObserver: NSObjectProtocol?
+    nonisolated(unsafe) private var onboardingStateObserver: NSObjectProtocol?
     private var lastKnownOnboardingState = false
     private var lastObservedAppLanguageRaw: String?
     private var onboardingWindow: NSWindow?
@@ -54,25 +55,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             object: UserDefaults.standard,
             queue: .main
         ) { [weak self] _ in
-            guard let self else { return }
-            let langRaw = self.normalizedAppLanguageStorageRaw()
-            if langRaw != self.lastObservedAppLanguageRaw {
-                self.lastObservedAppLanguageRaw = langRaw
-                Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let langRaw = self.normalizedAppLanguageStorageRaw()
+                if langRaw != self.lastObservedAppLanguageRaw {
+                    self.lastObservedAppLanguageRaw = langRaw
                     SettingsWindowCoordinator.refreshAllSettingsWindowTitles()
                 }
-            }
 
-            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: self.onboardingDefaultsKey)
-            guard hasCompletedOnboarding != self.lastKnownOnboardingState else { return }
+                let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: self.onboardingDefaultsKey)
+                guard hasCompletedOnboarding != self.lastKnownOnboardingState else { return }
 
-            self.lastKnownOnboardingState = hasCompletedOnboarding
-            self.updateActivationPolicy(hasCompletedOnboarding: hasCompletedOnboarding)
+                self.lastKnownOnboardingState = hasCompletedOnboarding
+                self.updateActivationPolicy(hasCompletedOnboarding: hasCompletedOnboarding)
 
-            if hasCompletedOnboarding {
-                self.dismissOnboardingWindow()
-            } else {
-                self.presentOnboardingWindow()
+                if hasCompletedOnboarding {
+                    self.dismissOnboardingWindow()
+                } else {
+                    self.presentOnboardingWindow()
+                }
             }
         }
     }
@@ -140,7 +141,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // macOS immediately show the "clipaste wants to control this computer"
         // system dialog so the user can grant access in one click.
         let options: NSDictionary = [
-            kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true
+            "AXTrustedCheckOptionPrompt": true
         ]
         let trusted = AXIsProcessTrustedWithOptions(options)
 
@@ -154,7 +155,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // shortcuts after a short delay so KeyboardShortcuts can retry with
         // the privileged tap without appending duplicate handlers.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.refreshGlobalShortcuts()
+            Task { @MainActor in
+                self.refreshGlobalShortcuts()
+            }
         }
     }
 
