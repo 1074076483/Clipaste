@@ -270,7 +270,11 @@ struct ClipboardHeaderView: View {
                     selectSmartFilter(type)
                 }) {
                     HStack {
-                        Label(type.localizedFilterTitle, systemImage: type.systemImage)
+                        Label {
+                            Text(type.localizedFilterTitle)
+                        } icon: {
+                            Image(systemName: type.systemImage)
+                        }
                         if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
                             Spacer()
                             Image(systemName: "checkmark")
