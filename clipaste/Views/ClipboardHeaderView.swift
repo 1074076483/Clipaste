@@ -251,46 +251,47 @@ struct ClipboardHeaderView: View {
 
     private var groupOverflowMenu: some View {
         Menu {
-            SwiftUI.Section("Smart Filters") {
-                Button(action: {
-                    selectAllGroup()
-                }) {
-                    HStack {
-                        Label("All", systemImage: "tray.2.fill")
-                        if viewModel.currentFilter == nil && viewModel.selectedGroupId == nil {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
+            Text("Smart Filters")
+
+            Button(action: {
+                selectAllGroup()
+            }) {
+                HStack {
+                    Label("All", systemImage: "tray.2.fill")
+                    if viewModel.currentFilter == nil && viewModel.selectedGroupId == nil {
+                        Spacer()
+                        Image(systemName: "checkmark")
                     }
                 }
+            }
 
-                ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
-                    Button(action: {
-                        selectSmartFilter(type)
-                    }) {
-                        HStack {
-                            Label(type.localizedFilterTitle, systemImage: type.systemImage)
-                            if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
+            ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
+                Button(action: {
+                    selectSmartFilter(type)
+                }) {
+                    HStack {
+                        Label(type.localizedFilterTitle, systemImage: type.systemImage)
+                        if viewModel.currentFilter == type && viewModel.selectedGroupId == nil {
+                            Spacer()
+                            Image(systemName: "checkmark")
                         }
                     }
                 }
             }
 
             if !viewModel.customGroups.isEmpty {
-                SwiftUI.Section("Groups") {
-                    ForEach(viewModel.customGroups) { group in
-                        Button(action: {
-                            selectCustomGroup(group.id)
-                        }) {
-                            HStack {
-                                Label(group.name, systemImage: group.systemIconName)
-                                if viewModel.selectedGroupId == group.id {
-                                    Spacer()
-                                    Image(systemName: "checkmark")
-                                }
+                Divider()
+                Text("Groups")
+
+                ForEach(viewModel.customGroups) { group in
+                    Button(action: {
+                        selectCustomGroup(group.id)
+                    }) {
+                        HStack {
+                            Label(group.name, systemImage: group.systemIconName)
+                            if viewModel.selectedGroupId == group.id {
+                                Spacer()
+                                Image(systemName: "checkmark")
                             }
                         }
                     }

@@ -92,6 +92,7 @@ class EditWindowManager: NSObject, NSWindowDelegate {
     }
 
     // 供 SwiftUI 内部点击"保存"按钮时主动调用的关闭方法
+    @MainActor
     func forceClose(windowId: String) {
         if let window = openWindows[windowId] {
             closeAndCleanUp(windowId: windowId, window: window)
