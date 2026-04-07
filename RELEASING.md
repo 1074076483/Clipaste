@@ -12,6 +12,8 @@ This repository can attach a notarized `.dmg` to a GitHub Release automatically.
 
 You can also run the workflow manually with `workflow_dispatch` and provide an existing tag.
 
+If the tag matches `vX.Y` or `vX.Y.Z`, the release build writes that value into `CFBundleShortVersionString`.
+
 ## Required GitHub Secrets
 
 - `APPLE_TEAM_ID`

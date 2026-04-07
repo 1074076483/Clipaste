@@ -1,66 +1,77 @@
 # 📋 Clipaste
 
-Clipaste is a fast, free, open-source clipboard manager for macOS, built with **SwiftUI** and **SwiftData**.
+[English](README.en.md)
 
-It is designed for people who keep a serious clipboard history and expect the UI to stay responsive even when the dataset gets large.
+Clipaste 是一个基于 **SwiftUI** 和 **SwiftData** 构建的 macOS 剪贴板管理器。
 
-## ✨ Highlights
+它的核心目标很明确：**历史记录再多、文本再大，也要保持响应迅速、滚动丝滑、内存占用可控。**
 
-- 🚀 Fast response and smooth interaction
-- 🧠 Low memory footprint
-- 🗂️ Handles very large clipboard histories without stutter
-- 📝 Large text entries stay fluid instead of slowing the app down
-- 🔄 Imports clipboard history from **Paste**, **PasteNow**, and **iCopy**
-- ↔️ Supports both horizontal and vertical layouts
-- ☁️ Optional iCloud / CloudKit sync
-- 🆓 Free and open source
+## ✨ 亮点
 
-## 🏎️ Why Clipaste
+- 🚀 响应迅速，常用操作几乎即时完成
+- 🧠 内存占用小，长时间运行也更稳定
+- 🗂️ 面对超大剪贴板历史仍然保持顺滑不卡顿
+- 📝 面对超大文本内容时依然流畅，不会因为内容变重而明显拖慢界面
+- 🔄 可迁移 **Paste**、**PasteNow**、**iCopy** 的历史数据
+- ↔️ UI 同时支持横向和纵向布局
+- ☁️ 支持可选的 iCloud / CloudKit 同步
+- 🆓 开源免费
 
-Clipaste focuses on the problems that start showing up when your clipboard history is no longer small:
+## 🏎️ 为什么是 Clipaste
 
-- Large histories still scroll smoothly
-- Large text payloads remain responsive
-- Day-to-day interactions stay immediate
-- The UI remains usable without trading away memory efficiency
+Clipaste 重点解决的是很多剪贴板工具在重负载场景下会暴露的问题：
 
-If you have used Paste or PasteNow before, the main difference is straightforward: Clipaste is built to stay smooth even when the history grows and the content gets heavy.
+- 历史记录一多就开始卡
+- 大文本一多就开始慢
+- 滚动和搜索在重内容场景下不够稳定
 
-## 🔄 Migration
+Clipaste 的设计目标相反：
 
-Clipaste can migrate existing clipboard history from:
+- 历史记录很多时仍然保持丝滑
+- 大文本内容仍然保持可操作性
+- 搜索、预览、再次粘贴保持快速反馈
+- 不靠明显增加内存占用来换取表面流畅
+
+如果你用过 Paste 或 PasteNow，Clipaste 的差异点很直接：
+
+- 更强调大历史记录下的性能稳定性
+- 更强调大文本内容下的响应速度
+- 提供它们没有覆盖到的布局与开源可定制能力
+
+## 🔄 历史迁移
+
+Clipaste 支持从以下应用迁移历史数据：
 
 - Paste
 - PasteNow
 - iCopy
 
-The goal is simple: switch without losing your history.
+目标很简单：切换工具时，不需要放弃原有历史记录。
 
-## 🧱 Tech Stack
+## 🧱 技术栈
 
-- **SwiftUI** for the interface
-- **SwiftData** for storage and migration
-- **CloudKit** for optional iCloud sync
-- Native macOS app architecture
+- **SwiftUI**：界面构建
+- **SwiftData**：存储与迁移
+- **CloudKit**：可选同步能力
+- 原生 macOS 应用架构
 
-## 🖥️ Requirements
+## 🖥️ 系统要求
 
 - macOS 14.0+
 - Xcode 16+
 
-## 🛠️ Build
+## 🛠️ 本地构建
 
-1. Open `clipaste.xcodeproj` in Xcode.
-2. Select your own signing team if you want to run the app with iCloud / push entitlements.
-3. Build and run.
+1. 用 Xcode 打开 `clipaste.xcodeproj`
+2. 如果你要在本地运行带 iCloud / Push entitlement 的版本，请选择你自己的签名团队
+3. 直接构建运行
 
-If you are forking this project for your own distribution, you will also need your own:
+如果你 fork 这个项目并准备自行发布，还需要替换你自己的：
 
-- Bundle identifier
-- iCloud container
-- Apple signing configuration
+- Bundle Identifier
+- iCloud Container
+- Apple 签名配置
 
-## 🚢 Releases
+## 🚢 发布
 
-Maintainers can produce a notarized DMG with the GitHub Actions release workflow described in [RELEASING.md](RELEASING.md).
-
+维护者可以通过仓库内的 GitHub Actions 工作流自动生成并上传 notarized DMG，详见 [RELEASING.md](RELEASING.md)。

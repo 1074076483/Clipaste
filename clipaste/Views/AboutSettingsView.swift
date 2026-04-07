@@ -36,10 +36,6 @@ struct AboutSettingsView: View {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
     }
 
-    private var buildNumber: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "-"
-    }
-
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
@@ -72,7 +68,7 @@ private extension AboutSettingsView {
 
             HStack(spacing: 0) {
                 Text("Version")
-                Text(verbatim: " \(shortVersion) (\(buildNumber))")
+                Text(verbatim: " \(shortVersion)")
             }
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.secondary)
