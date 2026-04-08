@@ -38,6 +38,17 @@ final class MigrationManager {
             LocalizedStringResource("从 \(displayName) 迁移数据")
         }
 
+        nonisolated var summaryText: LocalizedStringResource {
+            switch self {
+            case .paste:
+                LocalizedStringResource("Choose the Paste SQLite database file. Clipaste will import the history records into your current library.")
+            case .pasteNow:
+                LocalizedStringResource("Choose the PasteNow exported JSON file. Clipaste will parse the history items and import them into your current library.")
+            case .iCopy:
+                LocalizedStringResource("Choose the iCopy SQLite database file. Clipaste will import the text history into your current library.")
+            }
+        }
+
         nonisolated var guidanceText: LocalizedStringResource {
             switch self {
             case .paste:

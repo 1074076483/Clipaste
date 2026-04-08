@@ -24,18 +24,7 @@ struct MigrationView: View {
             .fixedSize()
             .disabled(viewModel.isMigrating)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(selectedSource.titleText)
-                    .font(.subheadline)
-                    .bold()
-
-                Text(selectedSource.guidanceText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Text(selectedSource.detailText)
+            Text(selectedSource.summaryText)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -45,11 +34,13 @@ struct MigrationView: View {
                     .controlSize(.small)
             }
 
-            Text(statusMessage)
-                .font(.subheadline)
-                .foregroundStyle(statusColor)
-                .textSelection(.enabled)
-                .fixedSize(horizontal: false, vertical: true)
+            if shouldShowStatusMessage {
+                Text(statusMessage)
+                    .font(.subheadline)
+                    .foregroundStyle(statusColor)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Button {
                 isImporterPresented = true
@@ -77,6 +68,15 @@ struct MigrationView: View {
         )
         .fileDialogDefaultDirectory(defaultDirectoryURL)
         .fileDialogBrowserOptions(fileDialogBrowserOptions)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var shouldShowStatusMessage: Bool {
+        if let importerStatus, importerStatus.source == selectedSource {
+            return true
+        }
+
+        return viewModel.statusSource == selectedSource && viewModel.migrationProgress != nil
     }
 
     private var statusColor: Color {

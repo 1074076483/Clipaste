@@ -230,8 +230,15 @@ struct clipasteApp: App {
     @StateObject private var preferencesStore = AppPreferencesStore.shared
     @StateObject private var settingsViewModel = SettingsViewModel.shared
     @StateObject private var runtimeStore = ClipboardRuntimeStore.shared
+    private let appUpdateViewModel = AppUpdateViewModel.shared
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+
+    init() {
+        Task { @MainActor in
+            AppUpdateViewModel.shared.start()
+        }
+    }
 
     var body: some Scene {
         // Register standard macOS Settings Window
@@ -243,6 +250,7 @@ struct clipasteApp: App {
                 .modelContainer(runtimeStore.container)
                 .id(appLanguage.rawValue)
                 .environment(\.locale, appLanguage.locale ?? .current)
+                .environment(appUpdateViewModel)
                 .preferredColorScheme(appTheme.colorScheme)
         }
         .defaultSize(width: 620, height: 580)
@@ -256,6 +264,7 @@ struct clipasteApp: App {
                 .modelContainer(runtimeStore.container)
                 .id("\(runtimeStore.rootIdentity)-\(appLanguage.rawValue)")
                 .environment(\.locale, appLanguage.locale ?? .current)
+                .environment(appUpdateViewModel)
         }
     }
 }

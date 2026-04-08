@@ -23,24 +23,21 @@ private struct SettingsCard<Content: View>: View {
 // MARK: - About Settings View
 
 struct AboutSettingsView: View {
+    @Environment(AppUpdateViewModel.self) private var updateViewModel
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
 
-    private var appName: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-        ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
-        ?? "Clipaste"
-    }
-
-    private var shortVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-"
-    }
-
     var body: some View {
+        @Bindable var updateViewModel = updateViewModel
+
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
                 brandSection
-                featureOverviewCard
+                softwareUpdateCard(
+                    viewModel: updateViewModel,
+                    automaticallyChecksForUpdates: $updateViewModel.automaticallyChecksForUpdates,
+                    automaticallyDownloadsUpdates: $updateViewModel.automaticallyDownloadsUpdates
+                )
                 linksCard
             }
             .frame(maxWidth: .infinity)
@@ -48,6 +45,10 @@ struct AboutSettingsView: View {
         }
         .settingsScrollChromeHidden()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .task {
+            updateViewModel.start()
+            updateViewModel.refreshAvailabilityIfNeeded()
+        }
     }
 }
 
@@ -62,13 +63,13 @@ private extension AboutSettingsView {
                 .clipShape(.rect(cornerRadius: 22))
                 .shadow(color: .black.opacity(0.12), radius: 16, y: 8)
 
-            Text(appName)
+            Text(AppMetadata.displayName)
                 .font(.system(size: 34, weight: .bold))
                 .tracking(-0.8)
 
             HStack(spacing: 0) {
                 Text("Version")
-                Text(verbatim: " \(shortVersion)")
+                Text(verbatim: " \(AppMetadata.displayVersion)")
             }
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.secondary)
@@ -84,51 +85,179 @@ private extension AboutSettingsView {
     }
 }
 
-// MARK: - Card 1: Feature Overview
+// MARK: - Software Update
 
 private extension AboutSettingsView {
-    var featureOverviewCard: some View {
-        SettingsCard(
-            title: "Feature Overview",
-            systemImage: "sparkles"
-        ) {
+    func softwareUpdateCard(
+        viewModel: AppUpdateViewModel,
+        automaticallyChecksForUpdates: Binding<Bool>,
+        automaticallyDownloadsUpdates: Binding<Bool>
+    ) -> some View {
+        SettingsCard(title: "Software Update", systemImage: "arrow.triangle.2.circlepath") {
             VStack(alignment: .leading, spacing: 14) {
-                Text("All core capabilities are available in the open-source build.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(.red)
+                        .frame(width: 8, height: 8)
+                        .opacity(viewModel.shouldShowUpdateBadge ? 1 : 0)
 
-                HStack(spacing: 24) {
-                    featureItem(icon: "clock.arrow.circlepath", title: "Unlimited History")
-                    featureItem(icon: "magnifyingglass", title: "Search")
-                    featureItem(icon: "icloud.fill", title: "iCloud Sync")
-                }
-                .padding(.vertical, 2)
+                    Text(verbatim: updateStatusMessage(for: viewModel))
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(updateStatusColor(for: viewModel))
+                        .lineLimit(2)
 
-                HStack(spacing: 24) {
-                    featureItem(icon: "doc.plaintext", title: "Plain Text Paste")
-                    featureItem(icon: "slider.horizontal.3", title: "Custom Rules")
-                    featureItem(icon: "paintpalette.fill", title: "Multiple Themes")
+                    Spacer(minLength: 12)
                 }
-                .padding(.vertical, 2)
+
+                VStack(spacing: 0) {
+                    updateValueRow(title: "Current Version", value: viewModel.currentVersion)
+
+                    if let availableUpdate = viewModel.availableUpdate {
+                        cardDivider
+                        updateValueRow(title: "Latest Version", value: availableUpdate.version)
+                    }
+
+                    cardDivider
+
+                    updateToggleRow(title: "Automatically Check for Updates") {
+                        Toggle("", isOn: automaticallyChecksForUpdates)
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                    }
+
+                    cardDivider
+
+                    updateToggleRow(title: "Automatically Download Updates") {
+                        Toggle("", isOn: automaticallyDownloadsUpdates)
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                            .disabled(!viewModel.automaticallyChecksForUpdates)
+                    }
+                }
+
+                HStack(spacing: 12) {
+                    if viewModel.isUpdateAvailable {
+                        Button("Update Now") {
+                            viewModel.installAvailableUpdate()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(viewModel.isCheckingForUpdates || !viewModel.canCheckForUpdates)
+                    } else {
+                        Button("Check for Updates") {
+                            viewModel.checkForUpdates()
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(viewModel.isCheckingForUpdates || !viewModel.canCheckForUpdates)
+                    }
+
+                    if let releaseNotesURL = viewModel.availableUpdate?.releaseNotesURL {
+                        Link("View Release Notes", destination: releaseNotesURL)
+                            .buttonStyle(.link)
+                    }
+
+                    Spacer()
+                }
+
+                if let lastUpdateCheckDate = viewModel.lastUpdateCheckDate {
+                    Text(verbatim: lastCheckedText(for: lastUpdateCheckDate))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if case let .failed(message) = viewModel.phase {
+                    Text(verbatim: updateFailureText(message: message))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }
 
-    func featureItem(icon: String, title: LocalizedStringKey) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12))
-                .foregroundStyle(Color.accentColor)
+    func updateValueRow(title: LocalizedStringKey, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text(title)
-                .font(.system(size: 12))
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Text(verbatim: value)
+                .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .textSelection(.enabled)
         }
+        .padding(.vertical, 4)
+    }
+
+    func updateToggleRow<Trailing: View>(
+        title: LocalizedStringKey,
+        @ViewBuilder trailing: () -> Trailing
+    ) -> some View {
+        HStack(alignment: .center, spacing: 16) {
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            trailing()
+        }
+        .padding(.vertical, 4)
+    }
+
+    var cardDivider: some View {
+        Divider()
+            .padding(.vertical, 10)
+    }
+
+    func updateStatusMessage(for viewModel: AppUpdateViewModel) -> String {
+        switch viewModel.phase {
+        case .idle:
+            if !viewModel.automaticallyChecksForUpdates {
+                return String(localized: "Automatic update checks are turned off")
+            }
+            return String(localized: "Ready to check for updates")
+        case .checking:
+            return String(localized: "Checking for updates…")
+        case .updateAvailable:
+            if let version = viewModel.availableUpdate?.version {
+                return String(format: String(localized: "A new version is ready: %@"), version)
+            }
+            return String(localized: "A new version is available")
+        case .downloading:
+            return String(localized: "Downloading update…")
+        case .installing:
+            return String(localized: "Preparing update…")
+        case .upToDate:
+            return String(localized: "You're up to date")
+        case .failed(let message):
+            return updateFailureText(message: message)
+        }
+    }
+
+    func updateStatusColor(for viewModel: AppUpdateViewModel) -> Color {
+        switch viewModel.phase {
+        case .updateAvailable:
+            return .accentColor
+        case .failed:
+            return .red
+        default:
+            return .secondary
+        }
+    }
+
+    func lastCheckedText(for date: Date) -> String {
+        let formattedDate = date.formatted(date: .abbreviated, time: .shortened)
+        return String(format: String(localized: "Last checked: %@"), formattedDate)
+    }
+
+    func updateFailureText(message: String) -> String {
+        String(format: String(localized: "Update check failed: %@"), message)
     }
 }
 
-// MARK: - Card 2: Links
+// MARK: - Links
 
 private extension AboutSettingsView {
     var linksCard: some View {
@@ -197,4 +326,5 @@ private extension AboutSettingsView {
 
 #Preview {
     AboutSettingsView()
+        .environment(AppUpdateViewModel.preview)
 }

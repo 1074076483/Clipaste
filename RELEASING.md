@@ -1,6 +1,7 @@
 # Releasing
 
 This repository can attach a notarized `.dmg` to a GitHub Release automatically.
+It also publishes a Sparkle appcast feed so the macOS app can check, download, and install updates in-app.
 
 ## Trigger
 
@@ -8,7 +9,9 @@ This repository can attach a notarized `.dmg` to a GitHub Release automatically.
 2. Create and publish a GitHub Release for that tag.
 3. The `Release DMG` workflow runs automatically and uploads:
    - `Clipaste-<tag>.dmg`
+   - `Clipaste-<tag>.zip`
    - `Clipaste-<tag>.dmg.sha256`
+4. The workflow updates the `update-feed` branch and refreshes `appcast.xml`.
 
 You can also run the workflow manually with `workflow_dispatch` and provide an existing tag.
 
@@ -32,6 +35,8 @@ If the tag matches `vX.Y` or `vX.Y.Z`, the release build writes that value into 
   App Store Connect issuer ID.
 - `APPLE_API_KEY_BASE64`
   Base64-encoded contents of `AuthKey_<KEYID>.p8`.
+- `SPARKLE_PRIVATE_KEY`
+  The private Ed25519 key exported from Sparkle `generate_keys -x`. The app ships with the matching public key in `clipaste-Info.plist`.
 
 Optional:
 
@@ -64,6 +69,8 @@ Paste the result into `APPLE_API_KEY_BASE64`.
 ## Notes
 
 - The workflow builds using `developer-id` export and notarizes the generated `.dmg`.
+- The release script also creates a signed `.zip` update archive for Sparkle and notarizes the exported `.app` before zipping it.
+- Sparkle feed artifacts are published to the `update-feed` branch and served from `https://raw.githubusercontent.com/gangz1o/Clipaste/update-feed/appcast.xml`.
 - The project currently ships with iCloud entitlements in `clipaste/clipaste.entitlements` and `clipaste/clipaste-release.entitlements`.
 - If automatic provisioning fails on CI, provide `BUILD_PROVISION_PROFILE_BASE64`.
 - This document is maintainer-focused. Open-source contributors do not need release secrets to build the app locally.

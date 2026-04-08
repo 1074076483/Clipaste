@@ -31,6 +31,7 @@ jobs:
       APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
       APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
       BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+      SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
 
     steps:
       - name: Check out repository
@@ -48,4 +49,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "$RELEASE_TAG" build/release/*.dmg build/release/*.sha256 --clobber
+          gh release upload "$RELEASE_TAG" build/release/*.dmg build/release/*.sha256 build/release/*.zip --clobber
+
+      - name: Publish Sparkle Feed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES_MARKDOWN: ${{ github.event.release.body }}
+        run: |
+          if [ -z "${RELEASE_NOTES_MARKDOWN}" ]; then
+            RELEASE_NOTES_MARKDOWN="$(gh release view "$RELEASE_TAG" --json body --jq .body)"
+            export RELEASE_NOTES_MARKDOWN
+          fi
+
+          chmod +x scripts/publish-sparkle-feed.sh
+          scripts/publish-sparkle-feed.sh

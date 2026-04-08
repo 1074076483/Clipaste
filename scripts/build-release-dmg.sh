@@ -42,8 +42,10 @@ if [[ "$RELEASE_TAG" =~ ^v?([0-9]+(\.[0-9]+){1,2})$ ]]; then
 fi
 ARTIFACT_VERSION="${RELEASE_TAG:-v${RELEASE_VERSION}}"
 ARTIFACT_BASENAME="${APP_NAME}-${ARTIFACT_VERSION}"
+ZIP_PATH="$DIST_DIR/${ARTIFACT_BASENAME}.zip"
 DMG_PATH="$DIST_DIR/${ARTIFACT_BASENAME}.dmg"
 SHA256_PATH="$DIST_DIR/${ARTIFACT_BASENAME}.dmg.sha256"
+ZIP_NOTARIZATION_PATH="$TEMP_ROOT/${ARTIFACT_BASENAME}-notarization.zip"
 
 required_env=(
   APPLE_TEAM_ID
@@ -72,7 +74,7 @@ fi
 
 cleanup() {
   security delete-keychain "$KEYCHAIN_PATH" >/dev/null 2>&1 || true
-  rm -f "$CERT_PATH" "$APPSTORE_CONNECT_KEY_PATH" "$EXPORT_OPTIONS_PLIST" "$PROFILE_METADATA_PLIST"
+  rm -f "$CERT_PATH" "$APPSTORE_CONNECT_KEY_PATH" "$EXPORT_OPTIONS_PLIST" "$PROFILE_METADATA_PLIST" "$ZIP_NOTARIZATION_PATH"
 }
 trap cleanup EXIT
 
@@ -219,6 +221,20 @@ fi
 
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
+ditto -c -k --keepParent "$APP_PATH" "$ZIP_NOTARIZATION_PATH"
+
+xcrun notarytool submit "$ZIP_NOTARIZATION_PATH" \
+  --key "$APPSTORE_CONNECT_KEY_PATH" \
+  --key-id "$APPLE_API_KEY_ID" \
+  --issuer "$APPLE_API_ISSUER_ID" \
+  --wait
+
+xcrun stapler staple "$APP_PATH"
+xcrun stapler validate "$APP_PATH"
+spctl -a -vv "$APP_PATH"
+
+ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+
 mkdir -p "$DMG_STAGING_DIR"
 cp -R "$APP_PATH" "$DMG_STAGING_DIR/"
 ln -s /Applications "$DMG_STAGING_DIR/Applications"
@@ -252,6 +268,7 @@ shasum -a 256 "$DMG_PATH" > "$SHA256_PATH"
 cat <<EOF
 Built release artifacts:
   App: $APP_PATH
+  ZIP: $ZIP_PATH
   DMG: $DMG_PATH
   SHA256: $SHA256_PATH
   Version: $RELEASE_VERSION ($BUILD_NUMBER)

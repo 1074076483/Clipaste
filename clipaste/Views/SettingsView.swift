@@ -46,6 +46,7 @@ enum SettingsTab: String, CaseIterable, Identifiable, Hashable {
 struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .general
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
+    @Environment(AppUpdateViewModel.self) private var appUpdateViewModel
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
 
@@ -118,6 +119,7 @@ private struct SettingsSidebarItem: View {
     let action: () -> Void
 
     @State private var isHovering = false
+    @Environment(AppUpdateViewModel.self) private var appUpdateViewModel
 
     var body: some View {
         Button(action: action) {
@@ -126,6 +128,14 @@ private struct SettingsSidebarItem: View {
                     .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
                     .frame(width: 22, height: 20)
                     .symbolRenderingMode(isSelected ? .hierarchical : .monochrome)
+                    .overlay(alignment: .topTrailing) {
+                        if tab == .about, appUpdateViewModel.shouldShowUpdateBadge {
+                            Circle()
+                                .fill(.red)
+                                .frame(width: 8, height: 8)
+                                .offset(x: 4, y: -2)
+                        }
+                    }
 
                 Text(tab.localizedTitle)
                     .font(.system(size: 11, weight: isSelected ? .semibold : .medium, design: .default))
@@ -133,7 +143,7 @@ private struct SettingsSidebarItem: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .foregroundColor(isSelected ? .accentColor : .secondary)
+            .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(

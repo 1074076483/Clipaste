@@ -333,6 +333,38 @@
         }
       }
     },
+    "A new version is available" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发现新版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發現新版本"
+          }
+        }
+      }
+    },
+    "A new version is ready: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本已就绪：%1$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本已就緒：%1$@"
+          }
+        }
+      }
+    },
     "About" : {
       "localizations" : {
         "de" : {
@@ -710,9 +742,6 @@
         }
       }
     },
-    "All core capabilities are available in the open-source build." : {
-
-    },
     "All Groups" : {
       "localizations" : {
         "de" : {
@@ -946,6 +975,54 @@
         }
       }
     },
+    "Automatic update checks are turned off" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动检查更新已关闭"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動檢查更新已關閉"
+          }
+        }
+      }
+    },
+    "Automatically Check for Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动检查更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動檢查更新"
+          }
+        }
+      }
+    },
+    "Automatically Download Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动下载更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動下載更新"
+          }
+        }
+      }
+    },
     "Browse your complete clipboard history, not just the latest 10." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1044,6 +1121,22 @@
         }
       }
     },
+    "Check for Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查更新"
+          }
+        }
+      }
+    },
     "Check iCloud Connection Status" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1056,6 +1149,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "檢查 iCloud 連線狀態"
+          }
+        }
+      }
+    },
+    "Checking for updates…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在检查更新…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在檢查更新…"
           }
         }
       }
@@ -1136,6 +1245,126 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇一個圖示"
+          }
+        }
+      }
+    },
+    "Choose the iCopy SQLite database file. Clipaste will import the text history into your current library." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle die SQLite-Datenbankdatei von iCopy aus. Clipaste importiert den Textverlauf in deine aktuelle Mediathek."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le fichier de base de données SQLite d’iCopy. Clipaste importera l'historique textuel dans votre bibliothèque actuelle."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCopy の SQLite データベースファイルを選択すると、Clipaste がテキスト履歴を現在のライブラリに取り込みます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCopy SQLite 데이터베이스 파일을 선택하면 Clipaste가 텍스트 기록을 현재 라이브러리로 가져옵니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 iCopy 的 SQLite 数据库文件后，Clipaste 会将文本历史导入当前资料库。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇 iCopy 的 SQLite 資料庫檔案後，Clipaste 會將文字歷史匯入目前資料庫。"
+          }
+        }
+      }
+    },
+    "Choose the Paste SQLite database file. Clipaste will import the history records into your current library." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle die SQLite-Datenbankdatei von Paste aus. Clipaste importiert die Verlaufseinträge in deine aktuelle Mediathek."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le fichier de base de données SQLite de Paste. Clipaste importera l'historique dans votre bibliothèque actuelle."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste の SQLite データベースファイルを選択すると、Clipaste が履歴を現在のライブラリに取り込みます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste SQLite 데이터베이스 파일을 선택하면 Clipaste가 기록 항목을 현재 라이브러리로 가져옵니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 Paste 的 SQLite 数据库文件后，Clipaste 会将历史记录导入当前资料库。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇 Paste 的 SQLite 資料庫檔案後，Clipaste 會將歷史記錄匯入目前資料庫。"
+          }
+        }
+      }
+    },
+    "Choose the PasteNow exported JSON file. Clipaste will parse the history items and import them into your current library." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle die exportierte JSON-Datei von PasteNow aus. Clipaste analysiert die Verlaufseinträge und importiert sie in deine aktuelle Mediathek."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez le fichier JSON exporté par PasteNow. Clipaste analysera les éléments de l'historique et les importera dans votre bibliothèque actuelle."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PasteNow が書き出した JSON ファイルを選択すると、Clipaste が履歴項目を解析して現在のライブラリに取り込みます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PasteNow에서 내보낸 JSON 파일을 선택하면 Clipaste가 기록 항목을 분석해 현재 라이브러리로 가져옵니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 PasteNow 导出的 JSON 文件后，Clipaste 会解析历史条目并导入当前资料库。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇 PasteNow 匯出的 JSON 檔案後，Clipaste 會解析歷史項目並匯入目前資料庫。"
           }
         }
       }
@@ -2043,7 +2272,24 @@
         }
       }
     },
+    "Current Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前版本"
+          }
+        }
+      }
+    },
     "Custom Rules" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2478,6 +2724,22 @@
         }
       }
     },
+    "Downloading update…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下载更新…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載更新…"
+          }
+        }
+      }
+    },
     "Edit Content" : {
       "localizations" : {
         "de" : {
@@ -2630,9 +2892,6 @@
           }
         }
       }
-    },
-    "Feature Overview" : {
-
     },
     "Feedback & Sound" : {
       "localizations" : {
@@ -3506,9 +3765,6 @@
         }
       }
     },
-    "iCloud Sync" : {
-
-    },
     "If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility." : {
       "localizations" : {
         "de" : {
@@ -3944,6 +4200,22 @@
         }
       }
     },
+    "Last checked: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次检查：%1$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上次檢查：%1$@"
+          }
+        }
+      }
+    },
     "Last Position" : {
       "localizations" : {
         "de" : {
@@ -3997,6 +4269,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上次同步：%@"
+          }
+        }
+      }
+    },
+    "Latest Version" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新版本"
           }
         }
       }
@@ -4429,6 +4717,7 @@
       }
     },
     "Multiple Themes" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5617,9 +5906,6 @@
         }
       }
     },
-    "Plain Text Paste" : {
-
-    },
     "Plain Text Quick Paste" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5697,6 +5983,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "複製內容到剪貼簿後播放短促提示音。"
+          }
+        }
+      }
+    },
+    "Preparing update…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在准备更新…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在準備更新…"
           }
         }
       }
@@ -6058,6 +6360,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "退出 Clipaste"
+          }
+        }
+      }
+    },
+    "Ready to check for updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以开始检查更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以開始檢查更新"
           }
         }
       }
@@ -6535,9 +6853,6 @@
           }
         }
       }
-    },
-    "Search" : {
-
     },
     "Search History…" : {
       "localizations" : {
@@ -7448,6 +7763,22 @@
         }
       }
     },
+    "Software Update" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本更新"
+          }
+        }
+      }
+    },
     "Sort & Behavior" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8253,6 +8584,7 @@
       }
     },
     "Unlimited History" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8328,6 +8660,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消固定面板"
+          }
+        }
+      }
+    },
+    "Update check failed: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新失败：%1$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查更新失敗：%1$@"
+          }
+        }
+      }
+    },
+    "Update Now" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即更新"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "立即更新"
           }
         }
       }
@@ -8589,6 +8953,22 @@
         }
       }
     },
+    "View Release Notes" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新说明"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看更新說明"
+          }
+        }
+      }
+    },
     "Waiting for First Sync…" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8762,6 +9142,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "稍後也可以在設定中修改。"
+          }
+        }
+      }
+    },
+    "You're up to date" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前已是最新版本"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前已是最新版本"
           }
         }
       }

@@ -37,8 +37,10 @@ private struct SettingsCard<Content: View>: View {
             }
 
             content
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .liquidGlassCard()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 16)
     }
 }
@@ -92,6 +94,7 @@ struct AdvancedSettingsView: View {
                 migrationCard
                 dataSyncCard
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
         }
         .settingsScrollChromeHidden()
