@@ -48,7 +48,7 @@ Clipaste 支持从以下应用迁移历史数据：
 
 目标很简单：切换工具时，不需要放弃原有历史记录。
 
-## 预览
+## 🧩 预览
 ![mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp](https://cdn.nodeimage.com/i/mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp)
 ![JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp](https://cdn.nodeimage.com/i/JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp)
 ![bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp](https://cdn.nodeimage.com/i/bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp)
