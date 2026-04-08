@@ -82,3 +82,9 @@ If you fork this project and want to distribute your own build, you will also ne
 ## 🚢 Releases
 
 Maintainers can generate and upload a notarized DMG using the GitHub Actions workflow documented in [RELEASING.md](RELEASING.md).
+
+## 💌 Community
+
+Have questions, ideas, or just want to chat with a community of developers?
+
+- **Forum**: [linux.do](https://linux.do/) — Join the discussion, share your setup, report issues, and stick around.
