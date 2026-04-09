@@ -52,6 +52,7 @@ jobs:
           gh release upload "$RELEASE_TAG" build/release/*.dmg build/release/*.sha256 build/release/*.zip --clobber
 
       - name: Publish Sparkle Feed
+        timeout-minutes: 10
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_NOTES_MARKDOWN: ${{ github.event.release.body }}

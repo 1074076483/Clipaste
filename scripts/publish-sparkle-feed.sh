@@ -9,14 +9,13 @@ RELEASE_TAG="${RELEASE_TAG:-}"
 GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
 GH_TOKEN="${GH_TOKEN:-}"
 SPARKLE_PRIVATE_KEY="${SPARKLE_PRIVATE_KEY:-}"
-SPARKLE_KEY_ACCOUNT="${SPARKLE_KEY_ACCOUNT:-clipaste}"
 SPARKLE_VERSION="${SPARKLE_VERSION:-2.9.1}"
 DIST_DIR="${DIST_DIR:-$PROJECT_ROOT/build/release}"
 BUILD_ROOT="${BUILD_ROOT:-$PROJECT_ROOT/build}"
 FEED_BRANCH="${FEED_BRANCH:-update-feed}"
 FEED_DIR="${FEED_DIR:-$BUILD_ROOT/update-feed}"
-SPARKLE_SOURCE_DIR="${SPARKLE_SOURCE_DIR:-$BUILD_ROOT/sparkle-tools-src}"
-SPARKLE_DERIVED_DATA_PATH="${SPARKLE_DERIVED_DATA_PATH:-$BUILD_ROOT/DerivedData-SparkleTools}"
+SPARKLE_TOOLS_DIR="${SPARKLE_TOOLS_DIR:-$BUILD_ROOT/sparkle-tools}"
+SPARKLE_ARCHIVE_PATH="${SPARKLE_ARCHIVE_PATH:-$BUILD_ROOT/Sparkle-${SPARKLE_VERSION}.tar.xz}"
 RELEASE_NOTES_MARKDOWN="${RELEASE_NOTES_MARKDOWN:-}"
 
 if [[ -z "$RELEASE_TAG" ]]; then
@@ -49,44 +48,64 @@ ARTIFACT_BASENAME="$(basename "$ZIP_PATH" .zip)"
 DOWNLOAD_URL_PREFIX="https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/"
 FULL_RELEASE_NOTES_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG}"
 APP_LINK="https://github.com/${GITHUB_REPOSITORY}"
-REMOTE_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+cleanup() {
+  if [[ -d "$FEED_DIR" ]]; then
+    git worktree remove --force "$FEED_DIR" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
+
+log() {
+  printf '[publish-sparkle-feed] %s\n' "$*"
+}
 
 prepare_feed_checkout() {
   rm -rf "$FEED_DIR"
+  git worktree prune >/dev/null 2>&1 || true
 
-  if git ls-remote --exit-code --heads "$REMOTE_URL" "$FEED_BRANCH" >/dev/null 2>&1; then
-    git clone --depth 1 --branch "$FEED_BRANCH" "$REMOTE_URL" "$FEED_DIR"
+  log "Preparing worktree for branch $FEED_BRANCH"
+
+  if git fetch --depth 1 origin "$FEED_BRANCH" >/dev/null 2>&1; then
+    git worktree add -B "$FEED_BRANCH" "$FEED_DIR" FETCH_HEAD >/dev/null
   else
-    git clone --depth 1 "$REMOTE_URL" "$FEED_DIR"
-    git -C "$FEED_DIR" checkout --orphan "$FEED_BRANCH"
+    git worktree add --detach "$FEED_DIR" HEAD >/dev/null
+    git -C "$FEED_DIR" checkout --orphan "$FEED_BRANCH" >/dev/null
     find "$FEED_DIR" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
   fi
 }
 
 ensure_sparkle_tools() {
-  if [[ -x "$SPARKLE_DERIVED_DATA_PATH/Build/Products/Release/generate_appcast" ]]; then
+  if [[ -x "$SPARKLE_TOOLS_DIR/bin/generate_appcast" ]]; then
     return
   fi
 
-  rm -rf "$SPARKLE_SOURCE_DIR"
-  git clone --depth 1 --branch "$SPARKLE_VERSION" https://github.com/sparkle-project/Sparkle "$SPARKLE_SOURCE_DIR"
-  xcodebuild \
-    -project "$SPARKLE_SOURCE_DIR/Sparkle.xcodeproj" \
-    -scheme generate_appcast \
-    -configuration Release \
-    -derivedDataPath "$SPARKLE_DERIVED_DATA_PATH" \
-    build
+  log "Downloading Sparkle ${SPARKLE_VERSION} distribution"
+  rm -rf "$SPARKLE_TOOLS_DIR"
+  mkdir -p "$SPARKLE_TOOLS_DIR"
+
+  gh release download \
+    -R sparkle-project/Sparkle \
+    --pattern "Sparkle-${SPARKLE_VERSION}.tar.xz" \
+    --dir "$BUILD_ROOT" \
+    --clobber
+
+  tar -xJf "$SPARKLE_ARCHIVE_PATH" -C "$SPARKLE_TOOLS_DIR" ./bin
+  chmod +x "$SPARKLE_TOOLS_DIR/bin/generate_appcast"
 }
 
+log "Publishing Sparkle feed for $RELEASE_TAG"
 prepare_feed_checkout
 ensure_sparkle_tools
 
+log "Copying release assets into feed worktree"
 cp "$ZIP_PATH" "$FEED_DIR/"
 printf '%s\n' "${RELEASE_NOTES_MARKDOWN:-$RELEASE_TAG}" > "$FEED_DIR/${ARTIFACT_BASENAME}.md"
 touch "$FEED_DIR/.nojekyll"
 
+log "Generating appcast.xml"
 printf '%s' "$SPARKLE_PRIVATE_KEY" | \
-  "$SPARKLE_DERIVED_DATA_PATH/Build/Products/Release/generate_appcast" \
+  "$SPARKLE_TOOLS_DIR/bin/generate_appcast" \
     --ed-key-file - \
     --download-url-prefix "$DOWNLOAD_URL_PREFIX" \
     --embed-release-notes \
@@ -98,6 +117,7 @@ printf '%s' "$SPARKLE_PRIVATE_KEY" | \
 
 rm -rf "$FEED_DIR/old_updates"
 
+log "Committing feed updates"
 git -C "$FEED_DIR" config user.name "github-actions[bot]"
 git -C "$FEED_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git -C "$FEED_DIR" add -A
@@ -108,4 +128,5 @@ if git -C "$FEED_DIR" diff --cached --quiet; then
 fi
 
 git -C "$FEED_DIR" commit -m "Update Sparkle feed for $RELEASE_TAG"
+log "Pushing branch $FEED_BRANCH"
 git -C "$FEED_DIR" push origin "$FEED_BRANCH"
