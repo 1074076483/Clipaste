@@ -18,6 +18,18 @@ Clipaste 是一个基于 **SwiftUI** 和 **SwiftData** 构建的 macOS 剪贴板
 - ☁️ 支持可选的 iCloud / CloudKit 同步
 - 💕 开源免费
 
+## 🧩 预览
+<div align="center">
+  <img src="https://cdn.nodeimage.com/i/mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp" width="40%" />
+  <img src="https://cdn.nodeimage.com/i/JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp" width="40%" />
+</div>
+<br />
+<div align="center">
+  <img src="https://cdn.nodeimage.com/i/bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp" width="40%" />
+  <img src="https://cdn.nodeimage.com/i/Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp" width="40%" />
+</div>
+<br />
+
 ## 🏎️ 为什么是 Clipaste
 
 Clipaste 重点解决的是很多剪贴板工具在重负载场景下会暴露的问题：
@@ -49,12 +61,6 @@ Clipaste 支持从以下应用迁移历史数据：
 
 目标很简单：切换工具时，不需要放弃原有历史记录。
 
-## 🧩 预览
-![mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp](https://cdn.nodeimage.com/i/mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp)
-![JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp](https://cdn.nodeimage.com/i/JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp)
-![bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp](https://cdn.nodeimage.com/i/bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp)
-![Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp](https://cdn.nodeimage.com/i/Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp)
-![DFLr1a2kN4MJPgoWaCC2CJFvVvyeBgbo.webp](https://cdn.nodeimage.com/i/DFLr1a2kN4MJPgoWaCC2CJFvVvyeBgbo.webp)
 
 ## 🧱 技术栈
 
