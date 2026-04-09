@@ -18,6 +18,18 @@ Its core goal is simple: **stay fast, smooth, and memory-efficient even when cli
 - ☁️ Optional iCloud / CloudKit sync
 - 🆓 Free and open source
 
+## 🧩 Preview
+<div align="center">
+  <img src="https://cdn.nodeimage.com/i/mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp" width="40%" />
+  <img src="https://cdn.nodeimage.com/i/JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp" width="40%" />
+</div>
+<br />
+<div align="center">
+  <img src="https://cdn.nodeimage.com/i/bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp" width="40%" />
+  <img src="https://cdn.nodeimage.com/i/Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp" width="40%" />
+</div>
+<br />
+
 ## 🏎️ Why Clipaste
 
 Clipaste is designed around the failure cases that many clipboard managers start to show under heavier workloads:
@@ -48,13 +60,6 @@ Clipaste can migrate clipboard history from:
 - iCopy
 
 The goal is simple: switch without losing your existing history.
-
-## 🧩 Preview
-![mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp](https://cdn.nodeimage.com/i/mf7KusniFHeaoGGP4uez83OrVpcSyUIr.webp)
-![JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp](https://cdn.nodeimage.com/i/JuRrDgvz6wfUTptWjEX1uH0zZXiI9Hjs.webp)
-![bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp](https://cdn.nodeimage.com/i/bu2Tk7GSQ6aRItJc9PpBrEQrJSt4mKGN.webp)
-![Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp](https://cdn.nodeimage.com/i/Y3a2gv5YW0T4jHX0GxgKYGyDKPqutJmi.webp)
-![DFLr1a2kN4MJPgoWaCC2CJFvVvyeBgbo.webp](https://cdn.nodeimage.com/i/DFLr1a2kN4MJPgoWaCC2CJFvVvyeBgbo.webp)
 
 ## 🧱 Tech Stack
 
