@@ -84,6 +84,17 @@ If you fork this project and want to distribute your own build, you will also ne
 
 Maintainers can generate and upload a notarized DMG using the GitHub Actions workflow documented in [RELEASING.md](RELEASING.md).
 
+## ❤️ Sponsorship
+
+If you find this project helpful, please consider sponsoring us! Your support will help us better maintain and develop the project, allowing Clipaste to continue creating value for the community.
+
+Please be sure to leave a message when sponsoring so we can add you to our sponsor list. Thank you for your support and encouragement!
+
+|                           WeChat                            |                       AliPay                        |
+| :-------------------------------------------------------: | :-------------------------------------------------: |
+| ![7i5hilyW7pimUkNFZYCz9DDldWKgVs6u.webp](https://cdn.nodeimage.com/i/7i5hilyW7pimUkNFZYCz9DDldWKgVs6u.webp) |![4sr4q9XZJ3Bfa7IE1Ob5yyqTp3ZS6B5X.webp](https://cdn.nodeimage.com/i/4sr4q9XZJ3Bfa7IE1Ob5yyqTp3ZS6B5X.webp) |
+
+
 ## 💌 Community
 
 Have questions, ideas, or just want to chat with a community of developers?
