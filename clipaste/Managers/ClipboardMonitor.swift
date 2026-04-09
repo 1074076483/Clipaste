@@ -37,7 +37,7 @@ final class ClipboardMonitor {
 
     func startMonitoring() {
         isMonitoringLifecycleActive = true
-        refreshMonitoringLoop(resetChangeBaseline: false)
+        refreshMonitoringLoop(resetChangeBaseline: true)
     }
 
     func stopMonitoring() {

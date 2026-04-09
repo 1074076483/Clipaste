@@ -29,9 +29,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Pre-warm the panel so the first global shortcut does not block on panel construction.
-        _ = ClipboardPanelManager.shared
-
         let hasCompleted = UserDefaults.standard.bool(forKey: onboardingDefaultsKey)
         lastKnownOnboardingState = hasCompleted
         updateActivationPolicy(hasCompletedOnboarding: hasCompleted)
@@ -90,16 +87,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleToggleVerticalClipboardShortcut() {
         let defaults = UserDefaults.standard
-        let isVerticalLayout = !defaults.bool(forKey: "isVerticalLayout")
-        let layoutMode: AppLayoutMode = isVerticalLayout ? .vertical : .horizontal
+        let currentLayoutMode = AppLayoutMode(
+            rawValue: defaults.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
+        let layoutMode: AppLayoutMode = currentLayoutMode == .vertical ? .horizontal : .vertical
+        let isVerticalLayout = layoutMode == .vertical
 
-        defaults.set(isVerticalLayout, forKey: "isVerticalLayout")
         defaults.set(layoutMode.rawValue, forKey: "clipboardLayout")
-
-        NotificationCenter.default.post(
-            name: .clipboardLayoutModeChanged,
-            object: layoutMode
-        )
+        defaults.set(isVerticalLayout, forKey: "isVerticalLayout")
     }
 
     private func registerGlobalShortcutsIfNeeded() {

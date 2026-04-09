@@ -33,21 +33,25 @@ struct ClipboardVerticalListView: View {
                 viewModel.batchDelete()
             }
             .onAppear {
-                scrollToPrimarySelection(with: proxy)
+                scrollToPrimarySelection(with: proxy, animated: false)
             }
             .onChange(of: viewModel.selectedItemIDs) { _, _ in
-                scrollToPrimarySelection(with: proxy)
+                scrollToPrimarySelection(with: proxy, animated: true)
             }
             .frame(maxHeight: .infinity)
         }
         // 材质由 ClipboardMainView 最外层统一提供，此处不做局部 background
     }
 
-    private func scrollToPrimarySelection(with proxy: ScrollViewProxy) {
+    private func scrollToPrimarySelection(with proxy: ScrollViewProxy, animated: Bool) {
         guard let selectedID = viewModel.lastSelectedID ?? viewModel.selectedItemIDs.first else { return }
 
         DispatchQueue.main.async {
-            withAnimation(.easeInOut(duration: 0.12)) {
+            if animated {
+                withAnimation(.easeInOut(duration: 0.12)) {
+                    proxy.scrollTo(selectedID, anchor: .center)
+                }
+            } else {
                 proxy.scrollTo(selectedID, anchor: .center)
             }
         }

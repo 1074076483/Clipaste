@@ -12,7 +12,7 @@ struct ClipboardHeaderView: View {
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @FocusState var focusedField: ClipboardPanelFocusField?
     @FocusState private var focusedHeaderInput: HeaderInputField?
-    @AppStorage("isVerticalLayout") private var isVerticalLayout: Bool = false
+    @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
     @AppStorage("isPanelPinned") private var isPanelPinned: Bool = false
     @AppStorage("isMonitoringPaused") private var isMonitoringPaused: Bool = false
@@ -37,6 +37,26 @@ struct ClipboardHeaderView: View {
     /// 剪贴板面板上的 Popover 在独立窗口中呈现，往往拿不到根视图的 `\.locale`，需与 `ClipboardPanelRootView` 一致显式注入。
     private var panelLocale: Locale {
         appLanguage.locale ?? .current
+    }
+
+    private var isVerticalLayout: Bool {
+        clipboardLayout == .vertical
+    }
+
+    private var groupBarSpacing: CGFloat {
+        isVerticalLayout ? 2 : 4
+    }
+
+    private var groupTabHorizontalPadding: CGFloat {
+        isVerticalLayout ? 9 : 12
+    }
+
+    private var groupTabVerticalPadding: CGFloat {
+        isVerticalLayout ? 4 : 5
+    }
+
+    private var groupTabIconSpacing: CGFloat {
+        isVerticalLayout ? 4 : 5
     }
 
     var body: some View {
@@ -193,23 +213,26 @@ struct ClipboardHeaderView: View {
     }
 
     // MARK: - 核心组件：单行融合导航栏
-    // 可滚动区域：[全部][文本][链接][代码][图片] │ [自定义分组…]
-    // 固定区域：溢出菜单 ⋯
+    // 固定区域：[全部] … [溢出菜单 ⋯]
+    // 可滚动区域：[智能分类…] │ [自定义分组…]
     private var allGroupTabButton: some View {
         MinimalGroupTabButton(
             title: .localized(LocalizedStringResource("All")),
             icon: "tray.2.fill",
-            isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil
+            isSelected: viewModel.currentFilter == nil && viewModel.selectedGroupId == nil,
+            horizontalPadding: groupTabHorizontalPadding,
+            verticalPadding: groupTabVerticalPadding,
+            iconSpacing: groupTabIconSpacing
         ) {
             selectAllGroup()
         }
     }
 
     private var scrollableGroupTabsStrip: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: groupBarSpacing) {
             scrollableGroupTabsContent
         }
-        .padding(.horizontal, 2)
+        .padding(.horizontal, isVerticalLayout ? 1 : 2)
         .fixedSize(horizontal: true, vertical: false)
         .coordinateSpace(name: GroupBarDropSpace.name)
         .onPreferenceChange(GroupTabFramePreferenceKey.self) { frames in
@@ -242,7 +265,10 @@ struct ClipboardHeaderView: View {
             MinimalGroupTabButton(
                 title: .localized(type.localizedFilterTitle),
                 icon: type.systemImage,
-                isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil
+                isSelected: viewModel.currentFilter == type && viewModel.selectedGroupId == nil,
+                horizontalPadding: groupTabHorizontalPadding,
+                verticalPadding: groupTabVerticalPadding,
+                iconSpacing: groupTabIconSpacing
             ) {
                 selectSmartFilter(type)
             }
@@ -329,31 +355,19 @@ struct ClipboardHeaderView: View {
     }
 
     @ViewBuilder
-    private func hybridGroupBar(scrollWidth: CGFloat? = nil) -> some View {
-        HStack(spacing: 4) {
-            // ── 可滚动区域：智能分类 + 自定义分组 ──────────────────
-            FreeScrollWheelView {
-                HStack(spacing: 4) {
-                    allGroupTabButton
-                    scrollableGroupTabsContent
+    private func hybridGroupBar() -> some View {
+        HStack(spacing: groupBarSpacing) {
+            allGroupTabButton
+
+            if hasHorizontalScrollableGroupTabs {
+                // “全部”固定在左侧，其余分组在独立滚动区域内横向滚动。
+                FreeScrollWheelView {
+                    scrollableGroupTabsStrip
                 }
-                .padding(.horizontal, 2)
-                .fixedSize(horizontal: true, vertical: false)
-                .coordinateSpace(name: GroupBarDropSpace.name)
-                .onPreferenceChange(GroupTabFramePreferenceKey.self) { frames in
-                    groupTabFrames = frames
-                }
-                .onDrop(
-                    of: [ClipboardDragType.group],
-                    delegate: GroupBarDropDelegate(
-                        orderedGroupIDs: viewModel.customGroups.map(\.id),
-                        groupFrames: groupTabFrames,
-                        reorderTarget: $reorderTarget,
-                        viewModel: viewModel
-                    )
-                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Spacer(minLength: 0)
             }
-            .frame(width: scrollWidth, alignment: .leading)
 
             Divider()
                 .frame(height: 14)
@@ -375,7 +389,10 @@ struct ClipboardHeaderView: View {
             title: .verbatim(group.name),
             icon: group.systemIconName,
             isSelected: isSelected || isDropTarget,
-            maxTextWidth: isVerticalLayout ? 60 : 80
+            maxTextWidth: isVerticalLayout ? 60 : 80,
+            horizontalPadding: groupTabHorizontalPadding,
+            verticalPadding: groupTabVerticalPadding,
+            iconSpacing: groupTabIconSpacing
         ) {
             selectCustomGroup(group.id)
         }
@@ -794,6 +811,9 @@ struct MinimalGroupTabButton: View {
     let icon: String
     let isSelected: Bool
     var maxTextWidth: CGFloat? = nil
+    var horizontalPadding: CGFloat = 12
+    var verticalPadding: CGFloat = 5
+    var iconSpacing: CGFloat = 5
     let action: () -> Void
 
     @State private var isHovered = false
@@ -801,7 +821,7 @@ struct MinimalGroupTabButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 5) {
+            HStack(spacing: iconSpacing) {
                 if IconPickerViewModel.customIconNames.contains(icon) {
                     Image(icon)
                         .renderingMode(.template)
@@ -828,15 +848,15 @@ struct MinimalGroupTabButton: View {
                     }
             }
             .foregroundStyle(foregroundStyle)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
             .background(tabBackground)
             .contentShape(Capsule(style: .continuous))
         }
         .buttonStyle(.plain)
         .fixedSize(horizontal: true, vertical: false)
         .animation(.easeInOut(duration: 0.14), value: isHovered)
-        .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isSelected)
+        .animation(.easeInOut(duration: 0.16), value: isSelected)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.12)) {
                 isHovered = hovering
@@ -846,9 +866,9 @@ struct MinimalGroupTabButton: View {
 
     private var foregroundStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(Color.accentColor)
+            return AnyShapeStyle(Color.primary)
         }
-        return AnyShapeStyle(isHovered ? Color.primary.opacity(0.72) : Color.secondary)
+        return AnyShapeStyle(isHovered ? Color.primary : Color.secondary)
     }
 
     private var tabBackground: some View {
@@ -858,29 +878,14 @@ struct MinimalGroupTabButton: View {
                 Capsule(style: .continuous)
                     .strokeBorder(borderStyle, lineWidth: borderLineWidth)
             }
-            .overlay {
-                if isSelected {
-                    Capsule(style: .continuous)
-                        .fill(selectionHighlightStyle)
-                        .padding(1)
-                        .blendMode(.screen)
-                }
-            }
-            .shadow(color: ambientShadowColor, radius: isSelected ? 12 : 0, y: isSelected ? 5 : 0)
-            .shadow(color: accentShadowColor, radius: isSelected ? 7 : 0, y: isSelected ? 2 : 0)
     }
 
     private var backgroundFillStyle: AnyShapeStyle {
         if isSelected {
             return AnyShapeStyle(
-                LinearGradient(
-                    colors: [
-                        Color.accentColor.opacity(colorScheme == .dark ? 0.24 : 0.18),
-                        Color.accentColor.opacity(colorScheme == .dark ? 0.15 : 0.10)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                colorScheme == .dark
+                    ? Color.white.opacity(0.10)
+                    : Color.accentColor.opacity(0.10)
             )
         }
 
@@ -898,14 +903,7 @@ struct MinimalGroupTabButton: View {
     private var borderStyle: AnyShapeStyle {
         if isSelected {
             return AnyShapeStyle(
-                LinearGradient(
-                    colors: [
-                        Color.white.opacity(colorScheme == .dark ? 0.22 : 0.72),
-                        Color.accentColor.opacity(colorScheme == .dark ? 0.34 : 0.22)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                Color.accentColor.opacity(colorScheme == .dark ? 0.34 : 0.20)
             )
         }
 
@@ -916,31 +914,8 @@ struct MinimalGroupTabButton: View {
         return AnyShapeStyle(Color.clear)
     }
 
-    private var selectionHighlightStyle: AnyShapeStyle {
-        AnyShapeStyle(
-            LinearGradient(
-                colors: [
-                    Color.white.opacity(colorScheme == .dark ? 0.16 : 0.58),
-                    Color.white.opacity(0)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-    }
-
     private var borderLineWidth: CGFloat {
-        isSelected ? 0.9 : (isHovered ? 0.6 : 0)
-    }
-
-    private var ambientShadowColor: Color {
-        colorScheme == .dark
-            ? Color.black.opacity(0.28)
-            : Color.black.opacity(0.08)
-    }
-
-    private var accentShadowColor: Color {
-        Color.accentColor.opacity(colorScheme == .dark ? 0.18 : 0.14)
+        isSelected ? 0.8 : (isHovered ? 0.6 : 0)
     }
 }
 

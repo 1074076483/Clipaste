@@ -12,7 +12,6 @@ struct ClipboardMainView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @FocusState private var focusedField: ClipboardPanelFocusField?
 
-    @State private var viewRebuildToken: Bool = false
     @State private var isPanelKeyWindow = false
     @State private var pendingListFocusRequest: PendingListFocusRequest?
     @State private var pendingListFocusGeneration: UInt = 0
@@ -45,7 +44,7 @@ struct ClipboardMainView: View {
 
     private var configuredContent: some View {
         panelLayoutContent
-            .id("\(runtimeStore.rootIdentity)-\(viewRebuildToken)")
+            .id("\(runtimeStore.rootIdentity)-\(clipboardLayout.rawValue)")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.clear)
             .background(VisualEffectView(material: .popover, blendingMode: .behindWindow))
@@ -60,16 +59,17 @@ struct ClipboardMainView: View {
             .preferredColorScheme(appTheme.colorScheme)
             .edgesIgnoringSafeArea(.all)
             .onChange(of: clipboardLayout) {
+                // Only resize the AppKit panel after the AppStorage-backed SwiftUI layout
+                // has already switched, avoiding a one-frame stretch of the old content.
                 NotificationCenter.default.post(
                     name: .clipboardLayoutModeChanged,
                     object: clipboardLayout
                 )
-                DispatchQueue.main.async {
-                    viewRebuildToken.toggle()
-                }
                 requestDefaultListFocus()
             }
             .onChange(of: focusedField) { _, newValue in
+                viewModel.panelFocusField = newValue
+
                 guard newValue == .searchBar else {
                     searchService.isTextFieldFocused = false
                     return
@@ -121,6 +121,9 @@ struct ClipboardMainView: View {
             .onReceive(NotificationCenter.default.publisher(for: .focusSearchFieldIntent)) { _ in
                 requestSearchFocus()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .focusListIntent)) { _ in
+                requestListFocusPreservingSelection()
+            }
     }
 
     @ViewBuilder
@@ -171,8 +174,18 @@ struct ClipboardMainView: View {
         focusSearchField()
     }
 
+    private func requestListFocusPreservingSelection() {
+        pendingListFocusGeneration &+= 1
+        pendingSearchFocusGeneration &+= 1
+        pendingListFocusRequest = nil
+        focusedField = .clipList
+        searchService.isTextFieldFocused = false
+        viewModel.ensureListSelection()
+    }
+
     private func activatePanelInputHandling() {
         isPanelKeyWindow = true
+        viewModel.beginPresentation()
         viewModel.startKeyboardMonitoring()
         // 先启动面板级键盘监听，再启动盲打搜索，确保特殊按键优先被 ViewModel 消费。
         searchService.start()
@@ -186,6 +199,7 @@ struct ClipboardMainView: View {
         pendingListFocusRequest = nil
         searchService.stop()
         viewModel.stopKeyboardMonitoring()
+        viewModel.endPresentation()
     }
 
     private func handlePanelDidBecomeKey() {

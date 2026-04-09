@@ -5,17 +5,22 @@ struct ClipboardEmptyStateView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: isSearching ? "doc.text.magnifyingglass" : "tray.fill")
-                .font(.system(size: 48, weight: .light))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(.tertiary)
+            if isLoading {
+                ProgressView()
+                    .controlSize(.large)
+            } else {
+                Image(systemName: isSearching ? "doc.text.magnifyingglass" : "tray.fill")
+                    .font(.system(size: 48, weight: .light))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.tertiary)
+            }
 
             VStack(spacing: 6) {
-                Text(isSearching ? "No Matches Found" : "Clipboard Empty")
+                Text(titleKey)
                     .font(.headline)
                     .foregroundStyle(.primary)
 
-                Text(isSearching ? "Try a different search term" : "Copied text, images and links will appear here")
+                Text(subtitleKey)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -29,5 +34,25 @@ struct ClipboardEmptyStateView: View {
 
     private var isSearching: Bool {
         !viewModel.searchInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var isLoading: Bool {
+        viewModel.isInitialHistoryLoading && !isSearching
+    }
+
+    private var titleKey: LocalizedStringKey {
+        if isLoading {
+            return "Loading Clipboard History…"
+        }
+
+        return isSearching ? "No Matches Found" : "Clipboard Empty"
+    }
+
+    private var subtitleKey: LocalizedStringKey {
+        if isLoading {
+            return "Recent items will appear first while the full history finishes loading."
+        }
+
+        return isSearching ? "Try a different search term" : "Copied text, images and links will appear here"
     }
 }

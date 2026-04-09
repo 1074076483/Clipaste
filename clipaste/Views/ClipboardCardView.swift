@@ -27,11 +27,23 @@ struct ClipboardCardView: View {
         quickPasteNumber != nil && viewModel.isQuickPasteModifierHeld
     }
 
+    private var watermarkIcon: NSImage? {
+        if let icon = item.appIcon {
+            return icon
+        }
+
+        guard let bundleIdentifier = item.sourceBundleIdentifier else {
+            return nil
+        }
+
+        return AppIconManager.shared.getIcon(for: bundleIdentifier)
+    }
+
     // MARK: - Body
     var body: some View {
         ZStack {
             // ── 水印层：App 图标，最底层──────────────────────────────────
-            if let icon = item.appIcon {
+            if let icon = watermarkIcon {
                 Image(nsImage: icon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)

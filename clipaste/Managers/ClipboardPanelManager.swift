@@ -70,12 +70,20 @@ class ClipboardPanelManager {
         layoutObserver = NotificationCenter.default.addObserver(
             forName: .clipboardLayoutModeChanged,
             object: nil,
-            queue: .main
+            queue: nil
         ) { [weak self] notification in
-            guard let layout = notification.object as? AppLayoutMode else { return }
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                self.updatePanelSize(layout: layout, animated: true)
+            guard let self, let layout = notification.object as? AppLayoutMode else { return }
+
+            let applyLayoutUpdate = {
+                MainActor.assumeIsolated {
+                    self.updatePanelSize(layout: layout, animated: false)
+                }
+            }
+
+            if Thread.isMainThread {
+                applyLayoutUpdate()
+            } else {
+                DispatchQueue.main.async(execute: applyLayoutUpdate)
             }
         }
     }
@@ -167,12 +175,17 @@ class ClipboardPanelManager {
         guard let panel, let screen = screenContainingMouse() ?? NSScreen.main else { return }
         let target = panelFrame(for: layout, on: screen)
 
-        // 瞬间切换尺寸（无动画），确保 SwiftUI .id() 重建时容器尺寸已就位
-        panel.setFrame(target, display: true)
+        // Synchronously batch the frame change and the subsequent AppKit redraw into one
+        // flush. This avoids a transient frame where SwiftUI has switched layout but the
+        // panel is still rendering at the previous size.
+        panel.disableScreenUpdatesUntilFlush()
+        panel.setFrame(target, display: false)
 
         // 横版贴底无需阴影（否则顶部出现边框线）；竖版浮窗保留阴影
         panel.hasShadow = (layout == .vertical)
         applyPanelMovability(for: layout, panel: panel)
+        panel.contentView?.layoutSubtreeIfNeeded()
+        panel.displayIfNeeded()
     }
 
     // MARK: - Show / Hide
@@ -194,10 +207,9 @@ class ClipboardPanelManager {
         //    必须在 activate / makeKeyAndOrderFront 之前调用，否则 frontmostApplication 会变成自己
         previousActiveApp = NSWorkspace.shared.frontmostApplication
 
-        // 每次呼出先读一次 Toggle 的底层 Bool（isVerticalLayout 是设置页的权威来源），
-        // 再同步到 AppLayoutMode 供 panelFrame 使用，保证冷启动尺寸正确。
-        let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
-        let layout: AppLayoutMode = isVertical ? .vertical : .horizontal
+        let layout = AppLayoutMode(
+            rawValue: UserDefaults.standard.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
         let screen = screenContainingMouse() ?? NSScreen.main
 
         applyPanelMovability(for: layout, panel: panel)

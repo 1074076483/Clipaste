@@ -33,10 +33,6 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
         didSet {
             // 保持 clipboardLayout 与 isVerticalLayout 同步
             layoutMode = isVerticalLayout ? .vertical : .horizontal
-            NotificationCenter.default.post(
-                name: .clipboardLayoutModeChanged,
-                object: isVerticalLayout ? AppLayoutMode.vertical : AppLayoutMode.horizontal
-            )
         }
     }
 
@@ -78,6 +74,10 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
     }
 
     @AppStorage("moveToTopAfterPaste") var moveToTopAfterPaste: Bool = false {
+        willSet { objectWillChange.send() }
+    }
+
+    @AppStorage("clearSearchOnPanelActivation") var clearSearchOnPanelActivation: Bool = false {
         willSet { objectWillChange.send() }
     }
 

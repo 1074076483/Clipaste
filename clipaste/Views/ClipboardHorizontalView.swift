@@ -37,20 +37,24 @@ struct ClipboardHorizontalView: View {
                 viewModel.batchDelete()
             }
             .onAppear {
-                scrollToPrimarySelection(with: proxy)
+                scrollToPrimarySelection(with: proxy, animated: false)
             }
             .onChange(of: viewModel.selectedItemIDs) { _, _ in
-                scrollToPrimarySelection(with: proxy)
+                scrollToPrimarySelection(with: proxy, animated: true)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
     }
 
-    private func scrollToPrimarySelection(with proxy: ScrollViewProxy) {
+    private func scrollToPrimarySelection(with proxy: ScrollViewProxy, animated: Bool) {
         guard let selectedID = viewModel.lastSelectedID ?? viewModel.selectedItemIDs.first else { return }
 
         DispatchQueue.main.async {
-            withAnimation(.easeInOut(duration: 0.12)) {
+            if animated {
+                withAnimation(.easeInOut(duration: 0.12)) {
+                    proxy.scrollTo(selectedID, anchor: .center)
+                }
+            } else {
                 proxy.scrollTo(selectedID, anchor: .center)
             }
         }

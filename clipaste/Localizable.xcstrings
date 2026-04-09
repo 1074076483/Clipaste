@@ -975,6 +975,46 @@
         }
       }
     },
+    "Always reset the search field each time the clipboard history panel opens." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setzt das Suchfeld jedes Mal zurück, wenn der Verlauf der Zwischenablage geöffnet wird."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialise toujours le champ de recherche chaque fois que le panneau d'historique du presse-papiers s'ouvre."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボード履歴パネルを開くたびに検索フィールドをリセットします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 기록 패널을 열 때마다 검색 필드를 항상 초기화합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次打开剪贴板历史面板时，都自动将搜索框恢复为空。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次開啟剪貼簿歷史面板時，都會自動將搜尋框清空。"
+          }
+        }
+      }
+    },
     "Automatic update checks are turned off" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1757,6 +1797,86 @@
         }
       }
     },
+    "Loading Clipboard History…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwischenablageverlauf wird geladen…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement de l’historique du presse-papiers…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボード履歴を読み込み中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 기록을 불러오는 중…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在加载剪贴板历史…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在載入剪貼簿歷史…"
+          }
+        }
+      }
+    },
+    "Recent items will appear first while the full history finishes loading." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neueste Elemente werden zuerst angezeigt, während der vollständige Verlauf weiter geladen wird."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments récents s’affichent d’abord pendant le chargement complet de l’historique."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まず最近の項目を表示し、その間に履歴全体の読み込みを続けます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 항목을 먼저 표시하고, 전체 기록은 백그라운드에서 계속 불러옵니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会先显示最近的项目，完整历史会在后台继续加载。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "會先顯示最近的項目，完整歷史會在背景繼續載入。"
+          }
+        }
+      }
+    },
     "Clipboard Monitoring Interval" : {
       "localizations" : {
         "de" : {
@@ -1964,6 +2084,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "繼續"
+          }
+        }
+      }
+    },
+    "Clear Search When Opening Clipboard History" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suche beim Öffnen des Zwischenablageverlaufs löschen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer la recherche à l’ouverture de l’historique du presse-papiers"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボード履歴を開くときに検索をクリア"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 기록을 열 때 검색 지우기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开剪贴板历史时清空搜索框"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟剪貼簿歷史時清空搜尋框"
           }
         }
       }

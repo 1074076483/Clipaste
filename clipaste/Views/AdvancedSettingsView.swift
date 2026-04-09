@@ -143,6 +143,18 @@ private extension AdvancedSettingsView {
 
                 cardDivider
 
+                SettingRow(
+                    icon: "magnifyingglass",
+                    title: "Clear Search When Opening Clipboard History",
+                    subtitle: "Always reset the search field each time the clipboard history panel opens."
+                ) {
+                    Toggle("", isOn: $viewModel.clearSearchOnPanelActivation)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                }
+
+                cardDivider
+
                 // Text Format Setting
                 HStack(alignment: .center, spacing: 12) {
                     Image(systemName: "textformat")

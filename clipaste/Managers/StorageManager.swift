@@ -55,9 +55,9 @@ nonisolated private func encodedGroupIDs(_ groupIDs: [String]) -> String? {
 
 @ModelActor
 actor ClipboardSearcher {
-    func searchAndMap(searchText: String) async -> [ClipboardItem] {
+    func searchAndMap(searchText: String, fetchLimit: Int? = nil) async -> [ClipboardItem] {
         let query = searchText
-        let descriptor: FetchDescriptor<ClipboardRecord>
+        var descriptor: FetchDescriptor<ClipboardRecord>
 
         if query.isEmpty {
             descriptor = FetchDescriptor<ClipboardRecord>(
@@ -73,6 +73,10 @@ actor ClipboardSearcher {
                 predicate: predicate,
                 sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
             )
+        }
+
+        if let fetchLimit, fetchLimit > 0 {
+            descriptor.fetchLimit = fetchLimit
         }
 
         let records = (try? modelContext.fetch(descriptor)) ?? []
@@ -127,9 +131,13 @@ final class StorageManager {
     }
 
     nonisolated
-    func fetchItemsInBackground(searchText: String, container: ModelContainer) async -> [ClipboardItem] {
+    func fetchItemsInBackground(
+        searchText: String,
+        container: ModelContainer,
+        fetchLimit: Int? = nil
+    ) async -> [ClipboardItem] {
         let searcher = ClipboardSearcher(modelContainer: container)
-        return await searcher.searchAndMap(searchText: searchText)
+        return await searcher.searchAndMap(searchText: searchText, fetchLimit: fetchLimit)
     }
 
     nonisolated
@@ -399,7 +407,6 @@ final class StorageManager {
     @MainActor
     fileprivate static func makeClipboardItem(from record: ClipboardRecordSnapshot) -> ClipboardItem {
         let type = ClipboardContentType(rawValue: record.typeRawValue) ?? .text
-        let appIcon = record.bundleIdentifier.flatMap { AppIconManager.shared.getIcon(for: $0) }
 
         return ClipboardItem(
             id: record.id,
@@ -409,7 +416,7 @@ final class StorageManager {
             searchableText: record.plainText,
             sourceBundleIdentifier: record.bundleIdentifier,
             appName: record.appName,
-            appIcon: appIcon,
+            appIcon: nil,
             appIconName: ClipboardItem.appIconName(for: record.bundleIdentifier),
             timestamp: record.timestamp,
             rawText: (type == .text || type == .link || type == .code) ? record.plainText : nil,

@@ -6,6 +6,7 @@ extension Notification.Name {
     static let selectNextGroup = Notification.Name("selectNextGroup")
     static let selectPreviousGroup = Notification.Name("selectPreviousGroup")
     static let focusSearchFieldIntent = Notification.Name("focusSearchFieldIntent")
+    static let focusListIntent = Notification.Name("focusListIntent")
 }
 
 /// 统一分组标识：将智能分类和用户分组抹平为同一类型，供游标引擎使用。
@@ -24,6 +25,13 @@ extension UserDefaults {
 
 @MainActor
 class ClipboardViewModel: ObservableObject {
+    private enum DataLoadMode {
+        case visibleFirst
+        case fullRefresh
+    }
+
+    private static let initialVisibleItemBatchSize = 80
+
     private struct QuickLookImagePreviewState {
         let image: NSImage
         let targetSize: CGSize
@@ -35,6 +43,7 @@ class ClipboardViewModel: ObservableObject {
     @Published var activeSearchQuery: String = ""
     @Published var currentFilter: ClipboardContentType? = nil  // 智能分类过滤：nil = 全部
     @Published var selectedItemIDs: Set<UUID> = []
+    @Published private(set) var isInitialHistoryLoading = false
     /// Shift 连选锚点：记录最近一次「主动点击」选中的 item ID
     var lastSelectedID: UUID? = nil
     @Published var quickLookItem: ClipboardItem? = nil  // 空格键预览
@@ -55,6 +64,7 @@ class ClipboardViewModel: ObservableObject {
     @Published private(set) var isPlainTextModifierHeld: Bool = false
     @AppStorage("enable_smart_groups") var isSmartGroupsEnabled: Bool = true
     @AppStorage("pasteTextFormat") private var pasteTextFormat: PasteTextFormat = .original
+    var panelFocusField: ClipboardPanelFocusField? = nil
 
     private var cancellables: Set<AnyCancellable> = []
     private var filterGeneration: UInt = 0
@@ -65,6 +75,10 @@ class ClipboardViewModel: ObservableObject {
     nonisolated(unsafe) private var flagsChangedMonitor: Any?
     private var currentModifierFlags: NSEvent.ModifierFlags = []
     private var shouldResetSelectionToFirstDisplayedItem = false
+    private var hasPreparedPanelData = false
+    private var isPanelPresentationActive = false
+    private var needsReloadOnNextPresentation = false
+    private var dataLoadGeneration: UInt = 0
     private let settingsViewModel: SettingsViewModel
 
     init(
@@ -80,12 +94,31 @@ class ClipboardViewModel: ObservableObject {
         ]
 
         setupDataSubscriptions()
-        loadData()
-        loadCustomGroups()
         setupFilterPipeline()
         setupGroupSwitchSubscriptions()
         setupSmartGroupsGuard()
         setupModifierPreferenceSync()
+    }
+
+    func beginPresentation() {
+        isPanelPresentationActive = true
+        resetSearchForPresentationIfNeeded()
+
+        if hasPreparedPanelData == false {
+            hasPreparedPanelData = true
+            loadData(mode: .visibleFirst)
+            loadCustomGroups()
+            return
+        }
+
+        guard needsReloadOnNextPresentation else { return }
+        needsReloadOnNextPresentation = false
+        loadData(mode: .fullRefresh)
+        loadCustomGroups()
+    }
+
+    func endPresentation() {
+        isPanelPresentationActive = false
     }
 
     deinit {
@@ -107,7 +140,8 @@ class ClipboardViewModel: ObservableObject {
         }
 
         keyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            self?.handlePanelKeyDown(event) ?? event
+            guard let self else { return event }
+            return self.handlePanelKeyDown(event)
         }
     }
 
@@ -157,14 +191,24 @@ class ClipboardViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .clipboardDataDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.loadData()
+                guard let self, self.hasPreparedPanelData else { return }
+                guard self.isPanelPresentationActive else {
+                    self.needsReloadOnNextPresentation = true
+                    return
+                }
+                self.loadData()
             }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .didFinishDataMigration)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.reloadPanelDataAfterMigration()
+                guard let self, self.hasPreparedPanelData else { return }
+                guard self.isPanelPresentationActive else {
+                    self.needsReloadOnNextPresentation = true
+                    return
+                }
+                self.reloadPanelDataAfterMigration()
             }
             .store(in: &cancellables)
     }
@@ -172,6 +216,14 @@ class ClipboardViewModel: ObservableObject {
     private func reloadPanelDataAfterMigration() {
         loadData()
         loadCustomGroups()
+    }
+
+    private func resetSearchForPresentationIfNeeded() {
+        guard settingsViewModel.clearSearchOnPanelActivation else { return }
+        guard !searchInput.isEmpty || !activeSearchQuery.isEmpty else { return }
+
+        searchInput = ""
+        activeSearchQuery = ""
     }
 
     private func setupModifierPreferenceSync() {
@@ -298,34 +350,71 @@ class ClipboardViewModel: ObservableObject {
             return nil
         }
 
+        if !isQuickLookActive,
+           let direction = navigationDirection(for: keyCode),
+           shouldRouteSearchArrowNavigation {
+            NotificationCenter.default.post(name: .focusListIntent, object: nil)
+            moveSelection(direction: direction)
+            return nil
+        }
+
         if hasActiveTextInputResponder {
             return event
         }
 
-        if !isQuickLookActive {
-            let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
-            if isVertical {
-                if keyCode == 125 {
-                    moveSelection(direction: 1)
-                    return nil
-                }
-                if keyCode == 126 {
-                    moveSelection(direction: -1)
-                    return nil
-                }
-            } else {
-                if keyCode == 124 {
-                    moveSelection(direction: 1)
-                    return nil
-                }
-                if keyCode == 123 {
-                    moveSelection(direction: -1)
-                    return nil
-                }
-            }
+        if !isQuickLookActive,
+           let direction = navigationDirection(for: keyCode) {
+            moveSelection(direction: direction)
+            return nil
         }
 
         return event
+    }
+
+    private var shouldRouteSearchArrowNavigation: Bool {
+        guard panelFocusField == .searchBar else {
+            return false
+        }
+
+        guard !displayedItemsForInteraction.isEmpty else {
+            return false
+        }
+
+        guard !searchInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+
+        if let textView = NSApp.keyWindow?.firstResponder as? NSTextView,
+           textView.hasMarkedText() {
+            return false
+        }
+
+        return true
+    }
+
+    private func navigationDirection(for keyCode: UInt16) -> Int? {
+        let layout = AppLayoutMode(
+            rawValue: UserDefaults.standard.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
+        let isVertical = layout == .vertical
+
+        if isVertical {
+            if keyCode == 125 {
+                return 1
+            }
+            if keyCode == 126 {
+                return -1
+            }
+        } else {
+            if keyCode == 124 {
+                return 1
+            }
+            if keyCode == 123 {
+                return -1
+            }
+        }
+
+        return nil
     }
 
     private func acceptedSearchInput(from rawInput: String) -> String? {
@@ -478,33 +567,61 @@ class ClipboardViewModel: ObservableObject {
         }
     }
 
-    func loadData() {
+    private func loadData(mode: DataLoadMode = .fullRefresh) {
         let container = StorageManager.shared.container
+        dataLoadGeneration &+= 1
+        let generation = dataLoadGeneration
+
+        if items.isEmpty {
+            isInitialHistoryLoading = true
+        }
 
         Task(priority: .userInitiated) {
             let searcher = ClipboardSearcher(modelContainer: container)
+
+            if mode == .visibleFirst {
+                let previewItems = await searcher.searchAndMap(
+                    searchText: "",
+                    fetchLimit: Self.initialVisibleItemBatchSize
+                )
+
+                guard !Task.isCancelled else { return }
+                guard generation == self.dataLoadGeneration else { return }
+
+                self.applyLoadedItems(previewItems)
+            }
+
             let mappedItems = await searcher.searchAndMap(searchText: "")
-            self.items = mappedItems
 
-            // ⚠️ 面板首次打开保险：若无任何筛选条件，直接同步 filteredItems
-            // 避免 Combine 防抖管道 200ms 延迟导致列表短暂显示残缺数据
-            if self.searchInput.isEmpty && self.currentFilter == nil && self.selectedGroupId == nil {
-                self.filteredItems = mappedItems
-                self.reconcileSelectionAfterDisplayedItemsChange()
-            }
+            guard !Task.isCancelled else { return }
+            guard generation == self.dataLoadGeneration else { return }
 
-            // 清理失效的选中 ID：移除已不在数据源中的 ID
-            let validIDs = Set(mappedItems.map(\.id))
-            let staleIDs = self.selectedItemIDs.subtracting(validIDs)
-            if !staleIDs.isEmpty {
-                self.selectedItemIDs.subtract(staleIDs)
-            }
-            if let anchor = self.lastSelectedID, !validIDs.contains(anchor) {
-                self.lastSelectedID = nil
-            }
-
-            self.reconcileSelectionAfterDisplayedItemsChange()
+            self.applyLoadedItems(mappedItems)
         }
+    }
+
+    private func applyLoadedItems(_ mappedItems: [ClipboardItem]) {
+        items = mappedItems
+        isInitialHistoryLoading = false
+
+        // ⚠️ 面板首次打开保险：若无任何筛选条件，直接同步 filteredItems
+        // 避免 Combine 防抖管道 200ms 延迟导致列表短暂显示残缺数据
+        if searchInput.isEmpty && currentFilter == nil && selectedGroupId == nil {
+            filteredItems = mappedItems
+            reconcileSelectionAfterDisplayedItemsChange()
+        }
+
+        // 清理失效的选中 ID：移除已不在数据源中的 ID
+        let validIDs = Set(mappedItems.map(\.id))
+        let staleIDs = selectedItemIDs.subtracting(validIDs)
+        if !staleIDs.isEmpty {
+            selectedItemIDs.subtract(staleIDs)
+        }
+        if let anchor = lastSelectedID, !validIDs.contains(anchor) {
+            lastSelectedID = nil
+        }
+
+        reconcileSelectionAfterDisplayedItemsChange()
     }
 
     // MARK: - 多选核心运算引擎

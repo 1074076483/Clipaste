@@ -37,7 +37,10 @@ final class ClipboardPanel: NSPanel {
     /// Returns `true` if the event was consumed (scrolled horizontally).
     private func handleVerticalToHorizontalScroll(_ event: NSEvent) -> Bool {
         // Only redirect when the layout is horizontal
-        let isVertical = UserDefaults.standard.bool(forKey: "isVerticalLayout")
+        let layout = AppLayoutMode(
+            rawValue: UserDefaults.standard.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
+        let isVertical = layout == .vertical
         guard !isVertical else { return false }
 
         // Don't touch events that already have Shift (user intentionally scrolling horizontally)
