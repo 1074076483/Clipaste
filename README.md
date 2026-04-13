@@ -1,4 +1,5 @@
-# 📋 Clipaste &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; [![简体中文](https://img.shields.io/static/v1?label=🇨🇳&message=简体中文&color=blue)](README.zh.md) [![English](https://img.shields.io/static/v1?label=🇺🇸&message=English&color=orange)](README.md)
+# 📋 Clipaste  
+[![简体中文](https://img.shields.io/static/v1?label=🇨🇳&message=简体中文&color=blue)](README.zh.md) [![English](https://img.shields.io/static/v1?label=🇺🇸&message=English&color=orange)](README.md)
 
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/gangz1o/Clipaste?style=for-the-badge)
