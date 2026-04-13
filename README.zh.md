@@ -1,4 +1,9 @@
 # 📋 Clipaste
+![GitHub Repo stars](https://img.shields.io/github/stars/gangz1o/Clipaste?style=for-the-badge)
+![GitHub forks](https://img.shields.io/github/forks/gangz1o/Clipaste?style=for-the-badge)
+![GitHub contributors](https://img.shields.io/github/contributors/gangz1o/Clipaste?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/gangz1o/Clipaste?style=for-the-badge)
+![GitHub issues](https://img.shields.io/github/issues/gangz1o/Clipaste?style=for-the-badge)
 
 [English](README.en.md)
 
