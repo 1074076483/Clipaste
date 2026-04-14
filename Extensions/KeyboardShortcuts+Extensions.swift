@@ -31,4 +31,9 @@ extension KeyboardShortcuts.Name {
         "toggleFavoriteSelection",
         default: .init(.e, modifiers: [.control])
     )
+
+    static let deleteSelectedItems = Self(
+        "deleteSelectedItems",
+        default: .init(.delete, modifiers: [.command])
+    )
 }

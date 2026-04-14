@@ -78,6 +78,10 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
         willSet { objectWillChange.send() }
     }
 
+    @AppStorage("requireCmdToDelete") var requireCmdToDelete: Bool = false {
+        willSet { objectWillChange.send() }
+    }
+
     @AppStorage("pasteTextFormat") var pasteTextFormat: PasteTextFormat = .original {
         willSet { objectWillChange.send() }
     }

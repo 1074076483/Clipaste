@@ -5,6 +5,7 @@ struct ClipboardVerticalListView: View {
     let items: [ClipboardItem]
     @FocusState var focusedField: ClipboardPanelFocusField?
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
+    @AppStorage("requireCmdToDelete") private var requireCmdToDelete: Bool = false
 
     private var isCompact: Bool {
         clipboardLayout == .compact
@@ -45,6 +46,7 @@ struct ClipboardVerticalListView: View {
                 focusedField = .clipList
             })
             .onDeleteCommand {
+                guard !requireCmdToDelete else { return }
                 guard !viewModel.selectedItemIDs.isEmpty else { return }
                 viewModel.batchDelete()
             }
