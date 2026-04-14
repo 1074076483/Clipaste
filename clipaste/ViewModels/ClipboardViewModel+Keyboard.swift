@@ -12,6 +12,15 @@ extension ClipboardViewModel {
                 self.toggleFavoriteForSelection()
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .deleteSelectedItemsIntent)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self, self.isPanelPresentationActive else { return }
+                guard !self.selectedItemIDs.isEmpty else { return }
+                self.batchDelete()
+            }
+            .store(in: &cancellables)
     }
 
     func startKeyboardMonitoring() {

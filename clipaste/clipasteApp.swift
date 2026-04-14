@@ -85,21 +85,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ClipboardPanelManager.shared.togglePanel()
     }
 
-<<<<<<< HEAD
-||||||| parent of 6c55086 (Add Vertical Compact layout mode)
-    private func handleToggleVerticalClipboardShortcut() {
-        let defaults = UserDefaults.standard
-        let currentLayoutMode = AppLayoutMode(
-            rawValue: defaults.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
-        ) ?? .horizontal
-        let layoutMode: AppLayoutMode = currentLayoutMode == .vertical ? .horizontal : .vertical
-        let isVerticalLayout = layoutMode == .vertical
-
-        defaults.set(layoutMode.rawValue, forKey: "clipboardLayout")
-        defaults.set(isVerticalLayout, forKey: "isVerticalLayout")
-    }
-
-=======
     private func handleToggleVerticalClipboardShortcut() {
         let defaults = UserDefaults.standard
         let currentLayoutMode = AppLayoutMode(
@@ -120,13 +105,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         defaults.set(layoutMode.rawValue, forKey: "clipboardLayout")
     }
 
->>>>>>> 6c55086 (Add Vertical Compact layout mode)
     private func registerGlobalShortcutsIfNeeded() {
         guard !hasRegisteredGlobalShortcuts else { return }
         hasRegisteredGlobalShortcuts = true
 
         KeyboardShortcuts.onKeyDown(for: .toggleClipboardPanel) { [weak self] in
             self?.handleTogglePanelShortcut()
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .toggleVerticalClipboard) { [weak self] in
+            self?.handleToggleVerticalClipboardShortcut()
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .nextList) {
+            NotificationCenter.default.post(name: .selectNextGroup, object: nil)
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .prevList) {
+            NotificationCenter.default.post(name: .selectPreviousGroup, object: nil)
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .clearHistory) {
+            StorageManager.shared.clearUnpinnedHistory()
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .toggleFavoriteSelection) {
+            NotificationCenter.default.post(name: .toggleFavoriteSelectionIntent, object: nil)
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .deleteSelectedItems) {
+            NotificationCenter.default.post(name: .deleteSelectedItemsIntent, object: nil)
         }
     }
 
