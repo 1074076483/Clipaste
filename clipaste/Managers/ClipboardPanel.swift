@@ -40,7 +40,7 @@ final class ClipboardPanel: NSPanel {
         let layout = AppLayoutMode(
             rawValue: UserDefaults.standard.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
         ) ?? .horizontal
-        let isVertical = layout == .vertical
+        let isVertical = layout == .vertical || layout == .compact
         guard !isVertical else { return false }
 
         // Don't touch events that already have Shift (user intentionally scrolling horizontally)

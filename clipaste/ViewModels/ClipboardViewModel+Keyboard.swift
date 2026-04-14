@@ -305,7 +305,7 @@ private extension ClipboardViewModel {
         let layout = AppLayoutMode(
             rawValue: UserDefaults.standard.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
         ) ?? .horizontal
-        let isVertical = layout == .vertical
+        let isVertical = layout == .vertical || layout == .compact
 
         if isVertical {
             if keyCode == 125 {

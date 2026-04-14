@@ -39,7 +39,7 @@ struct ClipboardHeaderView: View {
     }
 
     private var isVerticalLayout: Bool {
-        clipboardLayout == .vertical
+        clipboardLayout == .vertical || clipboardLayout == .compact
     }
 
     private var groupBarSpacing: CGFloat {
@@ -115,8 +115,10 @@ struct ClipboardHeaderView: View {
             // 第一行：固定按钮 + 搜索框 + 设置菜单
             searchBarContent
 
-            // 第二行：混合分组导航栏（占满全部宽度）
-            hybridGroupBar()
+            // 第二行：混合分组导航栏（占满全部宽度）- 紧凑模式下隐藏
+            if clipboardLayout != .compact {
+                hybridGroupBar()
+            }
         }
         .padding(.horizontal, 14)
         .padding(.top, 14)

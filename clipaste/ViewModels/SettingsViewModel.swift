@@ -28,14 +28,6 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
         didSet { updateAppLanguage(language: appLanguage) }
     }
 
-    @AppStorage("isVerticalLayout") var isVerticalLayout: Bool = false {
-        willSet { objectWillChange.send() }
-        didSet {
-            // 保持 clipboardLayout 与 isVerticalLayout 同步
-            layoutMode = isVerticalLayout ? .vertical : .horizontal
-        }
-    }
-
     @AppStorage("verticalFollowMode") var verticalFollowMode: VerticalFollowMode = .mouse {
         willSet { objectWillChange.send() }
     }
@@ -58,6 +50,11 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
 
     @AppStorage("clipboardLayout") var layoutMode: AppLayoutMode = .horizontal {
         willSet { objectWillChange.send() }
+    }
+
+    /// Backward compatibility property - true when layout is vertical or compact
+    var isVerticalLayout: Bool {
+        layoutMode == .vertical || layoutMode == .compact
     }
 
     @AppStorage("pasteBehavior") var pasteBehavior: PasteBehavior = .direct {

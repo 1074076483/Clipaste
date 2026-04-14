@@ -71,6 +71,7 @@ struct GeneralSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
 
     @State private var showingClearAlert = false
 
@@ -152,33 +153,19 @@ private extension GeneralSettingsView {
             VStack(spacing: 0) {
                 SettingRow(
                     icon: "rectangle.split.2x1",
-                    title: "Use Vertical List Layout",
-                    subtitle: "Horizontal cards are better for browsing; vertical list is better for quick switching and searching."
+                    title: "Layout Mode",
+                    subtitle: "Choose how to display your clipboard items"
                 ) {
-                    Toggle("", isOn: $viewModel.isVerticalLayout)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                }
-
-                if viewModel.isVerticalLayout {
-                    cardDivider
-
-                    SettingRow(
-                        icon: "arrow.up.and.down",
-                        title: "Display Position"
-                    ) {
-                        Picker("", selection: $viewModel.verticalFollowMode) {
-                            ForEach(VerticalFollowMode.allCases) { mode in
-                                Text(mode.localizedTitle).tag(mode)
-                            }
+                    Picker("", selection: $clipboardLayout) {
+                        ForEach(AppLayoutMode.allCases) { mode in
+                            Text(mode.displayName).tag(mode)
                         }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                        .fixedSize()
                     }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: viewModel.isVerticalLayout)
         }
     }
 }

@@ -4,12 +4,28 @@ struct ClipboardVerticalListView: View {
     @ObservedObject var viewModel: ClipboardViewModel
     let items: [ClipboardItem]
     @FocusState var focusedField: ClipboardPanelFocusField?
+    @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
 
+    private var isCompact: Bool {
+        clipboardLayout == .compact
+    }
+
+    private var itemSpacing: CGFloat {
+        isCompact ? 2 : 8
+    }
+
+    private var horizontalPadding: CGFloat {
+        isCompact ? 4 : 12
+    }
+
+    private var verticalPadding: CGFloat {
+        isCompact ? 6 : 12
+    }
 
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: 8) {
+                LazyVStack(spacing: itemSpacing) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                         ClipboardVerticalItemView(
                             item: item,
@@ -19,8 +35,8 @@ struct ClipboardVerticalListView: View {
                             .id(item.id)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 12)
+                .padding(.horizontal, horizontalPadding)
+                .padding(.vertical, verticalPadding)
             }
             .focusable()
             .focusEffectDisabled()

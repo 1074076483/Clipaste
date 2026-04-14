@@ -172,7 +172,7 @@ class ClipboardPanelManager {
             let full = screen.frame          // 使用完整屏幕帧，覆盖 Dock 栏
             let height: CGFloat = 320
             return NSRect(x: full.minX, y: full.minY, width: full.width, height: height)
-        case .vertical:
+        case .vertical, .compact:
             return verticalFrame(on: screen)
         }
     }
@@ -188,7 +188,7 @@ class ClipboardPanelManager {
         panel.setFrame(target, display: false)
 
         // 横版贴底无需阴影（否则顶部出现边框线）；竖版浮窗保留阴影
-        panel.hasShadow = (layout == .vertical)
+        panel.hasShadow = (layout == .vertical || layout == .compact)
         applyPanelMovability(for: layout, panel: panel)
 
         DispatchQueue.main.async { [weak panel] in
@@ -221,7 +221,7 @@ class ClipboardPanelManager {
         let screen = screenContainingMouse() ?? NSScreen.main
 
         applyPanelMovability(for: layout, panel: panel)
-        panel.hasShadow = (layout == .vertical)
+        panel.hasShadow = (layout == .vertical || layout == .compact)
 
 
         let visibleFrame = panelFrame(for: layout, on: screen ?? NSScreen.main!)
@@ -265,7 +265,7 @@ class ClipboardPanelManager {
 
     private func applyPanelMovability(for layout: AppLayoutMode, panel: ClipboardPanel) {
         panel.isMovableByWindowBackground = false
-        panel.isMovable = layout == .vertical
+        panel.isMovable = layout == .vertical || layout == .compact
     }
 
     /// Hides the clipboard panel — intercepted when the panel is pinned or showing a modal dialog.

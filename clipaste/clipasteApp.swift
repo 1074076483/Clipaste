@@ -85,6 +85,42 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ClipboardPanelManager.shared.togglePanel()
     }
 
+<<<<<<< HEAD
+||||||| parent of 6c55086 (Add Vertical Compact layout mode)
+    private func handleToggleVerticalClipboardShortcut() {
+        let defaults = UserDefaults.standard
+        let currentLayoutMode = AppLayoutMode(
+            rawValue: defaults.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
+        let layoutMode: AppLayoutMode = currentLayoutMode == .vertical ? .horizontal : .vertical
+        let isVerticalLayout = layoutMode == .vertical
+
+        defaults.set(layoutMode.rawValue, forKey: "clipboardLayout")
+        defaults.set(isVerticalLayout, forKey: "isVerticalLayout")
+    }
+
+=======
+    private func handleToggleVerticalClipboardShortcut() {
+        let defaults = UserDefaults.standard
+        let currentLayoutMode = AppLayoutMode(
+            rawValue: defaults.string(forKey: "clipboardLayout") ?? AppLayoutMode.horizontal.rawValue
+        ) ?? .horizontal
+        
+        // Cycle through layouts: horizontal -> vertical -> compact -> horizontal
+        let layoutMode: AppLayoutMode
+        switch currentLayoutMode {
+        case .horizontal:
+            layoutMode = .vertical
+        case .vertical:
+            layoutMode = .compact
+        case .compact:
+            layoutMode = .horizontal
+        }
+
+        defaults.set(layoutMode.rawValue, forKey: "clipboardLayout")
+    }
+
+>>>>>>> 6c55086 (Add Vertical Compact layout mode)
     private func registerGlobalShortcutsIfNeeded() {
         guard !hasRegisteredGlobalShortcuts else { return }
         hasRegisteredGlobalShortcuts = true
