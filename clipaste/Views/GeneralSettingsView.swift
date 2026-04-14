@@ -154,16 +154,15 @@ private extension GeneralSettingsView {
                 SettingRow(
                     icon: "rectangle.split.2x1",
                     title: "Layout Mode",
-                    subtitle: "Choose how to display your clipboard items"
+                    subtitle: "Choose how clipboard items are displayed"
                 ) {
                     Picker("", selection: $clipboardLayout) {
                         ForEach(AppLayoutMode.allCases) { mode in
                             Text(mode.displayName).tag(mode)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
                     .labelsHidden()
-                    .fixedSize()
                 }
             }
         }
