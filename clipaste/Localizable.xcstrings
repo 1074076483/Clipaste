@@ -2720,46 +2720,6 @@
         }
       }
     },
-    "Deleted %lld items. Kept %lld item(s) in Favorites." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld Einträge gelöscht. %lld Einträge in den Favoriten behalten."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld éléments supprimés. %lld élément(s) conservé(s) dans les favoris."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld件を削除し、お気に入り内の%lld件を保持しました。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld개 항목을 삭제하고 즐겨찾기의 %lld개 항목은 유지했습니다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已删除 %lld 个项目，保留收藏中的 %lld 个项目。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已刪除 %lld 個項目，保留收藏中的 %lld 個項目。"
-          }
-        }
-      }
-    },
     "Delete Group" : {
       "localizations" : {
         "de" : {
@@ -2813,6 +2773,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確認刪除選取的歷史嗎？"
+          }
+        }
+      }
+    },
+    "Deleted %lld items. Kept %lld item(s) in Favorites." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Einträge gelöscht. %lld Einträge in den Favoriten behalten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld éléments supprimés. %lld élément(s) conservé(s) dans les favoris."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件を削除し、お気に入り内の%lld件を保持しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld개 항목을 삭제하고 즐겨찾기의 %lld개 항목은 유지했습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已删除 %lld 个项目，保留收藏中的 %lld 个项目。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已刪除 %lld 個項目，保留收藏中的 %lld 個項目。"
           }
         }
       }
@@ -4328,6 +4328,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "從任何 App 快速喚起 Clipaste。"
+          }
+        }
+      }
+    },
+    "Items in Favorites can't be deleted. Remove them from Favorites first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einträge in den Favoriten können nicht gelöscht werden. Entfernen Sie sie zuerst aus den Favoriten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments des favoris ne peuvent pas être supprimés. Retirez-les d'abord des favoris."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "お気に入り内の項目は削除できません。先にお気に入りから外してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "즐겨찾기 항목은 삭제할 수 없습니다. 먼저 즐겨찾기에서 제거하세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收藏中的项目不能删除，请先将其移出收藏。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收藏中的項目不能刪除，請先將其移出收藏。"
           }
         }
       }
@@ -6096,46 +6136,6 @@
         }
       }
     },
-    "Items in Favorites can't be deleted. Remove them from Favorites first." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einträge in den Favoriten können nicht gelöscht werden. Entfernen Sie sie zuerst aus den Favoriten."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les éléments des favoris ne peuvent pas être supprimés. Retirez-les d'abord des favoris."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "お気に入り内の項目は削除できません。先にお気に入りから外してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "즐겨찾기 항목은 삭제할 수 없습니다. 먼저 즐겨찾기에서 제거하세요."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "收藏中的项目不能删除，请先将其移出收藏。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "收藏中的項目不能刪除，請先將其移出收藏。"
-          }
-        }
-      }
-    },
     "Permission Granted — Continue" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7366,6 +7366,12 @@
           }
         }
       }
+    },
+    "Search" : {
+
+    },
+    "Search History" : {
+
     },
     "Search History…" : {
       "localizations" : {
@@ -8896,6 +8902,22 @@
         }
       }
     },
+    "Toggle Favorites for Selection" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换选中项收藏"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換選中項收藏"
+          }
+        }
+      }
+    },
     "Toggle Vertical Clipboard" : {
       "localizations" : {
         "de" : {
@@ -9727,22 +9749,6 @@
     },
     "选择 SQLite 数据库" : {
 
-    },
-    "Toggle Favorites for Selection" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切换选中项收藏"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切換選中項收藏"
-          }
-        }
-      }
     }
   },
   "version" : "1.0"

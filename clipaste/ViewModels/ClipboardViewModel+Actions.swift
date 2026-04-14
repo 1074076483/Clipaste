@@ -90,6 +90,7 @@ extension ClipboardViewModel {
         let idsToDelete = Set(deletableItems.map(\.id))
         let protectedIDs = Set(protectedItems.map(\.id))
         let hashesToDelete = deletableItems.map(\.contentHash)
+        let fallbackSelectionID = selectionCandidateAfterRemoving(ids: idsToDelete)
 
         withAnimation(.easeOut(duration: 0.2)) {
             removeItems(withIDs: idsToDelete)
@@ -103,13 +104,14 @@ extension ClipboardViewModel {
             StorageManager.shared.deleteRecord(hash: hash)
         }
 
-        if protectedIDs.isEmpty {
-            clearSelection()
-        } else {
-            selectedItemIDs = protectedIDs
-            lastSelectedID = displayedItemsForInteraction.first(where: { protectedIDs.contains($0.id) })?.id
+        if protectedIDs.isEmpty == false {
             showFavoritesPreservedNotice(deletedCount: hashesToDelete.count, preservedCount: protectedItems.count)
         }
+
+        applySelectionAfterDeletion(
+            fallbackID: fallbackSelectionID,
+            preservedSelectionIDs: protectedIDs
+        )
         print("✅ 批量删除 \(hashesToDelete.count) 条记录，保留 \(protectedItems.count) 条收藏记录")
     }
 
@@ -346,13 +348,11 @@ extension ClipboardViewModel {
             print("🛡️ 已阻止删除收藏记录: \(item.id)")
             return
         }
+        let fallbackSelectionID = selectionCandidateAfterRemoving(ids: [item.id])
         withAnimation(.easeOut(duration: 0.2)) {
             removeItems(withIDs: [item.id])
         }
-        selectedItemIDs.remove(item.id)
-        if lastSelectedID == item.id {
-            lastSelectedID = nil
-        }
+        applySelectionAfterDeletion(fallbackID: fallbackSelectionID)
         if quickLookItem?.id == item.id {
             dismissQuickLook()
         }

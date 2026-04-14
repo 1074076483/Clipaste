@@ -2,6 +2,14 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ClipboardHeaderView: View {
+    private enum HorizontalSearchLayout {
+        static let fieldHeight: CGFloat = 28
+        static let collapsedWidth: CGFloat = fieldHeight
+        static let expandedWidth: CGFloat = 240
+        static let horizontalPadding: CGFloat = 12
+        static let contentSpacing: CGFloat = 8
+    }
+
     @ObservedObject var viewModel: ClipboardViewModel
     @Environment(\.openSettings) private var openSettings
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
@@ -167,34 +175,98 @@ struct ClipboardHeaderView: View {
         .frame(width: 28, alignment: .leading)
     }
 
+    private var isHorizontalSearchExpanded: Bool {
+        focusedField == .searchBar || !viewModel.searchInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var horizontalSearchBarWidth: CGFloat {
+        isHorizontalSearchExpanded
+            ? HorizontalSearchLayout.expandedWidth
+            : HorizontalSearchLayout.collapsedWidth
+    }
+
+    private var horizontalSearchContentWidth: CGFloat {
+        isHorizontalSearchExpanded
+            ? HorizontalSearchLayout.expandedWidth - HorizontalSearchLayout.fieldHeight
+            : 0
+    }
+
+    private var horizontalSearchWidthAnimation: Animation {
+        .timingCurve(0.2, 0.8, 0.2, 1, duration: 0.24)
+    }
+
+    private var horizontalSearchContentAnimation: Animation {
+        .easeOut(duration: 0.18)
+    }
+
     private var horizontalSearchBar: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-
-            TextField("Search History…", text: searchTextBinding)
-                .font(.system(size: 13))
-                .textFieldStyle(.plain)
-                .autocorrectionDisabled(true)
-#if os(macOS)
-                .textContentType(.none)
-#endif
-                .focused($focusedField, equals: .searchBar)
-
-            if !viewModel.searchInput.isEmpty {
-                Button(action: { viewModel.searchInput = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(.plain)
+        HStack(spacing: 0) {
+            Button(action: activateHorizontalSearch) {
+                horizontalSearchIcon
+                    .frame(
+                        width: HorizontalSearchLayout.fieldHeight,
+                        height: HorizontalSearchLayout.fieldHeight
+                    )
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+
+            HStack(spacing: HorizontalSearchLayout.contentSpacing) {
+                horizontalSearchTextField
+                horizontalSearchClearButton
+            }
+            .padding(.leading, isHorizontalSearchExpanded ? 4 : 0)
+            .padding(.trailing, isHorizontalSearchExpanded ? HorizontalSearchLayout.horizontalPadding : 0)
+            .frame(width: horizontalSearchContentWidth, alignment: .leading)
+            .opacity(isHorizontalSearchExpanded ? 1 : 0)
+            .offset(x: isHorizontalSearchExpanded ? 0 : -4)
+            .clipped()
+            .allowsHitTesting(isHorizontalSearchExpanded)
+            .animation(horizontalSearchContentAnimation, value: isHorizontalSearchExpanded)
         }
-        .padding(.horizontal, 12)
-        .frame(height: 28)
-        .frame(width: 240)
+        .frame(height: HorizontalSearchLayout.fieldHeight)
+        .frame(width: horizontalSearchBarWidth, alignment: .leading)
         .background(Color.clear.background(.regularMaterial))
         .clipShape(Capsule())
         .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+        .animation(horizontalSearchWidthAnimation, value: isHorizontalSearchExpanded)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.searchInput.isEmpty)
+        .help(isHorizontalSearchExpanded ? Text("Search History") : Text("Search"))
+    }
+
+    private var horizontalSearchIcon: some View {
+        Image(systemName: "magnifyingglass")
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(.secondary)
+    }
+
+    private var horizontalSearchTextField: some View {
+        TextField("Search History…", text: searchTextBinding)
+            .font(.system(size: 13))
+            .textFieldStyle(.plain)
+            .autocorrectionDisabled(true)
+#if os(macOS)
+            .textContentType(.none)
+#endif
+            .focused($focusedField, equals: .searchBar)
+    }
+
+    @ViewBuilder
+    private var horizontalSearchClearButton: some View {
+        if !viewModel.searchInput.isEmpty {
+            Button(action: { viewModel.searchInput = "" }) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .transition(.move(edge: .trailing).combined(with: .opacity))
+        }
+    }
+
+    private func activateHorizontalSearch() {
+        withAnimation(horizontalSearchWidthAnimation) {
+            focusedField = .searchBar
+        }
     }
 
     private var horizontalHybridGroupBar: some View {

@@ -114,6 +114,55 @@ extension ClipboardViewModel {
         displayedItems
     }
 
+    func selectionCandidateAfterRemoving(ids removedIDs: Set<UUID>) -> UUID? {
+        let displayedItems = displayedItemsForInteraction
+        guard let firstRemovedIndex = displayedItems.firstIndex(where: { removedIDs.contains($0.id) }) else {
+            return nil
+        }
+
+        let remainingItems = displayedItems.filter { removedIDs.contains($0.id) == false }
+        guard !remainingItems.isEmpty else {
+            return nil
+        }
+
+        let candidateIndex = min(firstRemovedIndex, remainingItems.count - 1)
+        return remainingItems[candidateIndex].id
+    }
+
+    func applySelectionAfterDeletion(
+        fallbackID: UUID?,
+        preservedSelectionIDs: Set<UUID> = []
+    ) {
+        let visibleIDs = Set(displayedItemsForInteraction.map(\.id))
+        let remainingPreservedIDs = preservedSelectionIDs.intersection(visibleIDs)
+
+        if !remainingPreservedIDs.isEmpty {
+            selectedItemIDs = remainingPreservedIDs
+
+            if let lastSelectedID, remainingPreservedIDs.contains(lastSelectedID) == false {
+                self.lastSelectedID = displayedItemsForInteraction.first(where: {
+                    remainingPreservedIDs.contains($0.id)
+                })?.id
+            } else if lastSelectedID == nil {
+                self.lastSelectedID = displayedItemsForInteraction.first(where: {
+                    remainingPreservedIDs.contains($0.id)
+                })?.id
+            }
+
+            prewarmQuickLookPreviewIfNeeded()
+            return
+        }
+
+        guard let fallbackID, visibleIDs.contains(fallbackID) else {
+            clearSelection()
+            return
+        }
+
+        selectedItemIDs = [fallbackID]
+        lastSelectedID = fallbackID
+        prewarmQuickLookPreviewIfNeeded()
+    }
+
     func reconcileSelectionAfterDisplayedItemsChange() {
         if shouldResetSelectionToFirstDisplayedItem || shouldAutoFollowTopItemDuringPresentation {
             shouldResetSelectionToFirstDisplayedItem = false
