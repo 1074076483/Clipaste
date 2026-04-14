@@ -193,6 +193,18 @@ extension ClipboardViewModel {
             return nil
         }
 
+        // Cmd+Backspace to delete selected items (when requireCmdToDelete is enabled)
+        if keyCode == 51, event.modifierFlags.contains(.command) {
+            if let responder = NSApp.keyWindow?.firstResponder,
+               responder is NSTextView || responder is NSTextField {
+                return event
+            }
+            if settingsViewModel.requireCmdToDelete, !selectedItemIDs.isEmpty {
+                batchDelete()
+                return nil
+            }
+        }
+
         if keyCode == 0, event.modifierFlags.contains(.command) {
             if let responder = NSApp.keyWindow?.firstResponder,
                responder is NSTextView || responder is NSTextField {
