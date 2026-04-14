@@ -20,12 +20,6 @@ struct ClipboardItemTitleEditorSheet: View {
             Text(viewModel.sheetTitle)
                 .font(.title3.weight(.semibold))
 
-            Text(viewModel.previewText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
-                .textSelection(.enabled)
-
             TextField(
                 "",
                 text: $viewModel.draftTitle,

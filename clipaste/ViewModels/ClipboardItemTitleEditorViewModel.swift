@@ -6,7 +6,6 @@ import Observation
 final class ClipboardItemTitleEditorViewModel {
     let itemID: UUID
     let originalTitle: String?
-    let previewText: String
 
     var draftTitle: String
 
@@ -14,7 +13,6 @@ final class ClipboardItemTitleEditorViewModel {
         self.itemID = item.id
         self.originalTitle = item.trimmedCustomTitle
         self.draftTitle = item.trimmedCustomTitle ?? ""
-        self.previewText = ClipboardItemTitleEditorViewModel.makePreviewText(for: item)
     }
 
     var sheetTitle: LocalizedStringResource {
@@ -28,25 +26,5 @@ final class ClipboardItemTitleEditorViewModel {
 
     var canSave: Bool {
         normalizedTitle != originalTitle
-    }
-}
-
-private extension ClipboardItemTitleEditorViewModel {
-    static func makePreviewText(for item: ClipboardItem) -> String {
-        if let fileDisplayName = item.fileDisplayName, fileDisplayName.isEmpty == false {
-            return fileDisplayName
-        }
-
-        if let rawText = item.rawText?.trimmingCharacters(in: .whitespacesAndNewlines),
-           rawText.isEmpty == false {
-            return rawText
-        }
-
-        let preview = item.textPreview.trimmingCharacters(in: .whitespacesAndNewlines)
-        if preview.isEmpty == false {
-            return preview
-        }
-
-        return String(localized: "(Empty)")
     }
 }

@@ -2,11 +2,13 @@ import SwiftUI
 
 struct ClipboardVerticalItemView: View {
     private enum Layout {
+        static let rowHorizontalPadding: CGFloat = 12
         static let appIconSize: CGFloat = 42
-        static let customTitleWidth: CGFloat = 78
-        static let customTitleHeight: CGFloat = 12
-        static let customTitleLeading: CGFloat = 16
-        static let customTitleTop: CGFloat = 4
+        static let contentSpacing: CGFloat = 12
+        static let customTitleWidth: CGFloat = 92
+        static let customTitleHeight: CGFloat = 13
+        static let customTitleLeading: CGFloat = rowHorizontalPadding + appIconSize + contentSpacing
+        static let customTitleTop: CGFloat = 8
     }
 
     let item: ClipboardItem
@@ -85,9 +87,14 @@ struct ClipboardVerticalItemView: View {
         ?? .secondary.opacity(0.7)
     }
 
+    private var customTitleTextColor: Color {
+        parsedColor.map { $0.isDark ? .white.opacity(0.96) : .black.opacity(0.9) }
+        ?? .black.opacity(0.9)
+    }
+
     var body: some View {
         rowContent
-            .padding(.horizontal, 12)
+            .padding(.horizontal, Layout.rowHorizontalPadding)
             .frame(height: 76)
             .background(
                 RoundedRectangle(cornerRadius: 12)
@@ -138,7 +145,7 @@ struct ClipboardVerticalItemView: View {
 
     @ViewBuilder
     private var rowContent: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Layout.contentSpacing) {
             // 1. 左侧：App 图标
             AppIconView(appBundleID: item.sourceBundleIdentifier, size: Layout.appIconSize)
                 .shadow(color: Color.black.opacity(0.1), radius: 2, y: 1)
@@ -299,8 +306,8 @@ struct ClipboardVerticalItemView: View {
             ClipboardItemCustomTitleView(
                 item: item,
                 viewModel: viewModel,
-                font: .system(size: 9, weight: .semibold),
-                textColor: timeTextColor
+                font: .system(size: 11, weight: .semibold),
+                textColor: customTitleTextColor
             )
             .frame(
                 width: Layout.customTitleWidth,
