@@ -66,7 +66,7 @@ struct ClipboardHeaderView: View {
                 horizontalHeader
             }
         }
-        .padding(.bottom, 8)
+        .padding(.bottom, isCompactMode ? 4 : 8)
         .background(headerBackground)
         .popover(isPresented: $showEditPopover, arrowEdge: .bottom) {
             editGroupPopover
@@ -111,7 +111,7 @@ struct ClipboardHeaderView: View {
 
     // MARK: - 竖版模式：双行布局
     private var verticalHeader: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: isCompactMode ? 4 : 10) {
             // 第一行：固定按钮 + 搜索框 + 设置菜单
             searchBarContent
 
@@ -120,9 +120,13 @@ struct ClipboardHeaderView: View {
                 hybridGroupBar()
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.top, 14)
-        .padding(.bottom, 2)
+        .padding(.horizontal, isCompactMode ? 4 : 14)
+        .padding(.top, isCompactMode ? 4 : 14)
+        .padding(.bottom, isCompactMode ? 0 : 2)
+    }
+
+    private var isCompactMode: Bool {
+        clipboardLayout == .compact
     }
 
     // MARK: - 横版模式：单行紧凑布局
