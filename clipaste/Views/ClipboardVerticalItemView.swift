@@ -15,6 +15,7 @@ struct ClipboardVerticalItemView: View {
     let item: ClipboardItem
     @ObservedObject var viewModel: ClipboardViewModel
     let quickPasteIndex: Int?
+    let onHoverChange: ((Bool) -> Void)?
 
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
 
@@ -125,6 +126,7 @@ struct ClipboardVerticalItemView: View {
                 withAnimation(.easeInOut(duration: 0.1)) {
                     isHovering = hovering
                 }
+                onHoverChange?(hovering)
             }
             .animation(.easeInOut(duration: 0.15), value: showsQuickPasteBadge)
             .onDrag {

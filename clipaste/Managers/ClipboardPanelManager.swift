@@ -15,6 +15,9 @@ class ClipboardPanelManager {
     private var pinObserver: Any?
     private var forceHideObserver: Any?
 
+    /// Additional width to add when preview panel is active
+    private let previewExpandedWidth: CGFloat = 380
+
     /// 记录呼出面板前正在活跃的 App（如微信、Safari），用于关闭面板时精准归还焦点
     private var previousActiveApp: NSRunningApplication?
 
@@ -129,7 +132,15 @@ class ClipboardPanelManager {
     /// and strict screen-edge collision detection.
     private func verticalFrame(on screen: NSScreen) -> NSRect {
         let sf = screen.visibleFrame
-        let width: CGFloat = 360
+        
+        // Determine if preview panel is enabled
+        let previewMode = PreviewPanelMode(
+            rawValue: UserDefaults.standard.string(forKey: "previewPanelMode") ?? PreviewPanelMode.disabled.rawValue
+        ) ?? .disabled
+        let isPreviewEnabled = previewMode == .enabled
+        
+        let baseWidth: CGFloat = 360
+        let width: CGFloat = isPreviewEnabled ? baseWidth + previewExpandedWidth : baseWidth
         let height: CGFloat = 700
         let modeRaw = UserDefaults.standard.string(forKey: "verticalFollowMode") ?? VerticalFollowMode.mouse.rawValue
         let mode = VerticalFollowMode(rawValue: modeRaw) ?? .mouse
@@ -351,4 +362,5 @@ private struct ClipboardPanelRootView: View {
 
 extension Notification.Name {
     static let clipboardLayoutModeChanged = Notification.Name("clipboardLayoutModeChanged")
+    static let clipboardPreviewPanelChanged = Notification.Name("clipboardPreviewPanelChanged")
 }
