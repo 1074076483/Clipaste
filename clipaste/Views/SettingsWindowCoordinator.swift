@@ -185,10 +185,12 @@ struct SettingsWindowObserver: NSViewRepresentable {
         guard let trackingView = nsView as? TrackingView else { return }
         // 布局阶段 window 常为 nil，仅在此处 return 会导致标题永远不随语言更新。
         trackingView.scheduleApplyWindowTitle()
+        trackingView.scheduleToolbarChromeLayout()
     }
 
     private final class TrackingView: NSView {
         nonisolated(unsafe) private var pendingTitleWorkItem: DispatchWorkItem?
+        private var hasAppliedTrafficLightOffset = false
 
         deinit {
             pendingTitleWorkItem?.cancel()
@@ -198,11 +200,17 @@ struct SettingsWindowObserver: NSViewRepresentable {
             super.viewDidMoveToWindow()
 
             guard let window else { return }
+            window.toolbarStyle = .preference
             window.titlebarSeparatorStyle = .none
+            window.styleMask.insert(.miniaturizable)
+            window.styleMask.insert(.resizable)
+            window.standardWindowButton(.miniaturizeButton)?.isEnabled = true
+            window.standardWindowButton(.zoomButton)?.isEnabled = true
 
             SettingsWindowCoordinator.register(window: window)
 
             applyWindowTitleIfNeeded()
+            scheduleToolbarChromeLayout()
         }
 
         func scheduleApplyWindowTitle() {
@@ -215,9 +223,63 @@ struct SettingsWindowObserver: NSViewRepresentable {
             DispatchQueue.main.async(execute: item)
         }
 
+        func scheduleToolbarChromeLayout() {
+            let delays: [TimeInterval] = [0, 0.05, 0.2]
+            for delay in delays {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.refreshToolbarChrome()
+                }
+            }
+        }
+
         private func applyWindowTitleIfNeeded() {
             guard let window else { return }
             window.title = SettingsWindowCoordinator.resolvedSettingsWindowTitle()
+        }
+
+        private func refreshToolbarChrome() {
+            removeSystemSidebarToolbarItems()
+            applyTrafficLightLayout()
+        }
+
+        private func removeSystemSidebarToolbarItems() {
+            guard let toolbar = window?.toolbar else { return }
+
+            let unwantedIdentifiers: Set<NSToolbarItem.Identifier> = [
+                .toggleSidebar,
+                .sidebarTrackingSeparator
+            ]
+
+            let indexes = toolbar.items.enumerated()
+                .compactMap { index, item in
+                    unwantedIdentifiers.contains(item.itemIdentifier) ? index : nil
+                }
+
+            for index in indexes.reversed() {
+                toolbar.removeItem(at: index)
+            }
+        }
+
+        private func applyTrafficLightLayout() {
+            guard let window else { return }
+            guard let closeButton = window.standardWindowButton(.closeButton),
+                  let miniaturizeButton = window.standardWindowButton(.miniaturizeButton),
+                  let zoomButton = window.standardWindowButton(.zoomButton) else {
+                return
+            }
+
+            if !hasAppliedTrafficLightOffset {
+                let xOffset: CGFloat = 4
+                let yOffset: CGFloat = -3
+                let buttons = [closeButton, miniaturizeButton, zoomButton]
+                for button in buttons {
+                    var origin = button.frame.origin
+                    origin.x += xOffset
+                    origin.y += yOffset
+                    button.setFrameOrigin(origin)
+                }
+                hasAppliedTrafficLightOffset = true
+            }
         }
     }
 }

@@ -10,7 +10,9 @@ final class SettingsViewModel: @preconcurrency ObservableObject {
     private let preferencesStore: AppPreferencesStore
     private var cancellables = Set<AnyCancellable>()
     private var isApplyingSharedState = false
-    @Published var ignoredApps: [IgnoredAppItem] = []
+    var ignoredApps: [IgnoredAppItem] = [] {
+        willSet { objectWillChange.send() }
+    }
 
     var launchAtLogin: Bool {
         willSet { objectWillChange.send() }

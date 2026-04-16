@@ -1,163 +1,97 @@
 import KeyboardShortcuts
 import SwiftUI
 
-// MARK: - Settings Card Container
-
-private struct SettingsCard<Content: View>: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(title, systemImage: systemImage)
-                .settingsSectionTitle()
-
-            content
-                .liquidGlassCard()
-        }
-        .padding(.bottom, 16)
-    }
-}
-
-// MARK: - Shortcuts Settings View
-
 struct ShortcutsSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                globalShortcutsCard
-                panelShortcutsCard
-                modifiersCard
-                resetButton
-            }
-            .padding(20)
+        Form {
+            globalShortcutsSection
+            panelShortcutsSection
+            modifiersSection
+            resetSection
         }
-        .settingsScrollChromeHidden()
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
+        .settingsPageChrome()
     }
 }
 
-// MARK: - Card 1: Global Shortcuts
+// MARK: - Section 1: Global Shortcuts
 
 private extension ShortcutsSettingsView {
-    var globalShortcutsCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SettingsCard(title: "Global Shortcuts", systemImage: "command") {
-                VStack(spacing: 0) {
-                    ShortcutRecorderRow("Show / Hide Clipboard Panel", name: .toggleClipboardPanel)
-                }
+    var globalShortcutsSection: some View {
+        Section {
+            ShortcutRecorderRow("Show / Hide Clipboard Panel", name: .toggleClipboardPanel)
+        } header: {
+            SettingsSectionHeader(title: "Global Shortcuts")
+        } footer: {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Only the wake shortcut is registered globally. Other actions work only while the Clipaste panel is focused.")
+                Text("If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility.")
             }
-
-            Text("Only the wake shortcut is registered globally. Other actions work only while the Clipaste panel is focused.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
-
-            Text("If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
         }
     }
 }
 
-// MARK: - Card 2: Panel Shortcuts
+// MARK: - Section 2: Panel Shortcuts
 
 private extension ShortcutsSettingsView {
-    var panelShortcutsCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SettingsCard(title: "Panel Shortcuts", systemImage: "rectangle.on.rectangle") {
-                VStack(spacing: 0) {
-                    ShortcutRecorderRow("Toggle Vertical Clipboard", name: .toggleVerticalClipboard)
-
-                    cardDivider
-
-                    ShortcutRecorderRow("Next List", name: .nextList)
-
-                    cardDivider
-
-                    ShortcutRecorderRow("Previous List", name: .prevList)
-
-                    cardDivider
-
-                    ShortcutRecorderRow("Toggle Favorites for Selection", name: .toggleFavoriteSelection)
-
-                    cardDivider
-
-                    ShortcutRecorderRow("Clear Clipboard History", name: .clearHistory)
-                }
-            }
-
+    var panelShortcutsSection: some View {
+        Section {
+            ShortcutRecorderRow("Toggle Vertical Clipboard", name: .toggleVerticalClipboard)
+            ShortcutRecorderRow("Next List", name: .nextList)
+            ShortcutRecorderRow("Previous List", name: .prevList)
+            ShortcutRecorderRow("Toggle Favorites for Selection", name: .toggleFavoriteSelection)
+            ShortcutRecorderRow("Clear Clipboard History", name: .clearHistory)
+        } header: {
+            SettingsSectionHeader(title: "Panel Shortcuts")
+        } footer: {
             Text("These shortcuts are handled only when the Clipaste panel is the active window, so native shortcuts in Notes, browsers, Terminal, and other apps stay intact.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
         }
     }
 }
 
-// MARK: - Card 3: Modifiers
+// MARK: - Section 3: Modifier Keys
 
 private extension ShortcutsSettingsView {
-    var modifiersCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SettingsCard(title: "Modifier Keys", systemImage: "option") {
-                VStack(spacing: 0) {
-                    ModifierPickerView(
-                        title: "Quick Paste",
-                        suffix: "+ 1…9",
-                        selection: $viewModel.quickPasteModifier
-                    )
-
-                    cardDivider
-
-                    ModifierPickerView(
-                        title: "Plain Text Mode",
-                        suffix: "",
-                        selection: $viewModel.plainTextModifier
-                    )
-                }
-            }
-
-            Text("Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
-        }
-    }
-}
-
-// MARK: - Reset Button
-
-private extension ShortcutsSettingsView {
-    var resetButton: some View {
-        Button {
-            KeyboardShortcuts.reset(
-                .toggleClipboardPanel,
-                .toggleVerticalClipboard,
-                .nextList,
-                .prevList,
-                .toggleFavoriteSelection,
-                .clearHistory
+    var modifiersSection: some View {
+        Section {
+            ModifierPickerView(
+                title: "Quick Paste",
+                suffix: "+ 1…9",
+                selection: $viewModel.quickPasteModifier
             )
-        } label: {
-            Label("Reset Shortcuts to Defaults", systemImage: "arrow.counterclockwise")
-                .frame(maxWidth: .infinity)
+
+            ModifierPickerView(
+                title: "Plain Text Mode",
+                suffix: "",
+                selection: $viewModel.plainTextModifier
+            )
+        } header: {
+            SettingsSectionHeader(title: "Modifier Keys")
+        } footer: {
+            Text("Hold the quick paste modifier to reveal 1…9 shortcuts. Hold the plain text modifier while copying or pasting to strip formatting.")
         }
-        .controlSize(.regular)
-        .buttonStyle(.bordered)
     }
 }
 
-// MARK: - Shared UI
+// MARK: - Section 4: Reset
 
 private extension ShortcutsSettingsView {
-    var cardDivider: some View {
-        Divider()
-            .padding(.vertical, 10)
+    var resetSection: some View {
+        Section {
+            Button {
+                KeyboardShortcuts.reset(
+                    .toggleClipboardPanel,
+                    .toggleVerticalClipboard,
+                    .nextList,
+                    .prevList,
+                    .toggleFavoriteSelection,
+                    .clearHistory
+                )
+            } label: {
+                Label("Reset Shortcuts to Defaults", systemImage: "arrow.counterclockwise")
+            }
+        }
     }
 }
 
@@ -176,12 +110,7 @@ private struct ShortcutRecorderRow: View {
     }
 
     var body: some View {
-        HStack {
-            Text(title)
-                .font(.body)
-
-            Spacer()
-
+        LabeledContent(title) {
             HStack(spacing: 8) {
                 shortcutRecorder
 
@@ -200,10 +129,7 @@ private struct ShortcutRecorderRow: View {
     }
 
     private var canRestoreDefault: Bool {
-        guard let defaultShortcut = name.defaultShortcut else {
-            return false
-        }
-
+        guard let defaultShortcut = name.defaultShortcut else { return false }
         return shortcut != defaultShortcut
     }
 

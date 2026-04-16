@@ -261,12 +261,11 @@ struct clipasteApp: App {
                 .environmentObject(settingsViewModel)
                 .environmentObject(runtimeStore)
                 .modelContainer(runtimeStore.container)
-                .id(appLanguage.rawValue)
                 .environment(\.locale, appLanguage.locale ?? .current)
                 .environment(appUpdateViewModel)
                 .preferredColorScheme(appTheme.colorScheme)
         }
-        .defaultSize(width: 620, height: 580)
+        .defaultSize(width: 900, height: 700)
         .windowResizability(.contentMinSize)
 
         // Status Bar Menu to access app functions

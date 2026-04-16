@@ -1,83 +1,6 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Settings Card Container
-
-private struct SettingsCard<Content: View>: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-    let subtitle: LocalizedStringKey?
-    @ViewBuilder let content: Content
-
-    init(
-        title: LocalizedStringKey,
-        systemImage: String,
-        subtitle: LocalizedStringKey? = nil,
-        @ViewBuilder content: () -> Content
-    ) {
-        self.title = title
-        self.systemImage = systemImage
-        self.subtitle = subtitle
-        self.content = content()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            VStack(alignment: .leading, spacing: 4) {
-                Label(title, systemImage: systemImage)
-                    .settingsSectionTitle()
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.leading, 4)
-                }
-            }
-
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .liquidGlassCard()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.bottom, 16)
-    }
-}
-
-// MARK: - Setting Row
-
-private struct SettingRow<Trailing: View>: View {
-    let icon: String
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey
-    @ViewBuilder let trailing: Trailing
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            Spacer()
-
-            trailing
-        }
-    }
-}
-
-// MARK: - Advanced Settings View
-
 struct AdvancedSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
@@ -87,219 +10,141 @@ struct AdvancedSettingsView: View {
     @State private var copiedDiagnostics = false
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                coreInteractionCard
-                interfaceCard
-                migrationCard
-                dataSyncCard
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(20)
+        Form {
+            coreInteractionSection
+            interfaceSection
+            migrationSection
+            dataSyncSection
         }
-        .settingsScrollChromeHidden()
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
+        .settingsPageChrome()
     }
 }
 
-// MARK: - Card 1: Core Interaction & Behavior
+// MARK: - Section 1: Interaction & Behavior
 
 private extension AdvancedSettingsView {
-    var coreInteractionCard: some View {
-        SettingsCard(title: "Interaction & Behavior", systemImage: "hand.tap") {
-            VStack(spacing: 0) {
-                // Paste Setting
-                VStack(alignment: .leading, spacing: 8) {
-                    SettingRow(
-                        icon: "doc.on.clipboard",
-                        title: "Auto-Paste to Active App on Double-Click",
-                        subtitle: "When disabled, double-clicking an item only copies it to the clipboard without sending the paste shortcut."
-                    ) {
-                        Toggle("", isOn: $viewModel.autoPasteToActiveApp)
-                            .toggleStyle(.switch)
-                            .labelsHidden()
-                    }
-
-                    if viewModel.autoPasteToActiveApp {
-                        Button("Open Accessibility Settings…", action: viewModel.openAccessibilitySettings)
-                            .buttonStyle(.link)
-                            .font(.subheadline)
-                            .padding(.leading, 32)
-                    }
+    var coreInteractionSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                Toggle(isOn: $viewModel.autoPasteToActiveApp) {
+                    Text("Auto-Paste to Active App on Double-Click")
                 }
-
-                cardDivider
-
-                // Sort Setting
-                SettingRow(
-                    icon: "arrow.up.to.line",
-                    title: "Move Item to Top After Pasting",
-                    subtitle: "Useful when you repeatedly paste the same content."
-                ) {
-                    Toggle("", isOn: $viewModel.moveToTopAfterPaste)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
+                if viewModel.autoPasteToActiveApp {
+                    Button("Open Accessibility Settings…", action: viewModel.openAccessibilitySettings)
+                        .buttonStyle(.link)
+                        .font(.subheadline)
+                        .padding(.leading, 2)
                 }
+            }
 
-                cardDivider
+            Toggle(isOn: $viewModel.moveToTopAfterPaste) {
+                Text("Move Item to Top After Pasting")
+            }
 
-                SettingRow(
-                    icon: "magnifyingglass",
-                    title: "Clear Search When Opening Clipboard History",
-                    subtitle: "Always reset the search field each time the clipboard history panel opens."
-                ) {
-                    Toggle("", isOn: $viewModel.clearSearchOnPanelActivation)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
+            Toggle(isOn: $viewModel.clearSearchOnPanelActivation) {
+                Text("Clear Search When Opening Clipboard History")
+            }
+
+            Toggle(isOn: $viewModel.requireCmdToDelete) {
+                Text("Require Cmd+Backspace to Delete")
+            }
+
+            Picker(xcstringsLocalized("Default Text Format", locale: locale), selection: $viewModel.pasteTextFormat) {
+                ForEach(PasteTextFormat.allCases) { format in
+                    Text(format.localizedTitle).tag(format)
                 }
+            }
+        } header: {
+            SettingsSectionHeader(title: "Interaction & Behavior")
+        }
+    }
+}
 
-                cardDivider
+// MARK: - Section 2: Interface
 
-                SettingRow(
-                    icon: "delete.backward",
-                    title: "Require Cmd+Backspace to Delete",
-                    subtitle: "When enabled, items can only be deleted using Cmd+Backspace instead of just Backspace."
-                ) {
-                    Toggle("", isOn: $viewModel.requireCmdToDelete)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                }
+private extension AdvancedSettingsView {
+    var interfaceSection: some View {
+        Section {
+            Toggle(isOn: $isSmartGroupsEnabled) {
+                Text("Show Smart Groups")
+            }
+        } header: {
+            SettingsSectionHeader(title: "Interface")
+        } footer: {
+            Text("Display preset category tabs like Text, Links, and Images in the navigation bar.")
+        }
+    }
+}
 
-                cardDivider
+// MARK: - Section 3: Migration Assistant
 
-                // Text Format Setting
-                HStack(alignment: .center, spacing: 12) {
-                    Image(systemName: "textformat")
-                        .font(.body)
+private extension AdvancedSettingsView {
+    var migrationSection: some View {
+        Section {
+            MigrationView()
+        } header: {
+            SettingsSectionHeader(title: "Migration Assistant")
+        }
+    }
+}
+
+// MARK: - Section 4: Data Sync
+
+private extension AdvancedSettingsView {
+    var dataSyncSection: some View {
+        Section {
+            Toggle(isOn: syncEnabledBinding) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Sync via iCloud")
+                    Text("Seamlessly sync clipboard history across all Macs signed in with the same Apple ID.")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                        .frame(width: 20)
+                }
+            }
+            .disabled(runtimeStore.isSyncing)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(xcstringsLocalized("Default Text Format", locale: locale))
-                            .font(.body)
-                        Text(holdPlainTextOutputHint(locale: locale))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
+            if runtimeStore.isSyncEnabled {
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(syncStatusColor)
+                            .frame(width: 8, height: 8)
+                            .opacity(runtimeStore.isSyncing ? 0.5 : 1.0)
+                            .animation(
+                                runtimeStore.isSyncing
+                                    ? Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)
+                                    : .default,
+                                value: runtimeStore.isSyncing
+                            )
+
+                        syncStatusText
                     }
 
                     Spacer()
 
-                    Picker("", selection: $viewModel.pasteTextFormat) {
-                        ForEach(PasteTextFormat.allCases) { format in
-                            Text(format.localizedTitle).tag(format)
-                        }
+                    Button("Check iCloud Connection Status", systemImage: "arrow.triangle.2.circlepath") {
+                        runtimeStore.refreshCurrentRoute()
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Card 2: Interface
-
-private extension AdvancedSettingsView {
-    var interfaceCard: some View {
-        SettingsCard(title: "Interface", systemImage: "macwindow") {
-            SettingRow(
-                icon: "rectangle.3.group",
-                title: "Show Smart Groups",
-                subtitle: "Display preset category tabs like Text, Links, and Images in the navigation bar."
-            ) {
-                Toggle("", isOn: $isSmartGroupsEnabled)
-                    .toggleStyle(.switch)
-                    .labelsHidden()
-            }
-        }
-    }
-}
-
-// MARK: - Card 3: Migration Assistant
-
-private extension AdvancedSettingsView {
-    var migrationCard: some View {
-        SettingsCard(title: "Migration Assistant", systemImage: "shippingbox") {
-            MigrationView()
-        }
-    }
-}
-
-// MARK: - Card 4: Data Sync
-
-private extension AdvancedSettingsView {
-    var dataSyncCard: some View {
-        SettingsCard(title: "Data Sync", systemImage: "icloud") {
-            VStack(alignment: .leading, spacing: 12) {
-                // iCloud Sync Toggle
-                Toggle(isOn: syncEnabledBinding) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Sync via iCloud")
-                            .font(.body)
-                        Text("Seamlessly sync clipboard history across all Macs signed in with the same Apple ID.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .toggleStyle(.switch)
-                .disabled(runtimeStore.isSyncing)
-
-                // Sync Console
-                if runtimeStore.isSyncEnabled {
-                    Divider()
-
-                    HStack {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(syncStatusColor)
-                                .frame(width: 8, height: 8)
-                                .opacity(runtimeStore.isSyncing ? 0.5 : 1.0)
-                                .animation(
-                                    runtimeStore.isSyncing
-                                        ? Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)
-                                        : .default,
-                                    value: runtimeStore.isSyncing
-                                )
-
-                            syncStatusText
-                        }
-
-                        Spacer()
-
-                        Button("Check iCloud Connection Status", systemImage: "arrow.triangle.2.circlepath") {
-                            runtimeStore.refreshCurrentRoute()
-                        }
-                        .labelStyle(.iconOnly)
-                        .buttonStyle(.plain)
-                        .font(.subheadline)
-                        .bold()
-                        .rotationEffect(Angle(degrees: runtimeStore.isSyncing ? 360 : 0))
-                        .animation(
-                            runtimeStore.isSyncing
-                                ? Animation.linear(duration: 1).repeatForever(autoreverses: false)
-                                : .default,
-                            value: runtimeStore.isSyncing
-                        )
-                        .foregroundStyle(runtimeStore.isSyncing ? .secondary : Color.accentColor)
-                        .disabled(runtimeStore.isSyncing)
-                    }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.plain)
+                    .font(.subheadline)
+                    .bold()
+                    .rotationEffect(Angle(degrees: runtimeStore.isSyncing ? 360 : 0))
+                    .animation(
+                        runtimeStore.isSyncing
+                            ? Animation.linear(duration: 1).repeatForever(autoreverses: false)
+                            : .default,
+                        value: runtimeStore.isSyncing
+                    )
+                    .foregroundStyle(runtimeStore.isSyncing ? .secondary : Color.accentColor)
+                    .disabled(runtimeStore.isSyncing)
                 }
 
                 diagnosticsPanel
             }
+        } header: {
+            SettingsSectionHeader(title: "Data Sync")
         }
-    }
-}
-
-// MARK: - Shared UI Components
-
-private extension AdvancedSettingsView {
-    var cardDivider: some View {
-        Divider()
-            .padding(.vertical, 10)
     }
 }
 
@@ -468,18 +313,14 @@ private extension AdvancedSettingsView {
         guard let pending = runtimeStore.diagnosticsSnapshot.pendingSyncEnabled else {
             return String(localized: "None")
         }
-
         return pending ? String(localized: "Pending Enable") : String(localized: "Pending Disable")
     }
 
     func color(for level: ClipboardSyncDiagnosticLevel) -> Color {
         switch level {
-        case .info:
-            return .secondary
-        case .warning:
-            return .orange
-        case .error:
-            return .red
+        case .info: return .secondary
+        case .warning: return .orange
+        case .error: return .red
         }
     }
 
@@ -494,7 +335,6 @@ private extension AdvancedSettingsView {
         }
     }
 
-    /// `String(localized:locale:)` 对含 `%@` 的部分键在运行时可能仍回退到开发语言；从对应 `.lproj` 取串更可靠。
     private func xcstringsLocalized(_ key: String, locale: Locale) -> String {
         let bcp47 = locale.identifier(.bcp47)
         if let path = Bundle.main.path(forResource: bcp47, ofType: "lproj"),
@@ -503,13 +343,6 @@ private extension AdvancedSettingsView {
             if value != key { return value }
         }
         return String(localized: String.LocalizationValue(key), bundle: .main, locale: locale)
-    }
-
-    private func holdPlainTextOutputHint(locale: Locale) -> String {
-        let key = "Hold %@ while copying or pasting to force plain text output."
-        let template = xcstringsLocalized(key, locale: locale)
-        let arg = viewModel.plainTextModifier.pickerLabel(locale: locale)
-        return String(format: template, locale: locale, arguments: [arg])
     }
 }
 

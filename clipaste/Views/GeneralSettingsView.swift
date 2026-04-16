@@ -1,72 +1,5 @@
 import SwiftUI
 
-// MARK: - Settings Card Container
-
-private struct SettingsCard<Content: View>: View {
-    let title: LocalizedStringKey
-    let systemImage: String
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(title, systemImage: systemImage)
-                .settingsSectionTitle()
-            
-            content
-                .liquidGlassCard()
-        }
-        .padding(.bottom, 16)
-    }
-}
-
-// MARK: - Setting Row
-
-private struct SettingRow<Trailing: View>: View {
-    let icon: String
-    let title: LocalizedStringKey
-    let subtitle: LocalizedStringKey?
-    @ViewBuilder let trailing: Trailing
-
-    init(
-        icon: String,
-        title: LocalizedStringKey,
-        subtitle: LocalizedStringKey? = nil,
-        @ViewBuilder trailing: () -> Trailing
-    ) {
-        self.icon = icon
-        self.title = title
-        self.subtitle = subtitle
-        self.trailing = trailing()
-    }
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Image(systemName: icon)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .frame(width: 20)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body)
-
-                if let subtitle {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-            }
-
-            Spacer()
-
-            trailing
-        }
-    }
-}
-
-// MARK: - General Settings View
-
 struct GeneralSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
@@ -76,105 +9,61 @@ struct GeneralSettingsView: View {
     @State private var showingClearAlert = false
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 20) {
-                launchAndLanguageCard
-                windowCard
-                feedbackCard
-                historyCard
-            }
-            .padding(20)
+        Form {
+            startupLanguageSection
+            windowSection
+            feedbackSection
+            historySection
         }
-        .settingsScrollChromeHidden()
-        .frame(minWidth: 360, idealWidth: 420, maxWidth: .infinity, minHeight: 440, alignment: .top)
+        .settingsPageChrome()
         .onAppear {
             preferencesStore.refreshLaunchAtLoginStatus()
         }
     }
 }
 
-// MARK: - Card 1: Launch & Language
+// MARK: - Section 1: Startup & Language
 
 private extension GeneralSettingsView {
-    var launchAndLanguageCard: some View {
-        SettingsCard(title: "Startup & Language", systemImage: "globe") {
-            VStack(spacing: 0) {
-                SettingRow(
-                    icon: "power",
-                    title: "Launch Clipaste at Login"
-                ) {
-                    Toggle("", isOn: launchAtLoginBinding)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                }
+    var startupLanguageSection: some View {
+        Section {
+            Toggle(isOn: launchAtLoginBinding) {
+                Text("Launch Clipaste at Login")
+            }
 
-                cardDivider
-
-                SettingRow(
-                    icon: "paintbrush",
-                    title: "Appearance"
-                ) {
-                    Picker("", selection: $appTheme) {
-                        ForEach(AppTheme.allCases) { theme in
-                            Text(theme.displayName).tag(theme)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-
-                cardDivider
-
-                SettingRow(
-                    icon: "character.bubble",
-                    title: "Language"
-                ) {
-                    Picker("", selection: $viewModel.appLanguage) {
-                        ForEach(AppLanguage.allCases) { lang in
-                            Text(lang.localizedDisplayName)
-                                .tag(lang)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .fixedSize()
+            Picker("Appearance", selection: $appTheme) {
+                ForEach(AppTheme.allCases) { theme in
+                    Text(theme.displayName).tag(theme)
                 }
             }
+
+            Picker("Language", selection: $viewModel.appLanguage) {
+                ForEach(AppLanguage.allCases) { lang in
+                    Text(lang.localizedDisplayName).tag(lang)
+                }
+            }
+        } header: {
+            SettingsSectionHeader(title: "Startup & Language")
         }
     }
 }
 
-// MARK: - Card 2: Window
+// MARK: - Section 2: Window
 
 private extension GeneralSettingsView {
-    var windowCard: some View {
-        SettingsCard(title: "Window", systemImage: "macwindow") {
-            VStack(spacing: 0) {
-                SettingRow(
-                    icon: "rectangle.split.2x1",
-                    title: "Layout Mode",
-                    subtitle: "Choose how clipboard items are displayed"
-                ) {
-                    Picker("", selection: $clipboardLayout) {
-                        ForEach(AppLayoutMode.allCases) { mode in
-                            Text(mode.localizedTitle).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                }
-
-                cardDivider
-
-                SettingRow(
-                    icon: "rectangle.on.rectangle",
-                    title: "Preview Panel",
-                    subtitle: "Show detailed preview when using vertical layouts"
-                ) {
-                    PreviewPanelToggle()
+    var windowSection: some View {
+        Section {
+            Picker("Layout Mode", selection: $clipboardLayout) {
+                ForEach(AppLayoutMode.allCases) { mode in
+                    Text(mode.localizedTitle).tag(mode)
                 }
             }
+
+            PreviewPanelToggle()
+        } header: {
+            SettingsSectionHeader(title: "Window")
+        } footer: {
+            Text("Layout Mode controls how clipboard items are displayed. Preview Panel shows detailed preview when using vertical layouts.")
         }
     }
 }
@@ -183,73 +72,55 @@ private struct PreviewPanelToggle: View {
     @AppStorage("previewPanelMode") private var previewPanelMode: PreviewPanelMode = .disabled
 
     var body: some View {
-        Toggle("", isOn: Binding(
+        Toggle(isOn: Binding(
             get: { previewPanelMode == .enabled },
             set: { previewPanelMode = $0 ? .enabled : .disabled }
-        ))
-        .toggleStyle(.switch)
-        .labelsHidden()
-    }
-}
-
-// MARK: - Card 3: Feedback & Sound
-
-private extension GeneralSettingsView {
-    var feedbackCard: some View {
-        SettingsCard(title: "Feedback & Sound", systemImage: "speaker.wave.2") {
-            SettingRow(
-                icon: "speaker.badge.exclamationmark",
-                title: "Copy Notification Sound",
-                subtitle: "Play a short sound after copying to the clipboard."
-            ) {
-                Toggle("", isOn: $viewModel.isCopySoundEnabled)
-                    .toggleStyle(.switch)
-                    .labelsHidden()
-            }
+        )) {
+            Text("Preview Panel")
         }
     }
 }
 
-// MARK: - Card 4: History
+// MARK: - Section 3: Feedback & Sound
 
 private extension GeneralSettingsView {
-    var historyCard: some View {
-        SettingsCard(title: "History", systemImage: "clock.arrow.circlepath") {
-            VStack(spacing: 0) {
-                SettingRow(
-                    icon: "calendar",
-                    title: "Retention Period"
-                ) {
-                    Picker("", selection: $viewModel.historyRetention) {
-                        ForEach(HistoryRetention.allCases) { retention in
-                            Text(retention.localizedTitle).tag(retention)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .fixedSize()
-                }
-
-                cardDivider
-
-                HStack {
-                    Spacer()
-
-                    Button(role: .destructive) {
-                        showingClearAlert = true
-                    } label: {
-                        Label("Clear History…", systemImage: "trash")
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                }
-
-                Text("Permanently deletes non-favorite clipboard records and image caches. Items in Favorites are kept.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
+    var feedbackSection: some View {
+        Section {
+            Toggle(isOn: $viewModel.isCopySoundEnabled) {
+                Text("Copy Notification Sound")
             }
+        } header: {
+            SettingsSectionHeader(title: "Feedback & Sound")
+        } footer: {
+            Text("Play a short sound after copying to the clipboard.")
+        }
+    }
+}
+
+// MARK: - Section 4: History
+
+private extension GeneralSettingsView {
+    var historySection: some View {
+        Section {
+            Picker("Retention Period", selection: $viewModel.historyRetention) {
+                ForEach(HistoryRetention.allCases) { retention in
+                    Text(retention.localizedTitle).tag(retention)
+                }
+            }
+
+            LabeledContent {
+                Button(role: .destructive) {
+                    showingClearAlert = true
+                } label: {
+                    Label("Clear", systemImage: "trash")
+                }
+            } label: {
+                Text("Clear History")
+            }
+        } header: {
+            SettingsSectionHeader(title: "History")
+        } footer: {
+            Text("Permanently deletes non-favorite clipboard records and image caches. Items in Favorites are kept.")
         }
         .alert("Clear History?", isPresented: $showingClearAlert) {
             Button("Cancel", role: .cancel) { }
@@ -259,15 +130,6 @@ private extension GeneralSettingsView {
         } message: {
             Text("Permanently deletes non-favorite clipboard records and image caches. Items in Favorites are kept.")
         }
-    }
-}
-
-// MARK: - Shared UI
-
-private extension GeneralSettingsView {
-    var cardDivider: some View {
-        Divider()
-            .padding(.vertical, 10)
     }
 }
 

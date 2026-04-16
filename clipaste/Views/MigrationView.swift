@@ -15,14 +15,17 @@ struct MigrationView: View {
     @State private var selectedSource: MigrationViewModel.MigrationSource = .paste
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Picker("Data Source", selection: $selectedSource) {
-                ForEach(MigrationViewModel.MigrationSource.allCases) { source in
-                    Text(source.displayName).tag(source)
+        VStack(alignment: .leading, spacing: 10) {
+            LabeledContent("Data Source") {
+                Picker("", selection: $selectedSource) {
+                    ForEach(MigrationViewModel.MigrationSource.allCases) { source in
+                        Text(source.displayName).tag(source)
+                    }
                 }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .disabled(viewModel.isMigrating)
             }
-            .fixedSize()
-            .disabled(viewModel.isMigrating)
 
             Text(selectedSource.summaryText)
                 .font(.subheadline)
@@ -58,6 +61,10 @@ struct MigrationView: View {
                     }
                 )
             }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .font(.subheadline.weight(.medium))
+            .padding(.top, 2)
             .disabled(viewModel.isMigrating)
         }
         .fileImporter(

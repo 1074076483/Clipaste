@@ -876,6 +876,7 @@
       }
     },
     "Always reset the search field each time the clipboard history panel opens." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1362,6 +1363,7 @@
       }
     },
     "Choose how clipboard items are displayed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1445,7 +1447,20 @@
       }
     },
     "Choose the Maccy SQLite database file. Clipaste will import the text history into your current library." : {
-
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 Maccy 的 SQLite 数据库文件后，Clipaste 会将文本历史记录导入当前资料库。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇 Maccy 的 SQLite 資料庫檔案後，Clipaste 會將文字歷史記錄匯入目前資料庫。"
+          }
+        }
+      }
     },
     "Choose the Paste SQLite database file. Clipaste will import the history records into your current library." : {
       "localizations" : {
@@ -1523,6 +1538,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇 PasteNow 匯出的 JSON 檔案後，Clipaste 會解析歷史項目並匯入目前資料庫。"
+          }
+        }
+      }
+    },
+    "Clear" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
           }
         }
       }
@@ -1682,6 +1713,7 @@
       }
     },
     "Clear History…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4934,6 +4966,22 @@
         }
       }
     },
+    "Layout Mode controls how clipboard items are displayed. Preview Panel shows detailed preview when using vertical layouts." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "布局模式控制剪贴板项目的显示方式。使用纵向布局时，预览面板会显示更详细的预览。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "佈局模式控制剪貼簿項目的顯示方式。使用縱向佈局時，預覽面板會顯示更詳細的預覽。"
+          }
+        }
+      }
+    },
     "Light" : {
       "localizations" : {
         "de" : {
@@ -8067,6 +8115,7 @@
       }
     },
     "Show detailed preview when using vertical layouts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9572,6 +9621,7 @@
       }
     },
     "Useful when you repeatedly paste the same content." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9886,6 +9936,7 @@
       }
     },
     "When disabled, double-clicking an item only copies it to the clipboard without sending the paste shortcut." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9926,6 +9977,7 @@
       }
     },
     "When enabled, items can only be deleted using Cmd+Backspace instead of just Backspace." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10105,7 +10157,14 @@
 
     },
     "请选择 Maccy 的 SQLite 数据库文件。" : {
-
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請選擇 Maccy 的 SQLite 資料庫檔案。"
+          }
+        }
+      }
     },
     "请选择 Paste 的 SQLite 数据库文件。" : {
 

@@ -337,7 +337,7 @@ struct ClipboardItemPreviewView: View {
                     .foregroundColor(.secondary)
             }
             
-            if let bundleID = item.sourceBundleIdentifier {
+            if item.sourceBundleIdentifier != nil {
                 Label(item.appName, systemImage: "app.fill")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary)
