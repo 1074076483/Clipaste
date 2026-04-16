@@ -189,7 +189,9 @@ struct SettingsWindowObserver: NSViewRepresentable {
     }
 
     private final class TrackingView: NSView {
+        private let sidebarButtonTag = 9_421
         nonisolated(unsafe) private var pendingTitleWorkItem: DispatchWorkItem?
+        private weak var installedSidebarButton: NSButton?
         private var hasAppliedTrafficLightOffset = false
 
         deinit {
@@ -280,6 +282,63 @@ struct SettingsWindowObserver: NSViewRepresentable {
                 }
                 hasAppliedTrafficLightOffset = true
             }
+
+            replaceSystemSidebarButton(nextTo: zoomButton, trafficLights: [closeButton, miniaturizeButton, zoomButton])
+        }
+
+        private func replaceSystemSidebarButton(nextTo zoomButton: NSButton, trafficLights: [NSButton]) {
+            guard let titlebarView = zoomButton.superview else { return }
+
+            let trafficLightIDs = Set(trafficLights.map(ObjectIdentifier.init))
+            let systemSidebarButton = titlebarView.subviews
+                .compactMap { $0 as? NSButton }
+                .filter { button in
+                    let buttonID = ObjectIdentifier(button)
+                    guard trafficLightIDs.contains(buttonID) == false else { return false }
+                    guard abs(button.frame.midY - zoomButton.frame.midY) <= 8 else { return false }
+                    guard button.frame.minX >= zoomButton.frame.maxX - 2 else { return false }
+                    guard button.frame.minX <= zoomButton.frame.maxX + 80 else { return false }
+                    return true
+                }
+                .min { $0.frame.minX < $1.frame.minX }
+
+            systemSidebarButton?.isHidden = true
+
+            let size = systemSidebarButton?.frame.size ?? NSSize(width: 28, height: 22)
+            let origin = systemSidebarButton?.frame.origin
+                ?? NSPoint(x: zoomButton.frame.maxX + 10, y: zoomButton.frame.minY - 1)
+
+            if let existing = installedSidebarButton {
+                existing.frame = NSRect(origin: origin, size: size)
+                return
+            }
+
+            if let stale = titlebarView.viewWithTag(sidebarButtonTag) as? NSButton {
+                stale.removeFromSuperview()
+            }
+
+            let image = NSImage(
+                systemSymbolName: "sidebar.left",
+                accessibilityDescription: String(localized: "Toggle Sidebar")
+            )
+            let newButton = NSButton(image: image ?? NSImage(), target: self, action: #selector(toggleSidebar))
+            newButton.tag = sidebarButtonTag
+            newButton.isBordered = false
+            newButton.imagePosition = .imageOnly
+            newButton.contentTintColor = .secondaryLabelColor
+            newButton.setButtonType(.momentaryPushIn)
+            newButton.focusRingType = .none
+            newButton.frame = NSRect(origin: origin, size: size)
+            titlebarView.addSubview(newButton)
+            installedSidebarButton = newButton
+        }
+
+        @objc
+        private func toggleSidebar() {
+            NSApp.keyWindow?.firstResponder?.tryToPerform(
+                #selector(NSSplitViewController.toggleSidebar(_:)),
+                with: nil
+            )
         }
     }
 }
