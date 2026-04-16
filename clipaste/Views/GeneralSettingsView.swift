@@ -158,7 +158,7 @@ private extension GeneralSettingsView {
                 ) {
                     Picker("", selection: $clipboardLayout) {
                         ForEach(AppLayoutMode.allCases) { mode in
-                            Text(mode.displayName).tag(mode)
+                            Text(mode.localizedTitle).tag(mode)
                         }
                     }
                     .pickerStyle(.menu)

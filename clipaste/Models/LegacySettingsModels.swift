@@ -40,6 +40,17 @@ enum AppLayoutMode: String, CaseIterable, Identifiable {
             return String(localized: "Vertical Compact")
         }
     }
+
+    var localizedTitle: LocalizedStringResource {
+        switch self {
+        case .horizontal:
+            return LocalizedStringResource("Horizontal Cards")
+        case .vertical:
+            return LocalizedStringResource("Vertical List")
+        case .compact:
+            return LocalizedStringResource("Vertical Compact")
+        }
+    }
 }
 
 enum HistoryLimit: String, CaseIterable, Identifiable {

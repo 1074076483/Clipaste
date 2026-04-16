@@ -77,6 +77,19 @@
         }
       }
     },
+    "%lld × %lld px" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld × %2$lld px"
+          }
+        }
+      }
+    },
+    "%lld chars" : {
+
+    },
     "%lld Items" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1249,6 +1262,9 @@
         }
       }
     },
+    "Checkerboard pattern for transparent image background" : {
+
+    },
     "Checking for updates…" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1345,6 +1361,46 @@
         }
       }
     },
+    "Choose how clipboard items are displayed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie, wie Zwischenablageobjekte angezeigt werden"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez la manière d'afficher les éléments du presse-papiers"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリップボード項目の表示方法を選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "클립보드 항목 표시 방식을 선택"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择剪贴板项目的显示方式"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇剪貼簿項目的顯示方式"
+          }
+        }
+      }
+    },
     "Choose Icon" : {
 
     },
@@ -1387,6 +1443,9 @@
           }
         }
       }
+    },
+    "Choose the Maccy SQLite database file. Clipaste will import the text history into your current library." : {
+
     },
     "Choose the Paste SQLite database file. Clipaste will import the history records into your current library." : {
       "localizations" : {
@@ -2817,7 +2876,11 @@
         }
       }
     },
+    "Disabled" : {
+
+    },
     "Display Position" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3088,6 +3151,9 @@
           }
         }
       }
+    },
+    "Enabled" : {
+
     },
     "English" : {
       "localizations" : {
@@ -4043,6 +4109,7 @@
       }
     },
     "Horizontal cards are better for browsing; vertical list is better for quick switching and searching." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4177,6 +4244,9 @@
           }
         }
       }
+    },
+    "Image" : {
+
     },
     "Initialized" : {
       "localizations" : {
@@ -4820,6 +4890,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "登入時啟動 Clipaste"
+          }
+        }
+      }
+    },
+    "Layout Mode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layout-Modus"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode de disposition"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レイアウトモード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "레이아웃 모드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "布局模式"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "佈局模式"
           }
         }
       }
@@ -5621,6 +5731,9 @@
           }
         }
       }
+    },
+    "No preview available" : {
+
     },
     "None" : {
       "localizations" : {
@@ -6509,6 +6622,46 @@
         }
       }
     },
+    "Preview Panel" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorschaufenster"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panneau d’aperçu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレビューパネル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리보기 패널"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预览面板"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預覽面板"
+          }
+        }
+      }
+    },
     "Preview truncated to protect memory. Pasting is not affected." : {
       "localizations" : {
         "de" : {
@@ -7091,6 +7244,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新命名群組"
+          }
+        }
+      }
+    },
+    "Require Cmd+Backspace to Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cmd+Backspace zum Löschen erforderlich"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exiger Cmd+Retour arrière pour supprimer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "削除に Cmd+Backspace を必須にする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삭제 시 Cmd+Backspace 필요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除时必须使用 Cmd+Backspace"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除時必須使用 Cmd+Backspace"
           }
         }
       }
@@ -7869,6 +8062,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "呼出剪貼板歷史記錄"
+          }
+        }
+      }
+    },
+    "Show detailed preview when using vertical layouts" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detaillierte Vorschau bei vertikalen Layouts anzeigen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher un aperçu détaillé lors de l'utilisation des dispositions verticales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縦型レイアウト使用時に詳細プレビューを表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "세로 레이아웃 사용 시 상세 미리보기 표시"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用垂直布局时显示详细预览"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用垂直佈局時顯示詳細預覽"
           }
         }
       }
@@ -9298,6 +9531,7 @@
       }
     },
     "Use Vertical List Layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9454,6 +9688,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本 %@（%@）"
+          }
+        }
+      }
+    },
+    "Vertical Compact" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kompakt vertikal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vertical compact"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コンパクト縦型"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "컴팩트 세로형"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "紧凑垂直"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "緊湊垂直"
           }
         }
       }
@@ -9651,6 +9925,46 @@
         }
       }
     },
+    "When enabled, items can only be deleted using Cmd+Backspace instead of just Backspace." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn aktiviert, können Elemente nur mit Cmd+Backspace statt nur mit Backspace gelöscht werden."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque cette option est activée, les éléments ne peuvent être supprimés qu’avec Cmd+Retour arrière au lieu de Retour arrière seul."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有効にすると、項目は Backspace 単体ではなく Cmd+Backspace でのみ削除できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "활성화하면 항목은 Backspace 단독이 아니라 Cmd+Backspace 로만 삭제할 수 있습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启后，项目只能使用 Cmd+Backspace 删除，而不能仅用 Backspace 删除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟後，項目只能使用 Cmd+Backspace 刪除，而不能僅用 Backspace 刪除。"
+          }
+        }
+      }
+    },
     "Window" : {
       "localizations" : {
         "de" : {
@@ -9759,6 +10073,9 @@
     "导入器将使用原生 SQLite3 读取 t_data 表的纯文本记录，不依赖任何第三方数据库库。" : {
 
     },
+    "导入器将使用原生 SQLite3 读取 ZHISTORYITEM 表的文本记录，不依赖任何第三方数据库库。" : {
+
+    },
     "导入器将使用原生 SQLite3 读取 ZRAWPREVIEW 二进制 JSON，不依赖任何第三方数据库库。" : {
 
     },
@@ -9785,6 +10102,9 @@
 
     },
     "请选择 iCopy 的 SQLite 数据库文件。" : {
+
+    },
+    "请选择 Maccy 的 SQLite 数据库文件。" : {
 
     },
     "请选择 Paste 的 SQLite 数据库文件。" : {
