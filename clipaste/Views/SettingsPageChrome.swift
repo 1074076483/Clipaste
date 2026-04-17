@@ -20,17 +20,13 @@ struct SettingsSectionFooter<Content: View>: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            content
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Spacer(minLength: 0)
-        }
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .textCase(nil)
-        .multilineTextAlignment(.leading)
-        .fixedSize(horizontal: false, vertical: true)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        content
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .textCase(nil)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
