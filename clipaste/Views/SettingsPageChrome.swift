@@ -24,6 +24,9 @@ struct SettingsSectionFooter<Content: View>: View {
             .font(.caption)
             .foregroundStyle(.secondary)
             .textCase(nil)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
