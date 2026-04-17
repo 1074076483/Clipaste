@@ -14,31 +14,22 @@ struct StandaloneEditView: View {
     @ObservedObject var viewModel: ClipboardViewModel
     let windowId: String
 
-    // ⚠️ 物理隔离：不再使用 @State 持有 NSAttributedString
-    let initialText: NSAttributedString
-    let context = EditorContext()
+    // ⚠️ 物理隔离：不在 State 中持有 NSAttributedString，仅缓存原始 RTF 数据。
+    private let fallbackInitialText: NSAttributedString
+    @State private var initialRTFData: Data?
+    @State private var didResolveInitialContent = false
+    @State private var editorContext = EditorContext()
 
     init(item: ClipboardItem, viewModel: ClipboardViewModel, windowId: String) {
         self.item = item
         self.viewModel = viewModel
         self.windowId = windowId
 
-        // ⚠️ 架构升级：从数据库按需加载 RTF，不依赖 DTO 层
-        let record = StorageManager.shared.fetchRecord(id: item.id)
-        if let rtfData = record?.rtfData,
-           let attrString = try? NSAttributedString(
-               data: rtfData,
-               options: [.documentType: NSAttributedString.DocumentType.rtf],
-               documentAttributes: nil
-           ) {
-            self.initialText = attrString
-        } else {
-            let baseString = item.rawText ?? item.textPreview
-            self.initialText = NSAttributedString(string: baseString, attributes: [
-                .font: NSFont.systemFont(ofSize: 14),
-                .foregroundColor: NSColor.textColor
-            ])
-        }
+        let baseString = item.rawText ?? item.textPreview
+        self.fallbackInitialText = NSAttributedString(string: baseString, attributes: [
+            .font: NSFont.systemFont(ofSize: 14),
+            .foregroundColor: NSColor.textColor
+        ])
     }
 
     var body: some View {
@@ -49,7 +40,7 @@ struct StandaloneEditView: View {
 
                 Button(action: {
                     // 转换为纯文本：通过上下文闭包在 NSTextView 内部操作，不回传 SwiftUI
-                    context.applyPlainText?()
+                    editorContext.applyPlainText?()
                 }) {
                     VStack(spacing: 4) {
                         Image(systemName: "doc.plaintext")
@@ -82,14 +73,37 @@ struct StandaloneEditView: View {
             Divider()
 
             // 富文本编辑器（带原生 Inspector Bar 格式工具栏）
-            NativeRichTextEditor(initialText: initialText, context: context)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Group {
+                if item.hasRTF, didResolveInitialContent == false {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    NativeRichTextEditor(initialText: resolvedInitialText, context: editorContext)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
         }
         .frame(minWidth: 500, minHeight: 400)
+        .task(id: item.id) {
+            await loadInitialContentIfNeeded()
+        }
         // 监听来自 WindowManager 的红绿灯拦截保存事件
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SaveEdit-\(windowId)"))) { _ in
             saveData()
         }
+    }
+
+    private var resolvedInitialText: NSAttributedString {
+        if let initialRTFData,
+           let attrString = try? NSAttributedString(
+               data: initialRTFData,
+               options: [.documentType: NSAttributedString.DocumentType.rtf],
+               documentAttributes: nil
+           ) {
+            return attrString
+        }
+
+        return fallbackInitialText
     }
 
     private func saveAndClose() {
@@ -99,8 +113,8 @@ struct StandaloneEditView: View {
 
     /// ⚠️ 架构升级：RTF 直接写入 StorageManager，不经过 ViewModel
     private func saveData() {
-        let plainText = context.getPlainText?() ?? ""
-        let rtfData = context.getRTFData?()
+        let plainText = editorContext.getPlainText?() ?? ""
+        let rtfData = editorContext.getRTFData?()
 
         // 1. ViewModel 仅处理纯文本的乐观 UI 更新
         viewModel.saveEditedItem(item, newText: plainText)
@@ -113,5 +127,14 @@ struct StandaloneEditView: View {
         // 3. 通知渲染引擎清除过期缓存
         ListRenderEngine.shared.invalidate(id: item.id)
     }
-}
 
+    @MainActor
+    private func loadInitialContentIfNeeded() async {
+        guard didResolveInitialContent == false else { return }
+
+        defer { didResolveInitialContent = true }
+
+        guard item.hasRTF else { return }
+        initialRTFData = await StorageManager.shared.loadRTFData(id: item.id)
+    }
+}

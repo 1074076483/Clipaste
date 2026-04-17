@@ -23,6 +23,13 @@ private struct ClipboardRecordSnapshot: Sendable {
     let hasRTF: Bool
 }
 
+struct ClipboardPasteRecord: Sendable {
+    let id: UUID
+    let typeRawValue: String
+    let plainText: String?
+    let rtfData: Data?
+}
+
 nonisolated private func normalizedGroupIDs(primaryGroupID: String?, groupIdsRaw: String?) -> [String] {
     var result: [String] = []
 
@@ -138,6 +145,26 @@ final class StorageManager {
         self.cleanupActor = ClipboardStoreActor(modelContainer: modelContainer)
     }
 
+    // Keep interactive reads off the shared write actor to avoid QoS inversions.
+    private func makeReadActor() -> ClipboardStoreActor {
+        ClipboardStoreActor(modelContainer: container)
+    }
+
+    /// 所有 UI / MainActor 可达的 async 读操作统一经过这里:
+    /// 用 `Task.detached(priority: .userInitiated)` 把对 SwiftData `@ModelActor`
+    /// (其底层执行器运行在 Background QoS 的私有队列上) 的等待动作
+    /// 搬离 user-interactive 主线程,彻底消除
+    /// "User-interactive thread waiting on Background QoS" 这类 Hang Risk 告警。
+    /// 调用方只需像普通 async 函数一样 `await` 即可,不用手写 detached。
+    nonisolated
+    private func detachedRead<T: Sendable>(
+        _ operation: @Sendable @escaping () async -> T
+    ) async -> T {
+        await Task.detached(priority: .userInitiated) {
+            await operation()
+        }.value
+    }
+
     nonisolated
     func fetchItemsInBackground(
         searchText: String,
@@ -145,8 +172,10 @@ final class StorageManager {
         fetchLimit: Int? = nil,
         offset: Int = 0
     ) async -> [ClipboardItem] {
-        let searcher = ClipboardSearcher(modelContainer: container)
-        return await searcher.searchAndMap(searchText: searchText, fetchLimit: fetchLimit, offset: offset)
+        await detachedRead {
+            let searcher = ClipboardSearcher(modelContainer: container)
+            return await searcher.searchAndMap(searchText: searchText, fetchLimit: fetchLimit, offset: offset)
+        }
     }
 
     nonisolated
@@ -155,8 +184,11 @@ final class StorageManager {
         fetchLimit: Int,
         offset: Int = 0
     ) async -> [ClipboardItem] {
-        let searcher = ClipboardSearcher(modelContainer: container)
-        return await searcher.searchAndMap(searchText: searchText, fetchLimit: fetchLimit, offset: offset)
+        let container = self.container
+        return await detachedRead {
+            let searcher = ClipboardSearcher(modelContainer: container)
+            return await searcher.searchAndMap(searchText: searchText, fetchLimit: fetchLimit, offset: offset)
+        }
     }
 
     nonisolated
@@ -172,21 +204,11 @@ final class StorageManager {
         }
     }
 
-    @MainActor
-    func fetchRecord(id: UUID) -> ClipboardRecord? {
-        let context = container.mainContext
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in
-                record.id == id
-            }
-        )
-        descriptor.fetchLimit = 1
-
-        return try? context.fetch(descriptor).first
-    }
-
     func recordExists(hash: String) async -> Bool {
-        await storeActor.recordExists(hash: hash)
+        let actor = storeActor
+        return await detachedRead {
+            await actor.recordExists(hash: hash)
+        }
     }
 
     nonisolated
@@ -406,17 +428,41 @@ final class StorageManager {
     }
 
     func fetchGroups() async -> [ClipboardGroupItem] {
-        await storeActor.fetchAllGroups()
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.fetchAllGroups()
+        }
+    }
+
+    /// UI 驱动的分组读取(数据量极小)。
+    /// 直接在 MainActor 上读 `mainContext`,避免 MainActor await
+    /// `@ModelActor` (Background QoS) 造成的优先级反转 (Hang Risk)。
+    @MainActor
+    func fetchAllGroupsOnMain() -> [ClipboardGroupItem] {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<ClipboardGroupModel>(
+            sortBy: [SortDescriptor(\.sortOrder, order: .forward)]
+        )
+        let records = (try? context.fetch(descriptor)) ?? []
+        return records.map {
+            ClipboardGroupItem(
+                id: $0.id,
+                name: $0.name,
+                systemIconName: $0.resolvedSystemIconName,
+                sortOrder: $0.sortOrder
+            )
+        }
     }
 
     func fetchItem(hash: String) async -> ClipboardItem? {
-        guard let snapshot = await storeActor.fetchRecordSnapshot(hash: hash) else {
-            return nil
+        let container = self.container
+        let snapshot = await detachedRead { () -> ClipboardRecordSnapshot? in
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.fetchRecordSnapshot(hash: hash)
         }
-
-        return await MainActor.run {
-            StorageManager.makeClipboardItem(from: snapshot)
-        }
+        guard let snapshot else { return nil }
+        return StorageManager.makeClipboardItem(from: snapshot)
     }
 
     func repairImportedMigrationTimestampsIfNeeded() async -> Int {
@@ -435,25 +481,11 @@ final class StorageManager {
         await storeActor.repairAppIconDominantColors(using: colorsByBundleID)
     }
 
-    @MainActor
-    func fetchAllGroups() -> [ClipboardGroupItem] {
-        let context = container.mainContext
-        let descriptor = FetchDescriptor<ClipboardGroupModel>(
-            sortBy: [SortDescriptor(\.sortOrder, order: .forward)]
-        )
-        let records = (try? context.fetch(descriptor)) ?? []
-        return records.map {
-            ClipboardGroupItem(
-                id: $0.id,
-                name: $0.name,
-                systemIconName: $0.resolvedSystemIconName,
-                sortOrder: $0.sortOrder
-            )
-        }
-    }
-
     func exportStore() async -> ClipboardStoreExport {
-        await storeActor.exportStore()
+        let actor = storeActor
+        return await detachedRead {
+            await actor.exportStore()
+        }
     }
 
     func importStoreExport(_ payload: ClipboardStoreExport) async throws {
@@ -461,23 +493,67 @@ final class StorageManager {
     }
 
     func loadPreviewImageData(id: UUID) async -> Data? {
-        await storeActor.loadPreviewImageData(id: id)
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadPreviewImageData(id: id)
+        }
+    }
+
+    func loadPlainText(id: UUID) async -> String? {
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadPlainText(id: id)
+        }
+    }
+
+    func loadAppIconDominantColorHex(id: UUID) async -> String? {
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadAppIconDominantColorHex(id: id)
+        }
+    }
+
+    func loadPasteRecord(id: UUID) async -> ClipboardPasteRecord? {
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadPasteRecord(id: id)
+        }
     }
 
     func loadOriginalImageData(id: UUID) async -> Data? {
-        await storeActor.loadOriginalImageData(id: id)
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadOriginalImageData(id: id)
+        }
     }
 
     func loadImageData(id: UUID) async -> Data? {
-        await storeActor.loadImageData(id: id)
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadImageData(id: id)
+        }
     }
 
     func loadRTFData(id: UUID) async -> Data? {
-        await storeActor.loadRTFData(id: id)
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadRTFData(id: id)
+        }
     }
 
     func loadImageUTType(id: UUID) async -> String? {
-        await storeActor.loadImageUTType(id: id)
+        let container = self.container
+        return await detachedRead {
+            let actor = ClipboardStoreActor(modelContainer: container)
+            return await actor.loadImageUTType(id: id)
+        }
     }
 
     fileprivate nonisolated static func makeClipboardItem(from record: ClipboardRecordSnapshot) -> ClipboardItem {
@@ -1320,46 +1396,47 @@ actor ClipboardStoreActor {
     }
 
     func loadPreviewImageData(id: UUID) -> Data? {
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
+        fetchStoredRecord(id: id)?.previewImageData
+    }
+
+    func loadPlainText(id: UUID) -> String? {
+        fetchStoredRecord(id: id)?.plainText
+    }
+
+    func loadAppIconDominantColorHex(id: UUID) -> String? {
+        fetchStoredRecord(id: id)?.appIconDominantColorHex
+    }
+
+    func loadPasteRecord(id: UUID) -> ClipboardPasteRecord? {
+        guard let record = fetchStoredRecord(id: id) else {
+            return nil
+        }
+
+        return ClipboardPasteRecord(
+            id: record.id,
+            typeRawValue: record.typeRawValue,
+            plainText: record.plainText,
+            rtfData: record.rtfData
         )
-        descriptor.fetchLimit = 1
-        return try? modelContext.fetch(descriptor).first?.previewImageData
     }
 
     func loadOriginalImageData(id: UUID) -> Data? {
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
-        )
-        descriptor.fetchLimit = 1
-        return try? modelContext.fetch(descriptor).first?.imageData
+        fetchStoredRecord(id: id)?.imageData
     }
 
     func loadImageData(id: UUID) -> Data? {
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
-        )
-        descriptor.fetchLimit = 1
-        if let record = try? modelContext.fetch(descriptor).first {
+        if let record = fetchStoredRecord(id: id) {
             return record.imageData ?? record.previewImageData
         }
         return nil
     }
 
     func loadRTFData(id: UUID) -> Data? {
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
-        )
-        descriptor.fetchLimit = 1
-        return try? modelContext.fetch(descriptor).first?.rtfData
+        fetchStoredRecord(id: id)?.rtfData
     }
 
     func loadImageUTType(id: UUID) -> String? {
-        var descriptor = FetchDescriptor<ClipboardRecord>(
-            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
-        )
-        descriptor.fetchLimit = 1
-        return try? modelContext.fetch(descriptor).first?.imageUTType
+        fetchStoredRecord(id: id)?.imageUTType
     }
 }
 
@@ -1372,5 +1449,13 @@ private extension ClipboardStoreActor {
 
     var textBasedTypes: Set<String> {
         Self.textBasedTypes
+    }
+
+    func fetchStoredRecord(id: UUID) -> ClipboardRecord? {
+        var descriptor = FetchDescriptor<ClipboardRecord>(
+            predicate: #Predicate<ClipboardRecord> { record in record.id == id }
+        )
+        descriptor.fetchLimit = 1
+        return try? modelContext.fetch(descriptor).first
     }
 }

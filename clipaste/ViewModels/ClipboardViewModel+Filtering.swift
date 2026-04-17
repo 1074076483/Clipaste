@@ -100,6 +100,8 @@ extension ClipboardViewModel {
             isInitialHistoryLoading = true
         }
 
+        // 读路径的优先级反转由 StorageManager.detachedRead 统一兜底,
+        // 这里保持普通 MainActor Task 即可。
         historyLoadTask = Task(priority: .userInitiated) { [weak self] in
             guard let self else { return }
 

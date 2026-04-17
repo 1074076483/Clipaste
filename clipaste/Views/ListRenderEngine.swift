@@ -42,9 +42,7 @@ final class ListRenderEngine {
         let itemId = item.id
 
         let task: Task<AttributedString?, Never> = Task.detached(priority: .userInitiated) {
-            let rtfData = await MainActor.run {
-                StorageManager.shared.fetchRecord(id: itemId)?.rtfData
-            }
+            let rtfData = await StorageManager.shared.loadRTFData(id: itemId)
 
             guard Task.isCancelled == false, let data = rtfData else {
                 return nil

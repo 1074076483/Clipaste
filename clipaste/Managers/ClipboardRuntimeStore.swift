@@ -64,6 +64,7 @@ final class ClipboardRuntimeStore: ObservableObject {
     private var cloudRuntime: ClipboardRuntime?
     private var currentRuntime: ClipboardRuntime
     private var pendingSyncEnabled: Bool?
+    private var maintenanceTask: Task<Void, Never>?
 
     private init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -142,7 +143,6 @@ final class ClipboardRuntimeStore: ObservableObject {
         scheduleWarmCacheRefresh(using: runtime.storage, routeKey: rootIdentity)
 
         ClipboardMonitor.shared.startMonitoring()
-        scheduleMaintenance()
 
         Task {
             await performInitialBootstrap()
@@ -258,6 +258,7 @@ final class ClipboardRuntimeStore: ObservableObject {
         }
 
         isSyncing = false
+        scheduleMaintenance()
         processPendingSyncRequestIfNeeded()
     }
 
@@ -429,14 +430,26 @@ final class ClipboardRuntimeStore: ObservableObject {
     }
 
     private func scheduleMaintenance() {
+        maintenanceTask?.cancel()
+
         let retentionRaw = defaults.string(forKey: "historyRetention") ?? HistoryRetention.oneMonth.rawValue
         guard let retention = HistoryRetention(rawValue: retentionRaw),
               let expirationDate = retention.expirationDate else {
             return
         }
 
-        Task.detached(priority: .background) {
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+        maintenanceTask = Task { [weak self] in
+            guard let self else { return }
+
+            // Avoid contending with startup hydration and visible panel work.
+            try? await Task.sleep(nanoseconds: 10_000_000_000)
+            guard Task.isCancelled == false else { return }
+
+            while self.isSyncing || ClipboardPanelManager.shared.isVisible {
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                guard Task.isCancelled == false else { return }
+            }
+
             StorageManager.shared.performAutoCleanup(before: expirationDate)
         }
     }

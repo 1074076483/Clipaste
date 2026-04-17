@@ -12,11 +12,11 @@ extension ClipboardViewModel {
     }
 
     func loadCustomGroups() {
-        Task { [weak self] in
-            guard let self else { return }
-            let latestGroups = await StorageManager.shared.fetchGroups()
-            self.applyCustomGroups(latestGroups)
-        }
+        // 分组数据量极小,直接在 MainActor 用 mainContext 同步读取,
+        // 避免 @ModelActor(Background QoS) 读被 MainActor(user-interactive) await
+        // 产生的优先级反转 (Hang Risk)。
+        let latestGroups = StorageManager.shared.fetchAllGroupsOnMain()
+        applyCustomGroups(latestGroups)
     }
 
     func applyCustomGroups(_ latestGroups: [ClipboardGroupItem]) {

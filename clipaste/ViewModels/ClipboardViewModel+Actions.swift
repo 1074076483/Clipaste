@@ -12,21 +12,26 @@ extension ClipboardViewModel {
 
         let orderedItems = displayedItemsForInteraction.filter { ids.contains($0.id) }
 
-        let fullTexts: [String] = orderedItems.compactMap { item in
-            if let record = StorageManager.shared.fetchRecord(id: item.id) {
-                return record.plainText
+        Task(priority: .userInitiated) { @MainActor in
+            var fullTexts: [String] = []
+            fullTexts.reserveCapacity(orderedItems.count)
+
+            for item in orderedItems {
+                let plainText = await StorageManager.shared.loadPlainText(id: item.id)
+                let resolvedText = plainText ?? item.rawText ?? item.textPreview
+                guard resolvedText.isEmpty == false else { continue }
+                fullTexts.append(resolvedText)
             }
-            return item.rawText ?? item.textPreview
+
+            let merged = fullTexts.joined(separator: "\n\n")
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(merged, forType: .string)
+            playCopySound()
+
+            print("✅ 批量复制 \(orderedItems.count) 条记录到剪贴板")
+            clearSelection()
         }
-
-        let merged = fullTexts.joined(separator: "\n\n")
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(merged, forType: .string)
-        playCopySound()
-
-        print("✅ 批量复制 \(orderedItems.count) 条记录到剪贴板")
-        clearSelection()
     }
 
     func batchAssignToGroup(groupId: String?) {
@@ -137,12 +142,12 @@ extension ClipboardViewModel {
         selectedItemIDs = [item.id]
         lastSelectedID = item.id
 
-        guard let record = StorageManager.shared.fetchRecord(id: item.id) else {
-            print("❌ 未找到可复制的记录: \(item.id)")
-            return
-        }
-
         Task { @MainActor in
+            guard let record = await StorageManager.shared.loadPasteRecord(id: item.id) else {
+                print("❌ 未找到可复制的记录: \(item.id)")
+                return
+            }
+
             let wroteToPasteboard = await PasteEngine.shared.writeToPasteboard(
                 record: record,
                 preferPlainText: shouldForcePlainTextOutput
@@ -175,19 +180,20 @@ extension ClipboardViewModel {
     }
 
     func pasteAsPlainText(item: ClipboardItem) {
-        guard let record = StorageManager.shared.fetchRecord(id: item.id),
-              let text = record.plainText else { return }
-        PasteEngine.shared.writePlainTextToPasteboard(text: text)
-        ClipboardPanelManager.shared.forceHidePanel()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            PasteEngine.shared.simulateCommandV()
+        Task { @MainActor in
+            guard let text = await StorageManager.shared.loadPlainText(id: item.id) else { return }
+            PasteEngine.shared.writePlainTextToPasteboard(text: text)
+            ClipboardPanelManager.shared.forceHidePanel()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                PasteEngine.shared.simulateCommandV()
+            }
         }
     }
 
     func copyToClipboard(item: ClipboardItem) {
-        guard let record = StorageManager.shared.fetchRecord(id: item.id) else { return }
-
         Task { @MainActor in
+            guard let record = await StorageManager.shared.loadPasteRecord(id: item.id) else { return }
+
             let wroteToPasteboard = await PasteEngine.shared.writeToPasteboard(
                 record: record,
                 preferPlainText: shouldForcePlainTextOutput

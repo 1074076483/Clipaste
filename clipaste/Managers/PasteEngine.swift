@@ -17,7 +17,7 @@ final class PasteEngine {
         return AXIsProcessTrustedWithOptions(options)
     }
 
-    func writeToPasteboard(record: ClipboardRecord, preferPlainText: Bool = false) async -> Bool {
+    func writeToPasteboard(record: ClipboardPasteRecord, preferPlainText: Bool = false) async -> Bool {
         guard let payload = await Self.makePastePayload(
             recordID: record.id,
             typeRawValue: record.typeRawValue,
@@ -42,7 +42,7 @@ final class PasteEngine {
         postPasteKeystroke()
     }
 
-    func paste(record: ClipboardRecord) async {
+    func paste(record: ClipboardPasteRecord) async {
         guard checkAccessibilityPermissions() else { return }
         guard await writeToPasteboard(record: record) else { return }
         ClipboardPanelManager.shared.hidePanel()

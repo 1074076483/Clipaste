@@ -149,7 +149,7 @@ struct ClipboardCardView: View {
             await refreshRichPreviewText()
         }
         .task(id: headerColorTaskKey) {
-            refreshHeaderDominantColorHex()
+            await refreshHeaderDominantColorHex()
         }
         .clipboardContextMenu(for: item, viewModel: viewModel)
         .onDrag {
@@ -357,10 +357,8 @@ struct ClipboardCardView: View {
     }
 
     @MainActor
-    private func refreshHeaderDominantColorHex() {
-        appIconDominantColorHex = StorageManager.shared
-            .fetchRecord(id: item.id)?
-            .appIconDominantColorHex
+    private func refreshHeaderDominantColorHex() async {
+        appIconDominantColorHex = await StorageManager.shared.loadAppIconDominantColorHex(id: item.id)
     }
 
     @MainActor
