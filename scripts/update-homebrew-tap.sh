@@ -44,6 +44,7 @@ CASK_RELATIVE_PATH="Casks/g/${CASK_TOKEN}.rb"
 CASK_ABSOLUTE_PATH="${CASK_WORK_DIR}/${CASK_RELATIVE_PATH}"
 EXISTING_CASK_JSON_PATH="${RUNNER_TEMP_DIR}/existing-cask.json"
 EXISTING_CASK_PATH="${RUNNER_TEMP_DIR}/existing-cask.rb"
+EXISTING_CASK_ERROR_PATH="${RUNNER_TEMP_DIR}/existing-cask.stderr"
 
 log() {
   printf '[update-homebrew-tap] %s\n' "$*"
@@ -116,10 +117,23 @@ fetch_existing_cask() {
   local output_path="$1"
 
   if ! gh api \
+    --method GET \
     "repos/${HOMEBREW_TAP_REPOSITORY}/contents/${CASK_RELATIVE_PATH}" \
-    -f ref="$HOMEBREW_TAP_BRANCH" > "$EXISTING_CASK_JSON_PATH" 2>/dev/null; then
+    -f ref="$HOMEBREW_TAP_BRANCH" > "$EXISTING_CASK_JSON_PATH" 2> "$EXISTING_CASK_ERROR_PATH"; then
     EXISTING_CASK_SHA=""
-    return 1
+
+    if [[ -f "$EXISTING_CASK_ERROR_PATH" ]]; then
+      local error_output
+      error_output="$(<"$EXISTING_CASK_ERROR_PATH")"
+
+      if [[ "$error_output" == *"404"* ]] || [[ "$error_output" == *"Not Found"* ]]; then
+        return 1
+      fi
+
+      printf '%s\n' "$error_output" >&2
+    fi
+
+    exit 1
   fi
 
   EXISTING_CASK_SHA="$(
