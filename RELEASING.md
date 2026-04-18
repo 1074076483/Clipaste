@@ -71,7 +71,7 @@ Paste the result into `APPLE_API_KEY_BASE64`.
 
 ## Notes
 
-- The workflow builds using `developer-id` export and notarizes the generated `.dmg`.
+- The workflow builds on the fixed `macos-26` GitHub Actions runner using the configured Xcode version, then creates a `developer-id` export and notarizes the generated `.dmg`.
 - The release script also creates a signed `.zip` update archive for Sparkle and notarizes the exported `.app` before zipping it.
 - Sparkle feed artifacts are published to the `update-feed` branch and served from `https://raw.githubusercontent.com/gangz1o/Clipaste/update-feed/appcast.xml`.
 - Homebrew tap updates are pushed to `https://github.com/gangz1o/homebrew-clipaste`.

@@ -11,6 +11,9 @@ INFO_PLIST_PATH="${INFO_PLIST_PATH:-$PROJECT_ROOT/clipaste-Info.plist}"
 CONFIGURATION="${CONFIGURATION:-Release}"
 APPLE_TEAM_ID="${APPLE_TEAM_ID:-}"
 RELEASE_TAG="${RELEASE_TAG:-}"
+XCODE_VERSION="${XCODE_VERSION:-}"
+XCODE_BUILD_VERSION="${XCODE_BUILD_VERSION:-}"
+EXPECTED_APP_SDK_VERSION="${EXPECTED_APP_SDK_VERSION:-}"
 
 BUILD_ROOT="${BUILD_ROOT:-$PROJECT_ROOT/build}"
 DIST_DIR="${DIST_DIR:-$BUILD_ROOT/release}"
@@ -30,6 +33,44 @@ EXPORT_OPTIONS_PLIST="$TEMP_ROOT/ExportOptions.plist"
 
 PROFILE_UUID=""
 PROFILE_NAME=""
+
+require_exact_match() {
+  local name="$1"
+  local actual="$2"
+  local expected="$3"
+
+  if [[ -n "$expected" && "$actual" != "$expected" ]]; then
+    cat >&2 <<EOF
+Unexpected $name.
+Expected: $expected
+Actual:   $actual
+EOF
+    exit 1
+  fi
+}
+
+current_xcode_version() {
+  xcodebuild -version | awk 'NR == 1 { print $2 }'
+}
+
+current_xcode_build_version() {
+  xcodebuild -version | awk 'NR == 2 { print $3 }'
+}
+
+current_developer_dir() {
+  xcode-select -p
+}
+
+resolve_app_sdk_version() {
+  local app_path="$1"
+  local binary_path="$app_path/Contents/MacOS/$APP_NAME"
+
+  otool -l "$binary_path" |
+    awk '
+      /LC_BUILD_VERSION/ { in_build_version = 1; next }
+      in_build_version && /sdk / { print $2; exit }
+    '
+}
 
 resolve_build_setting() {
   local key="$1"
@@ -107,6 +148,20 @@ required_env=(
   APPLE_API_ISSUER_ID
   APPLE_API_KEY_BASE64
 )
+
+ACTUAL_XCODE_VERSION="$(current_xcode_version)"
+ACTUAL_XCODE_BUILD_VERSION="$(current_xcode_build_version)"
+ACTUAL_DEVELOPER_DIR="$(current_developer_dir)"
+
+if [[ -z "$EXPECTED_APP_SDK_VERSION" ]]; then
+  EXPECTED_APP_SDK_VERSION="$ACTUAL_XCODE_VERSION"
+fi
+
+printf 'Using developer dir: %s\n' "$ACTUAL_DEVELOPER_DIR"
+printf 'Using Xcode %s (%s)\n' "$ACTUAL_XCODE_VERSION" "$ACTUAL_XCODE_BUILD_VERSION"
+printf 'Expected app SDK version: %s\n' "$EXPECTED_APP_SDK_VERSION"
+require_exact_match "Xcode version" "$ACTUAL_XCODE_VERSION" "$XCODE_VERSION"
+require_exact_match "Xcode build version" "$ACTUAL_XCODE_BUILD_VERSION" "$XCODE_BUILD_VERSION"
 
 missing_env=()
 for name in "${required_env[@]}"; do
@@ -268,6 +323,10 @@ if [[ -z "$APP_PATH" ]]; then
   echo "Failed to locate exported .app bundle." >&2
   exit 1
 fi
+
+ACTUAL_APP_SDK_VERSION="$(resolve_app_sdk_version "$APP_PATH")"
+printf 'Exported app SDK version: %s\n' "$ACTUAL_APP_SDK_VERSION"
+require_exact_match "app SDK version" "$ACTUAL_APP_SDK_VERSION" "$EXPECTED_APP_SDK_VERSION"
 
 codesign --verify --deep --strict --verbose=2 "$APP_PATH"
 
