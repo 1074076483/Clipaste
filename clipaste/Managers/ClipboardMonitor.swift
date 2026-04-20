@@ -149,8 +149,14 @@ final class ClipboardMonitor {
         var imagePayloads: [ClipboardImagePayload] = []
 
         for pasteboardItem in pasteboardItems {
+            let textPayload = makeTextPayload(from: pasteboardItem, appID: appID, appName: appName)
+
             if let imageData = imageData(from: pasteboardItem) {
-                imagePayloads.append(ClipboardImagePayload(data: imageData, appID: appID, appName: appName))
+                if let textPayload, shouldPreferTextPayload(textPayload, overImageFrom: pasteboardItem) {
+                    recordPayloads.append(textPayload)
+                } else {
+                    imagePayloads.append(ClipboardImagePayload(data: imageData, appID: appID, appName: appName))
+                }
                 continue
             }
 
@@ -164,11 +170,9 @@ final class ClipboardMonitor {
                 continue
             }
 
-            guard let payload = makeTextPayload(from: pasteboardItem, appID: appID, appName: appName) else {
-                continue
+            if let payload = textPayload {
+                recordPayloads.append(payload)
             }
-
-            recordPayloads.append(payload)
         }
 
         guard imagePayloads.isEmpty == false || recordPayloads.isEmpty == false else {
@@ -199,7 +203,8 @@ final class ClipboardMonitor {
             text: fileURLString,
             appID: appID,
             appName: appName,
-            type: ClipboardContentType.fileURL.rawValue
+            type: ClipboardContentType.fileURL.rawValue,
+            rtfData: nil
         )
     }
 
@@ -214,6 +219,7 @@ final class ClipboardMonitor {
 
         let textData = pasteboardItem.data(forType: utf8PlainTextType) ?? Data(text.utf8)
         let contentHash = CryptoHelper.sha256(data: textData)
+        let rtfData = pasteboardItem.data(forType: .rtf)
 
         // ⚠️ 智能嗅探：在录入瞬间决定数据类型，持久化入库
         let sniffedType = Self.sniffTextType(text)
@@ -223,7 +229,8 @@ final class ClipboardMonitor {
             text: text,
             appID: appID,
             appName: appName,
-            type: sniffedType.rawValue
+            type: sniffedType.rawValue,
+            rtfData: rtfData
         )
     }
 
@@ -249,6 +256,40 @@ final class ClipboardMonitor {
     private func imageDataFromFileURL(from pasteboardItem: NSPasteboardItem) -> Data? {
         guard let fileURLString = pasteboardItem.string(forType: fileURLType) else { return nil }
         return ClipboardFileReference.loadImageData(from: fileURLString)
+    }
+
+    private func shouldPreferTextPayload(
+        _ payload: ClipboardRecordPayload,
+        overImageFrom pasteboardItem: NSPasteboardItem
+    ) -> Bool {
+        guard let text = payload.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+              text.isEmpty == false else {
+            return false
+        }
+
+        if payload.rtfData?.isEmpty == false {
+            return true
+        }
+
+        if text.contains("\t") || text.contains("\n") {
+            return true
+        }
+
+        if text.count >= 80 {
+            return true
+        }
+
+        if ClipboardContentClassifier.isLikelyLink(text) {
+            return false
+        }
+
+        let textualTypeIdentifiers = Set(
+            pasteboardItem.types.map(\.rawValue).filter {
+                $0.contains("text") || $0.contains("html") || $0.contains("rtf")
+            }
+        )
+
+        return textualTypeIdentifiers.isEmpty == false
     }
 
     private nonisolated static func persistCapturedPayloads(
@@ -314,7 +355,8 @@ final class ClipboardMonitor {
             appID: payload.appID,
             appName: payload.appName,
             appIconDominantColorHex: appIconDominantColorHex,
-            type: payload.type
+            type: payload.type,
+            rtfData: payload.rtfData
         )
 
         // 链接类型 → 触发 LinkPresentation 抓取，让链接变成漂亮的书签卡片
@@ -324,11 +366,14 @@ final class ClipboardMonitor {
                 hash: payload.hash,
                 urlString: text.trimmingCharacters(in: .whitespacesAndNewlines)
             )
-            StorageManager.shared.processSyntaxHighlight(hash: payload.hash, text: text)
+            if payload.rtfData == nil {
+                StorageManager.shared.processSyntaxHighlight(hash: payload.hash, text: text)
+            }
         }
 
         // 代码/纯文本 → 静默触发后台语法高亮
         if (payload.type == ClipboardContentType.text.rawValue || payload.type == ClipboardContentType.code.rawValue),
+           payload.rtfData == nil,
            let text = payload.text {
             let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
@@ -369,6 +414,7 @@ private struct ClipboardRecordPayload: Sendable {
     let appID: String?
     let appName: String?
     let type: String
+    let rtfData: Data?
 }
 
 private struct ClipboardImagePayload: Sendable {

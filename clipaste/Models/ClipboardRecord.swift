@@ -23,7 +23,7 @@ final class ClipboardRecord {
     var linkTitle: String? // 链接预览：网页标题
     @Attribute(.externalStorage) var linkIconData: Data? // 链接预览：网站图标数据
     var isPinned: Bool = false // 固定状态
-    @Attribute(.externalStorage) var rtfData: Data? // 语法高亮后的 RTF 二进制数据（Highlightr 生成）
+    @Attribute(.externalStorage) var rtfData: Data? // 原始富文本或回退生成的 RTF，用于预览与粘贴
 
     init(
         id: UUID = UUID(),

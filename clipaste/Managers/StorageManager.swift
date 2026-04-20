@@ -219,6 +219,7 @@ final class StorageManager {
         appName: String?,
         appIconDominantColorHex: String? = nil,
         type: String,
+        rtfData: Data? = nil,
         previewImageData: Data? = nil,
         imageData: Data? = nil,
         imageMetadata: ClipboardImageMetadata? = nil
@@ -233,6 +234,7 @@ final class StorageManager {
                 appName: appName,
                 appIconDominantColorHex: appIconDominantColorHex,
                 type: type,
+                rtfData: rtfData,
                 previewImageData: previewImageData,
                 imageData: imageData,
                 imageMetadata: imageMetadata
@@ -774,6 +776,7 @@ actor ClipboardStoreActor {
         appName: String?,
         appIconDominantColorHex: String?,
         type: String,
+        rtfData: Data?,
         previewImageData: Data?,
         imageData: Data?,
         imageMetadata: ClipboardImageMetadata?
@@ -798,6 +801,10 @@ actor ClipboardStoreActor {
                     existingRecord.plainText = text
                 } else if type != ClipboardContentType.image.rawValue {
                     existingRecord.plainText = nil
+                }
+
+                if let rtfData {
+                    existingRecord.rtfData = rtfData
                 }
 
                 if let previewImageData {
@@ -825,7 +832,8 @@ actor ClipboardStoreActor {
                     imageMetadata: imageMetadata,
                     appBundleID: appID,
                     appLocalizedName: appName,
-                    appIconDominantColorHex: appIconDominantColorHex
+                    appIconDominantColorHex: appIconDominantColorHex,
+                    rtfData: rtfData
                 )
                 modelContext.insert(newRecord)
             }
