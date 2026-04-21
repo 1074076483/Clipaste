@@ -65,6 +65,7 @@ Clipaste 支持从以下应用迁移历史数据：
 - Paste
 - PasteNow
 - iCopy
+- Maccy
 
 目标很简单：切换工具时，不需要放弃原有历史记录。
 
