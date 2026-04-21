@@ -17,6 +17,9 @@ struct ClipboardMainView: View {
     @State private var pendingListFocusRequest: PendingListFocusRequest?
     @State private var pendingListFocusGeneration: UInt = 0
     @State private var pendingSearchFocusGeneration: UInt = 0
+    @State private var pendingBlindTypedSearchText = ""
+    @State private var pendingBlindTypedBaseSearchText: String?
+    @State private var pendingBlindTypedSearchEvents: [NSEvent] = []
     private let searchService = TypeToSearchService.shared
 
     var body: some View {
@@ -104,15 +107,14 @@ struct ClipboardMainView: View {
                 searchService.onInterceptedKey = { [weak viewModel] event in
                     guard let viewModel else { return false }
 
-                    let shouldEnterSearch = viewModel.shouldStartTypeToSearch(with: event)
-                    if shouldEnterSearch {
-                        focusSearchField(
-                            interceptedEvent: event,
-                            collapseSelectionToInsertionPoint: true
-                        )
+                    guard viewModel.shouldStartTypeToSearch(with: event),
+                          let acceptedInput = viewModel.acceptedSearchInput(from: event) else {
+                        return false
                     }
 
-                    return shouldEnterSearch
+                    bufferBlindTypedSearchInput(acceptedInput, event: event)
+                    focusSearchField(collapseSelectionToInsertionPoint: true)
+                    return true
                 }
                 requestDefaultListFocus()
             }
@@ -161,10 +163,7 @@ struct ClipboardMainView: View {
         }
     }
 
-    private func focusSearchField(
-        interceptedEvent: NSEvent? = nil,
-        collapseSelectionToInsertionPoint: Bool = false
-    ) {
+    private func focusSearchField(collapseSelectionToInsertionPoint: Bool = false) {
         pendingListFocusGeneration &+= 1
         pendingListFocusRequest = nil
         pendingSearchFocusGeneration &+= 1
@@ -177,8 +176,7 @@ struct ClipboardMainView: View {
             applySearchFieldFocusIfPossible(
                 generation: generation,
                 remainingAttempts: 3,
-                collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint,
-                interceptedEvent: interceptedEvent
+                collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint
             )
         }
     }
@@ -193,6 +191,7 @@ struct ClipboardMainView: View {
         pendingListFocusRequest = nil
         focusedField = .clipList
         searchService.isTextFieldFocused = false
+        resetPendingBlindTypedSearchInput()
         viewModel.ensureListSelection()
     }
 
@@ -210,6 +209,7 @@ struct ClipboardMainView: View {
         pendingListFocusGeneration &+= 1
         pendingSearchFocusGeneration &+= 1
         pendingListFocusRequest = nil
+        resetPendingBlindTypedSearchInput()
         searchService.stop()
         viewModel.stopKeyboardMonitoring()
         viewModel.endPresentation()
@@ -229,6 +229,7 @@ struct ClipboardMainView: View {
         pendingListFocusRequest = .preserveSelection
         focusedField = nil
         searchService.isTextFieldFocused = false
+        resetPendingBlindTypedSearchInput()
 
         DispatchQueue.main.async {
             _ = applyPendingListFocusIfPossible()
@@ -243,6 +244,7 @@ struct ClipboardMainView: View {
         pendingListFocusRequest = .selectFirstItem
         focusedField = nil
         searchService.isTextFieldFocused = false
+        resetPendingBlindTypedSearchInput()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             guard pendingListFocusGeneration == generation else { return }
@@ -283,8 +285,7 @@ struct ClipboardMainView: View {
     private func applySearchFieldFocusIfPossible(
         generation: UInt,
         remainingAttempts: Int,
-        collapseSelectionToInsertionPoint: Bool,
-        interceptedEvent: NSEvent?
+        collapseSelectionToInsertionPoint: Bool
     ) {
         guard pendingSearchFocusGeneration == generation else { return }
         guard isPanelKeyWindow else { return }
@@ -300,8 +301,10 @@ struct ClipboardMainView: View {
                     collapseActiveTextSelectionToInsertionPoint()
                 }
                 searchService.isTextFieldFocused = true
-                if let interceptedEvent {
-                    replayInterceptedSearchEvent(interceptedEvent)
+                replayPendingBlindTypedSearchEventsIfNeeded()
+
+                DispatchQueue.main.async {
+                    finalizePendingBlindTypedSearchInputIfNeeded()
                 }
                 return
             }
@@ -315,11 +318,58 @@ struct ClipboardMainView: View {
                 applySearchFieldFocusIfPossible(
                     generation: generation,
                     remainingAttempts: remainingAttempts - 1,
-                    collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint,
-                    interceptedEvent: interceptedEvent
+                    collapseSelectionToInsertionPoint: collapseSelectionToInsertionPoint
                 )
             }
         }
+    }
+
+    private func bufferBlindTypedSearchInput(_ input: String, event: NSEvent) {
+        if pendingBlindTypedBaseSearchText == nil {
+            pendingBlindTypedBaseSearchText = viewModel.searchInput
+        }
+
+        pendingBlindTypedSearchText.append(input)
+        pendingBlindTypedSearchEvents.append(event)
+    }
+
+    private func replayPendingBlindTypedSearchEventsIfNeeded() {
+        guard let textView = activeTextInputView else { return }
+        guard !pendingBlindTypedSearchEvents.isEmpty else { return }
+
+        let pendingEvents = pendingBlindTypedSearchEvents
+        pendingBlindTypedSearchEvents.removeAll()
+        textView.interpretKeyEvents(pendingEvents)
+    }
+
+    private func finalizePendingBlindTypedSearchInputIfNeeded() {
+        guard let baseSearchText = pendingBlindTypedBaseSearchText else { return }
+        guard !pendingBlindTypedSearchText.isEmpty else {
+            pendingBlindTypedBaseSearchText = nil
+            return
+        }
+
+        if let textView = activeTextInputView, textView.hasMarkedText() {
+            resetPendingBlindTypedSearchInput()
+            return
+        }
+
+        let expectedSearchText = baseSearchText + pendingBlindTypedSearchText
+        let currentSearchText = viewModel.searchInput
+
+        if currentSearchText == expectedSearchText || currentSearchText != baseSearchText {
+            resetPendingBlindTypedSearchInput()
+            return
+        }
+
+        viewModel.searchInput = expectedSearchText
+        resetPendingBlindTypedSearchInput()
+    }
+
+    private func resetPendingBlindTypedSearchInput() {
+        pendingBlindTypedSearchText = ""
+        pendingBlindTypedBaseSearchText = nil
+        pendingBlindTypedSearchEvents.removeAll()
     }
 
     private func collapseActiveTextSelectionToInsertionPoint() {
@@ -333,14 +383,6 @@ struct ClipboardMainView: View {
 
         let stringLength = textView.string.count
         textView.setSelectedRange(NSRange(location: stringLength, length: 0))
-    }
-
-    private func replayInterceptedSearchEvent(_ event: NSEvent) {
-        guard let textView = activeTextInputView else {
-            return
-        }
-
-        textView.interpretKeyEvents([event])
     }
 
     private var isActiveTextInputResponder: Bool {

@@ -69,7 +69,20 @@ extension ClipboardViewModel {
             return false
         }
 
-        return acceptedSearchInput(from: event.characters ?? "") != nil
+        return acceptedSearchInput(from: event) != nil
+    }
+
+    func acceptedSearchInput(from event: NSEvent) -> String? {
+        if let characters = event.characters,
+           let acceptedCharacters = acceptedSearchInput(from: characters) {
+            return acceptedCharacters
+        }
+
+        guard let charactersIgnoringModifiers = event.charactersIgnoringModifiers else {
+            return nil
+        }
+
+        return acceptedSearchInput(from: charactersIgnoringModifiers)
     }
 
     func setupModifierPreferenceSync() {
