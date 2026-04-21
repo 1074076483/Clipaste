@@ -6,24 +6,16 @@ import AppKit
 struct ColorParser {
 
     /// 从文本中提取颜色。仅当文本内容**完整**匹配已知颜色格式时才返回，否则返回 nil。
-    /// - 支持格式：`#RRGGBB`（必须带 # 前缀，6 位）、`rgb(255, 255, 255)`
+    /// - 支持格式：`#RRGGBB`、`RRGGBB`、`rgb(255, 255, 255)`
     nonisolated static func extractColor(from text: String) -> Color? {
         // 去除首尾空格换行，严格限制长度，防止长篇文章误触发
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count <= 25 else { return nil }
 
-        // 1. 嗅探 HEX 颜色：仅接受 #RRGGBB（必须带 #，必须 6 位）
-        //    排除：无前缀 / 3 位简写 / 纯数字验证码等误判场景
-        let hexPattern = "^#([A-Fa-f0-9]{6})$"
-        if trimmed.range(of: hexPattern, options: .regularExpression) != nil {
-            let hexSanitized = trimmed.replacingOccurrences(of: "#", with: "")
-            var rgb: UInt64 = 0
-            Scanner(string: hexSanitized).scanHexInt64(&rgb)
-            return Color(
-                red:   Double((rgb & 0xFF0000) >> 16) / 255.0,
-                green: Double((rgb & 0x00FF00) >> 8)  / 255.0,
-                blue:  Double( rgb & 0x0000FF)         / 255.0
-            )
+        // 1. 嗅探 HEX 颜色：接受 #RRGGBB 与裸 RRGGBB。
+        //    裸 HEX 需要同时包含数字与 A-F 字母，避免把 6 位纯数字验证码误判成颜色。
+        if let hexSanitized = parseHexCandidate(from: trimmed) {
+            return makeColor(fromHex: hexSanitized)
         }
 
         // 2. 嗅探 RGB 颜色：rgb(255, 255, 255)
@@ -41,6 +33,46 @@ struct ColorParser {
         }
 
         return nil
+    }
+
+    nonisolated static func isSupportedColorText(_ text: String) -> Bool {
+        extractColor(from: text) != nil
+    }
+
+    nonisolated private static func parseHexCandidate(from trimmed: String) -> String? {
+        let prefixedHexPattern = "^#([A-Fa-f0-9]{6})$"
+        if trimmed.range(of: prefixedHexPattern, options: .regularExpression) != nil {
+            return String(trimmed.dropFirst())
+        }
+
+        let bareHexPattern = "^([A-Fa-f0-9]{6})$"
+        guard trimmed.range(of: bareHexPattern, options: .regularExpression) != nil else {
+            return nil
+        }
+
+        let containsDigit = trimmed.contains(where: \.isNumber)
+        let containsHexLetter = trimmed.contains { character in
+            ("a"..."f").contains(character.lowercased())
+        }
+
+        guard containsDigit, containsHexLetter else {
+            return nil
+        }
+
+        return trimmed
+    }
+
+    nonisolated private static func makeColor(fromHex hex: String) -> Color? {
+        var rgb: UInt64 = 0
+        guard Scanner(string: hex).scanHexInt64(&rgb) else {
+            return nil
+        }
+
+        return Color(
+            red:   Double((rgb & 0xFF0000) >> 16) / 255.0,
+            green: Double((rgb & 0x00FF00) >> 8)  / 255.0,
+            blue:  Double( rgb & 0x0000FF)         / 255.0
+        )
     }
 }
 

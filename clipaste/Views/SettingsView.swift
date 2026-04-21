@@ -136,7 +136,7 @@ private struct SidebarLabel: View {
             Image(systemName: tab.iconName)
                 .font(.system(size: 14, weight: .medium))
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(isSelected ? SettingsPalette.updateAccentEmphasis(for: colorScheme) : .secondary)
+                .foregroundStyle(isSelected ? SettingsPalette.sidebarSelectionAccent(for: colorScheme) : .secondary)
                 .frame(width: 16)
                 .overlay(alignment: .topTrailing) {
                     if showsUpdateBadge {

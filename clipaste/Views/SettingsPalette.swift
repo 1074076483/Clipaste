@@ -1,21 +1,23 @@
 import SwiftUI
 
 enum SettingsPalette {
+    private static let sidebarAccent = Color.settingsSidebarAccent
+
     static func updateAccent(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            Color(.sRGB, red: 0.50, green: 0.64, blue: 0.80, opacity: 1.0)
+            sidebarAccent.opacity(0.92)
         default:
-            Color(.sRGB, red: 0.36, green: 0.50, blue: 0.65, opacity: 1.0)
+            sidebarAccent.opacity(0.88)
         }
     }
 
-    static func updateAccentEmphasis(for colorScheme: ColorScheme) -> Color {
+    static func sidebarSelectionAccent(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            Color(.sRGB, red: 0.61, green: 0.72, blue: 0.83, opacity: 1.0)
+            sidebarAccent.opacity(0.98)
         default:
-            Color(.sRGB, red: 0.31, green: 0.45, blue: 0.59, opacity: 1.0)
+            sidebarAccent.opacity(0.92)
         }
     }
 
@@ -49,13 +51,18 @@ enum SettingsPalette {
     static func sidebarSelectionFill(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            Color(.sRGB, red: 0.16, green: 0.21, blue: 0.26, opacity: 1.0)
+            sidebarAccent.opacity(0.26)
         default:
-            Color(.sRGB, red: 0.92, green: 0.95, blue: 0.97, opacity: 1.0)
+            sidebarAccent.opacity(0.18)
         }
     }
 
     static func sidebarSelectionBorder(for colorScheme: ColorScheme) -> Color {
-        updateSurfaceBorder(for: colorScheme)
+        switch colorScheme {
+        case .dark:
+            sidebarAccent.opacity(0.42)
+        default:
+            sidebarAccent.opacity(0.30)
+        }
     }
 }

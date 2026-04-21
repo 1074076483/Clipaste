@@ -1,11 +1,15 @@
 import Foundation
 
 enum ClipboardContentClassifier {
-    static let repairVersion = 1
+    static let repairVersion = 2
 
     static func classify(_ text: String) -> ClipboardContentType {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.isEmpty == false else { return .text }
+
+        if ColorParser.isSupportedColorText(trimmed) {
+            return .color
+        }
 
         if isLikelyLink(trimmed) {
             return .link

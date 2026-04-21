@@ -1209,9 +1209,7 @@ actor ClipboardStoreActor {
                     continue
                 }
 
-                let reclassifiedType = await MainActor.run {
-                    ClipboardContentClassifier.classify(text).rawValue
-                }
+                let reclassifiedType = ClipboardContentClassifier.classify(text).rawValue
                 guard reclassifiedType != record.typeRawValue else {
                     continue
                 }
