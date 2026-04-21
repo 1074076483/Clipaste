@@ -66,6 +66,7 @@ Clipaste can migrate clipboard history from:
 - Paste
 - PasteNow
 - iCopy
+- Maccy
 
 The goal is simple: switch without losing your existing history.
 
