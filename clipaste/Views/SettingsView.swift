@@ -51,6 +51,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     var body: some View {
         let resolvedLocale = appLanguage.resolvedLocale
@@ -66,6 +67,7 @@ struct SettingsView: View {
                                 SidebarLabel(
                                     tab: tab,
                                     isSelected: selectedTab == tab,
+                                    accentColor: appAccentColor,
                                     showsUpdateBadge: tab == .about && appUpdateViewModel.shouldShowUpdateBadge
                                 )
                             }
@@ -101,6 +103,7 @@ struct SettingsView: View {
                 .frame(minWidth: 620, maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .background(Color(nsColor: .windowBackgroundColor).ignoresSafeArea())
+        .tint(appAccentColor.color)
         .environment(\.locale, resolvedLocale)
         .animation(nil, value: appLanguage)
         .frame(minWidth: 820, idealWidth: 900, maxWidth: .infinity,
@@ -124,19 +127,28 @@ struct SettingsView: View {
 private struct SidebarLabel: View {
     let tab: SettingsTab
     let isSelected: Bool
+    let accentColor: AppAccentColor
     let showsUpdateBadge: Bool
     @Environment(\.colorScheme) private var colorScheme
+
+    private var selectedContentColor: Color {
+        SettingsPalette.sidebarSelectionAccent(accentColor, for: colorScheme)
+    }
+
+    private var selectedFillColor: Color {
+        SettingsPalette.sidebarSelectionFill(accentColor, for: colorScheme)
+    }
 
     var body: some View {
         Label {
             Text(tab.localizedTitle)
                 .lineLimit(1)
-                .foregroundStyle(.primary)
+                .foregroundStyle(isSelected ? selectedContentColor : .primary)
         } icon: {
             Image(systemName: tab.iconName)
                 .font(.system(size: 14, weight: .medium))
                 .symbolRenderingMode(.monochrome)
-                .foregroundStyle(isSelected ? SettingsPalette.sidebarSelectionAccent(for: colorScheme) : .secondary)
+                .foregroundStyle(isSelected ? selectedContentColor : .secondary)
                 .frame(width: 16)
                 .overlay(alignment: .topTrailing) {
                     if showsUpdateBadge {
@@ -146,7 +158,7 @@ private struct SidebarLabel: View {
                             .overlay {
                                 Circle()
                                     .stroke(
-                                        isSelected ? SettingsPalette.sidebarSelectionFill(for: colorScheme) : Color(nsColor: .controlBackgroundColor),
+                                        isSelected ? selectedFillColor : Color(nsColor: .controlBackgroundColor),
                                         lineWidth: 1
                                     )
                             }
@@ -161,11 +173,11 @@ private struct SidebarLabel: View {
         .contentShape(Rectangle())
         .background {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(isSelected ? SettingsPalette.sidebarSelectionFill(for: colorScheme) : Color.clear)
+                .fill(isSelected ? selectedFillColor : Color.clear)
                 .overlay {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .stroke(
-                            isSelected ? SettingsPalette.sidebarSelectionBorder(for: colorScheme) : Color.clear,
+                            isSelected ? SettingsPalette.sidebarSelectionBorder(accentColor, for: colorScheme) : Color.clear,
                             lineWidth: 1
                         )
                 }

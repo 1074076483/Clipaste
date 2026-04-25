@@ -1,23 +1,40 @@
 import SwiftUI
 
 enum SettingsPalette {
-    private static let sidebarAccent = Color.settingsSidebarAccent
+    private static let fallbackAccent = Color.settingsSidebarAccent
 
     static func updateAccent(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            sidebarAccent.opacity(0.92)
+            fallbackAccent.opacity(0.92)
         default:
-            sidebarAccent.opacity(0.88)
+            fallbackAccent.opacity(0.88)
+        }
+    }
+
+    static func sidebarSelectionAccent(_ accentColor: AppAccentColor, for _: ColorScheme) -> Color {
+        accentColor.selectedContentColor
+    }
+
+    static func sidebarSelectionFill(_ accentColor: AppAccentColor, for _: ColorScheme) -> Color {
+        accentColor.color
+    }
+
+    static func sidebarSelectionBorder(_ accentColor: AppAccentColor, for colorScheme: ColorScheme) -> Color {
+        switch colorScheme {
+        case .dark:
+            accentColor.color.opacity(0.82)
+        default:
+            accentColor.color.opacity(0.64)
         }
     }
 
     static func sidebarSelectionAccent(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            sidebarAccent.opacity(0.98)
+            fallbackAccent.opacity(0.98)
         default:
-            sidebarAccent.opacity(0.92)
+            fallbackAccent.opacity(0.92)
         }
     }
 
@@ -51,18 +68,18 @@ enum SettingsPalette {
     static func sidebarSelectionFill(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            sidebarAccent.opacity(0.26)
+            fallbackAccent.opacity(0.26)
         default:
-            sidebarAccent.opacity(0.18)
+            fallbackAccent.opacity(0.18)
         }
     }
 
     static func sidebarSelectionBorder(for colorScheme: ColorScheme) -> Color {
         switch colorScheme {
         case .dark:
-            sidebarAccent.opacity(0.42)
+            fallbackAccent.opacity(0.42)
         default:
-            sidebarAccent.opacity(0.30)
+            fallbackAccent.opacity(0.30)
         }
     }
 }

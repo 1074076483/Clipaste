@@ -3,6 +3,7 @@ import SwiftUI
 
 struct LocalizedShortcutRecorder: View {
     @Environment(\.locale) private var locale
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     @ObservedObject var viewModel: ShortcutRecorderRowViewModel
 
@@ -48,7 +49,7 @@ struct LocalizedShortcutRecorder: View {
 
     private var borderColor: Color {
         if viewModel.isRecording {
-            return .accentColor
+            return appAccentColor.color
         }
 
         return Color(nsColor: .separatorColor)
