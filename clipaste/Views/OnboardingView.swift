@@ -4,6 +4,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @StateObject var viewModel = OnboardingViewModel()
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     private var isLastStep: Bool {
         viewModel.currentStep == .preferences
@@ -100,7 +101,7 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(OnboardingStep.allCases, id: \.self) { step in
                 Circle()
-                    .fill(step == viewModel.currentStep ? Color.accentColor : Color.secondary.opacity(0.3))
+                    .fill(step == viewModel.currentStep ? appAccentColor.color : Color.secondary.opacity(0.3))
                     .frame(width: 8, height: 8)
                     .animation(.easeInOut(duration: 0.22), value: viewModel.currentStep)
             }
@@ -125,7 +126,7 @@ struct OnboardingView: View {
             }
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
-            .tint(.accentColor)
+            .tint(appAccentColor.color)
             .controlSize(.large)
             .disabled(!canContinue)
         }

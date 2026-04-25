@@ -3,6 +3,7 @@ import SwiftUI
 struct GroupEditorPopover: View {
     @ObservedObject var viewModel: GroupEditorViewModel
     @Environment(\.locale) private var locale
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     let onSubmit: (String, String?) -> Void
 
@@ -19,11 +20,31 @@ struct GroupEditorPopover: View {
                 iconPickerButton
 
                 TextField("Group Name", text: $viewModel.name)
-                    .textFieldStyle(.roundedBorder)
-                    .tint(.primary)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 8)
+                    .frame(height: 31)
+                    .tint(appAccentColor.color)
                     .frame(width: 150)
                     .focused($isNameFocused)
                     .onSubmit { submitIfPossible() }
+                    .background {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color(nsColor: .textBackgroundColor))
+                    }
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(
+                                isNameFocused
+                                    ? appAccentColor.color.opacity(0.88)
+                                    : Color.secondary.opacity(0.20),
+                                lineWidth: isNameFocused ? 2 : 1
+                            )
+                    }
+                    .shadow(
+                        color: isNameFocused ? appAccentColor.color.opacity(0.18) : .clear,
+                        radius: 5,
+                        y: 1
+                    )
             }
 
             HStack(spacing: 8) {
@@ -35,6 +56,7 @@ struct GroupEditorPopover: View {
                     Text(viewModel.submitTitle)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(appAccentColor.color)
                 .disabled(viewModel.canSubmit == false)
             }
         }

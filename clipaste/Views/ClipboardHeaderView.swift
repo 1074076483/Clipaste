@@ -16,6 +16,7 @@ struct ClipboardHeaderView: View {
     @FocusState var focusedField: ClipboardPanelFocusField?
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
     @AppStorage("appLanguage") private var appLanguage: AppLanguage = .auto
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     @AppStorage("isPanelPinned") private var isPanelPinned: Bool = false
     @AppStorage("isMonitoringPaused") private var isMonitoringPaused: Bool = false
     @AppStorage("monitorInterval") private var monitorInterval: Double = 0.5
@@ -25,6 +26,7 @@ struct ClipboardHeaderView: View {
     @State private var targetedBuiltInGroup: ClipboardBuiltInGroup? = nil
     @State private var groupTabFrames: [String: CGRect] = [:]
     @State private var reorderTarget: GroupReorderTarget? = nil
+    @State private var isShowingGroupOverflowPopover = false
 
     // MARK: - 重命名 / 删除分组弹窗控制
     @State private var groupToEdit: ClipboardGroupItem? = nil
@@ -233,8 +235,12 @@ struct ClipboardHeaderView: View {
         .frame(height: HorizontalSearchLayout.fieldHeight)
         .frame(width: horizontalSearchBarWidth, alignment: .leading)
         .background(Color.clear.background(.regularMaterial))
+        .overlay {
+            Capsule()
+                .strokeBorder(searchFieldFocusColor, lineWidth: 1)
+        }
         .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+        .shadow(color: searchFieldShadowColor, radius: focusedField == .searchBar ? 8 : 4, y: 2)
         .animation(horizontalSearchWidthAnimation, value: isHorizontalSearchExpanded)
         .animation(.easeInOut(duration: 0.18), value: viewModel.searchInput.isEmpty)
         .help(isHorizontalSearchExpanded ? Text("Search History") : Text("Search"))
@@ -254,6 +260,7 @@ struct ClipboardHeaderView: View {
 #if os(macOS)
             .textContentType(.none)
 #endif
+            .tint(appAccentColor.color)
             .focused($focusedField, equals: .searchBar)
     }
 
@@ -368,99 +375,111 @@ struct ClipboardHeaderView: View {
     }
 
     private var groupOverflowMenu: some View {
-        Menu {
-            Text("Built-in Groups")
+        Button {
+            isShowingGroupOverflowPopover = true
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 24)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(width: 24)
+        .help("All Groups")
+        .popover(isPresented: $isShowingGroupOverflowPopover, arrowEdge: .bottom) {
+            groupOverflowPopover
+                .environment(\.locale, panelLocale)
+        }
+        .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
+            newGroupPopover
+                .environment(\.locale, panelLocale)
+        }
+    }
 
-            Button(action: {
-                selectAllGroup()
-            }) {
-                HStack {
-                    Label("All", systemImage: "tray.2.fill")
-                    if viewModel.isAllScopeSelected {
-                        Spacer()
-                        Image(systemName: "checkmark")
-                    }
-                }
+    private var groupOverflowPopover: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            GroupOverflowSectionTitle("Built-in Groups")
+
+            GroupOverflowRow(
+                title: .localized(LocalizedStringResource("All")),
+                icon: "tray.2.fill",
+                isSelected: viewModel.isAllScopeSelected,
+                accentColor: appAccentColor
+            ) {
+                performGroupOverflowAction(selectAllGroup)
             }
 
             if !viewModel.customGroups.isEmpty {
                 Divider()
-                Text("Groups")
+                    .padding(.vertical, 3)
+
+                GroupOverflowSectionTitle("Groups")
 
                 ForEach(viewModel.customGroups) { group in
-                    Button(action: {
-                        selectCustomGroup(group.id)
-                    }) {
-                        HStack {
-                            GroupMenuLabel(title: group.name, iconName: group.systemIconName)
-                            if viewModel.isCustomGroupSelected(group.id) {
-                                Spacer()
-                                Image(systemName: "checkmark")
-                            }
+                    GroupOverflowRow(
+                        title: .verbatim(group.name),
+                        icon: group.systemIconName,
+                        isSelected: viewModel.isCustomGroupSelected(group.id),
+                        accentColor: appAccentColor
+                    ) {
+                        performGroupOverflowAction {
+                            selectCustomGroup(group.id)
                         }
                     }
                 }
             }
 
             ForEach(viewModel.visibleBuiltInGroups, id: \.self) { group in
-                Button(action: {
-                    selectBuiltInGroup(group)
-                }) {
-                    HStack {
-                        Label {
-                            Text(group.localizedTitle)
-                        } icon: {
-                            Image(systemName: group.systemImage)
-                        }
-                        if viewModel.isBuiltInGroupSelected(group) {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
+                GroupOverflowRow(
+                    title: .localized(group.localizedTitle),
+                    icon: group.systemImage,
+                    isSelected: viewModel.isBuiltInGroupSelected(group),
+                    accentColor: appAccentColor
+                ) {
+                    performGroupOverflowAction {
+                        selectBuiltInGroup(group)
                     }
                 }
             }
 
             ForEach(viewModel.visibleSmartFilters, id: \.self) { type in
-                Button(action: {
-                    selectSmartFilter(type)
-                }) {
-                    HStack {
-                        Label {
-                            Text(type.localizedFilterTitle)
-                        } icon: {
-                            Image(systemName: type.systemImage)
-                        }
-                        if viewModel.isSmartFilterSelected(type) {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
+                GroupOverflowRow(
+                    title: .localized(type.localizedFilterTitle),
+                    icon: type.systemImage,
+                    isSelected: viewModel.isSmartFilterSelected(type),
+                    accentColor: appAccentColor
+                ) {
+                    performGroupOverflowAction {
+                        selectSmartFilter(type)
                     }
                 }
             }
 
             Divider()
+                .padding(.vertical, 3)
 
-            Button(action: {
+            GroupOverflowRow(
+                title: .localized(LocalizedStringResource("New Group…")),
+                icon: "plus",
+                isSelected: false,
+                accentColor: appAccentColor
+            ) {
+                isShowingGroupOverflowPopover = false
                 newGroupEditor.prepareForCreate()
-                isShowingNewGroupPopover = true
-            }) {
-                Label("New Group…", systemImage: "plus")
+                DispatchQueue.main.async {
+                    isShowingNewGroupPopover = true
+                }
             }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.secondary)
-                .frame(width: 24, height: 24)
-                .contentShape(Rectangle())
         }
-        .menuStyle(.borderlessButton)
-        .menuIndicator(.hidden)
-        .frame(width: 24)
-        .help("All Groups")
-        .popover(isPresented: $isShowingNewGroupPopover, arrowEdge: .bottom) {
-            newGroupPopover
-                .environment(\.locale, panelLocale)
-        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 8)
+        .frame(width: 164)
+    }
+
+    private func performGroupOverflowAction(_ action: () -> Void) {
+        action()
+        isShowingGroupOverflowPopover = false
     }
 
     @ViewBuilder
@@ -611,9 +630,9 @@ struct ClipboardHeaderView: View {
 
     private var groupInsertionIndicator: some View {
         Capsule(style: .continuous)
-            .fill(Color.accentColor)
+            .fill(appAccentColor.color)
             .frame(width: 3, height: 22)
-            .shadow(color: Color.accentColor.opacity(0.35), radius: 4, y: 1)
+            .shadow(color: appAccentColor.color.opacity(0.35), radius: 4, y: 1)
             .allowsHitTesting(false)
     }
 
@@ -627,7 +646,7 @@ struct ClipboardHeaderView: View {
             )
         }) {
             Image(systemName: isPanelPinned ? "pin.fill" : "pin")
-                .foregroundColor(isPanelPinned ? .accentColor : .secondary)
+                .foregroundStyle(isPanelPinned ? appAccentColor.color : .secondary)
                 .font(.system(size: 15))
                 .rotationEffect(.degrees(isPanelPinned ? 45 : 0))
                 .animation(.spring(), value: isPanelPinned)
@@ -735,6 +754,7 @@ struct ClipboardHeaderView: View {
 #if os(macOS)
                     .textContentType(.none)
 #endif
+                    .tint(appAccentColor.color)
                     .focused($focusedField, equals: .searchBar)
                 if !viewModel.searchInput.isEmpty {
                     Button(action: { viewModel.searchInput = "" }) {
@@ -748,8 +768,12 @@ struct ClipboardHeaderView: View {
             .frame(height: 28)
             .frame(maxWidth: .infinity)
             .background(Color.clear.background(.regularMaterial))
+            .overlay {
+                Capsule()
+                    .strokeBorder(searchFieldFocusColor, lineWidth: 1)
+            }
             .clipShape(Capsule())
-            .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
+            .shadow(color: searchFieldShadowColor, radius: focusedField == .searchBar ? 8 : 4, y: 2)
 
             // 右侧：设置菜单
             settingsMenu
@@ -801,6 +825,18 @@ struct ClipboardHeaderView: View {
             get: { viewModel.searchInput },
             set: { viewModel.searchInput = $0 }
         )
+    }
+
+    private var searchFieldFocusColor: Color {
+        focusedField == .searchBar
+            ? appAccentColor.color.opacity(0.34)
+            : .clear
+    }
+
+    private var searchFieldShadowColor: Color {
+        focusedField == .searchBar
+            ? appAccentColor.color.opacity(0.16)
+            : .black.opacity(0.05)
     }
 
     private func selectAllGroup() {
@@ -862,6 +898,89 @@ struct ClipboardHeaderView: View {
     ClipboardHeaderPreview()
 }
 
+private struct GroupOverflowSectionTitle: View {
+    let title: LocalizedStringKey
+
+    init(_ title: LocalizedStringKey) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(.secondary.opacity(0.65))
+            .padding(.horizontal, 10)
+            .padding(.top, 2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct GroupOverflowRow: View {
+    enum Title {
+        case localized(LocalizedStringResource)
+        case verbatim(String)
+    }
+
+    let title: Title
+    let icon: String?
+    let isSelected: Bool
+    let accentColor: AppAccentColor
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    private var isHighlighted: Bool {
+        isSelected || isHovered
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if let iconName = ClipboardGroupIconName.normalize(icon) {
+                    GroupIconView(iconName: iconName, size: 13)
+                        .frame(width: 14, height: 14)
+                } else {
+                    Spacer()
+                        .frame(width: 14, height: 14)
+                }
+
+                titleView
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                    .lineLimit(1)
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .bold))
+                    .opacity(isSelected ? 1 : 0)
+            }
+            .foregroundStyle(isHighlighted ? accentColor.selectedContentColor : Color.primary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isHighlighted ? accentColor.color : Color.clear)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovered = hovering
+        }
+    }
+
+    @ViewBuilder
+    private var titleView: some View {
+        switch title {
+        case .localized(let resource):
+            Text(resource)
+        case .verbatim(let string):
+            Text(verbatim: string)
+        }
+    }
+}
+
 private struct ClipboardHeaderPreview: View {
     @FocusState private var focusedField: ClipboardPanelFocusField?
 
@@ -894,6 +1013,7 @@ struct MinimalGroupTabButton: View {
 
     @State private var isHovered = false
     @Environment(\.colorScheme) private var colorScheme
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     var body: some View {
         Button(action: action) {
@@ -944,7 +1064,7 @@ struct MinimalGroupTabButton: View {
 
     private var foregroundStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(Color.primary)
+            return AnyShapeStyle(appAccentColor.selectedContentColor)
         }
         return AnyShapeStyle(isHovered ? Color.primary : Color.secondary)
     }
@@ -964,11 +1084,7 @@ struct MinimalGroupTabButton: View {
 
     private var backgroundFillStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(
-                colorScheme == .dark
-                    ? Color.white.opacity(0.10)
-                    : Color.accentColor.opacity(0.10)
-            )
+            return AnyShapeStyle(appAccentColor.color)
         }
 
         if isHovered {
@@ -984,9 +1100,7 @@ struct MinimalGroupTabButton: View {
 
     private var borderStyle: AnyShapeStyle {
         if isSelected {
-            return AnyShapeStyle(
-                Color.accentColor.opacity(colorScheme == .dark ? 0.34 : 0.20)
-            )
+            return AnyShapeStyle(appAccentColor.color.opacity(colorScheme == .dark ? 0.82 : 0.64))
         }
 
         if isHovered {
@@ -997,7 +1111,7 @@ struct MinimalGroupTabButton: View {
     }
 
     private var borderLineWidth: CGFloat {
-        isSelected ? 0.8 : (isHovered ? 0.6 : 0)
+        isSelected ? 1 : (isHovered ? 0.6 : 0)
     }
 }
 

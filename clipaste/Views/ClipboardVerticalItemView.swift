@@ -18,6 +18,7 @@ struct ClipboardVerticalItemView: View {
     let onHoverChange: ((Bool) -> Void)?
 
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     @State private var isHovering = false
     @State private var richPreviewText: AttributedString?
@@ -61,7 +62,7 @@ struct ClipboardVerticalItemView: View {
         }
 
         if isSelected {
-            return AnyShapeStyle(Color.accentColor.opacity(0.12))
+            return AnyShapeStyle(appAccentColor.color.opacity(0.12))
         }
 
         return AnyShapeStyle(
@@ -75,11 +76,11 @@ struct ClipboardVerticalItemView: View {
         }
 
         if isSelected {
-            return Color.accentColor
+            return appAccentColor.color
         }
 
         if isHovering {
-            return Color.accentColor.opacity(0.45)
+            return appAccentColor.color.opacity(0.45)
         }
 
         return .clear

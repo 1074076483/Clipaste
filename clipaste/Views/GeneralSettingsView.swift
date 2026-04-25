@@ -4,6 +4,7 @@ struct GeneralSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var preferencesStore: AppPreferencesStore
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
 
     @State private var showingClearAlert = false
@@ -31,7 +32,12 @@ private extension GeneralSettingsView {
                 Text("Launch Clipaste at Login")
             }
 
-            AppearanceThemePicker(selection: $appTheme)
+            AppearanceThemePicker(
+                selection: $appTheme,
+                accentColor: appAccentColor.color
+            )
+
+            ThemeColorPicker(selection: $appAccentColor)
 
             Picker("Language", selection: $viewModel.appLanguage) {
                 ForEach(AppLanguage.allCases) { lang in
@@ -81,11 +87,7 @@ private struct PreviewPanelToggle: View {
 
 private struct AppearanceThemePicker: View {
     @Binding var selection: AppTheme
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var selectionAccent: Color {
-        SettingsPalette.sidebarSelectionAccent(for: colorScheme)
-    }
+    let accentColor: Color
 
     var body: some View {
         LabeledContent {
@@ -94,7 +96,7 @@ private struct AppearanceThemePicker: View {
                     AppearanceThemeCard(
                         theme: theme,
                         isSelected: selection == theme,
-                        accentColor: selectionAccent
+                        accentColor: accentColor
                     ) {
                         selection = theme
                     }

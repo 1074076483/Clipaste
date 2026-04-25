@@ -9,6 +9,7 @@ struct ClipboardCardView: View {
     @State private var isHovered = false
     @State private var richPreviewText: AttributedString?
     @State private var appIconDominantColorHex: String?
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
 
     private var isSelected: Bool {
         viewModel.selectedItemIDs.contains(item.id)
@@ -122,7 +123,7 @@ struct ClipboardCardView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(
-                    isSelected ? Color.accentColor.opacity(0.95) : Color.black.opacity(0.08),
+                    isSelected ? appAccentColor.color.opacity(0.95) : Color.black.opacity(0.08),
                     lineWidth: isSelected ? 6 : 0.8
                 )
         }

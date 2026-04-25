@@ -31,6 +31,7 @@ struct GroupIconPicker: View {
     @Binding var selectedIcon: String?
 
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     @StateObject private var vm = IconPickerViewModel()
 
     private let columns = [GridItem(.adaptive(minimum: 52), spacing: 8)]
@@ -115,7 +116,7 @@ struct GroupIconPicker: View {
             dismiss()
         } label: {
             IconItemView(item: item, size: 18)
-                .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
+                .foregroundStyle(isSelected ? appAccentColor.color : Color.primary)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle()) // ensure the hit target is still decent
         }
@@ -132,15 +133,15 @@ struct GroupIconPicker: View {
         } label: {
             ZStack {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(isSelected ? Color.accentColor.opacity(0.12) : Color.clear)
+                    .fill(isSelected ? appAccentColor.color.opacity(0.12) : Color.clear)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .stroke(isSelected ? Color.accentColor.opacity(0.5) : Color.secondary.opacity(0.18))
+                            .stroke(isSelected ? appAccentColor.color.opacity(0.5) : Color.secondary.opacity(0.18))
                     )
 
                 Image(systemName: "square.dashed")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(isSelected ? appAccentColor.color : Color.secondary)
                     .frame(width: 32, height: 32)
             }
             .frame(width: 32, height: 32)

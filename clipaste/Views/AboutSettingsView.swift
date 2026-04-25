@@ -6,6 +6,7 @@ struct AboutSettingsView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.locale) private var locale
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
 
@@ -230,12 +231,12 @@ private extension AboutSettingsView {
     }
 
     func updateVersionBadge(_ version: String) -> some View {
-        let fillColor = Color.accentColor.opacity(colorScheme == .dark ? 0.18 : 0.08)
-        let strokeColor = Color.accentColor.opacity(colorScheme == .dark ? 0.36 : 0.16)
+        let fillColor = appAccentColor.color.opacity(colorScheme == .dark ? 0.18 : 0.08)
+        let strokeColor = appAccentColor.color.opacity(colorScheme == .dark ? 0.36 : 0.16)
 
         return Text(verbatim: version)
             .font(.caption.weight(.semibold))
-            .foregroundStyle(Color.accentColor)
+            .foregroundStyle(appAccentColor.color)
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background {
@@ -297,7 +298,7 @@ private extension AboutSettingsView {
     func updateStatusColor(for viewModel: AppUpdateViewModel) -> Color {
         switch viewModel.phase {
         case .checking, .updateAvailable, .downloading, .installing:
-            return .accentColor
+            return appAccentColor.color
         case .failed:
             return .red
         default:
@@ -308,7 +309,7 @@ private extension AboutSettingsView {
     func updateStatusBackground(for viewModel: AppUpdateViewModel) -> Color {
         switch viewModel.phase {
         case .checking, .downloading, .installing:
-            return Color.accentColor.opacity(colorScheme == .dark ? 0.16 : 0.07)
+            return appAccentColor.color.opacity(colorScheme == .dark ? 0.16 : 0.07)
         case .updateAvailable:
             return SettingsPalette.cardBackground(for: colorScheme)
         case .failed:
@@ -321,7 +322,7 @@ private extension AboutSettingsView {
     func updateStatusBorder(for viewModel: AppUpdateViewModel) -> Color {
         switch viewModel.phase {
         case .checking, .downloading, .installing:
-            return Color.accentColor.opacity(colorScheme == .dark ? 0.32 : 0.14)
+            return appAccentColor.color.opacity(colorScheme == .dark ? 0.32 : 0.14)
         case .updateAvailable:
             return .clear
         case .failed:

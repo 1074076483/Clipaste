@@ -5,6 +5,7 @@ struct AdvancedSettingsView: View {
     @EnvironmentObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var runtimeStore: ClipboardRuntimeStore
     @Environment(\.locale) private var locale
+    @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     @AppStorage("enable_smart_groups") private var isSmartGroupsEnabled: Bool = true
     @State private var showsDiagnostics = false
     @State private var copiedDiagnostics = false
@@ -31,8 +32,10 @@ private extension AdvancedSettingsView {
                 }
                 if viewModel.autoPasteToActiveApp {
                     Button("Open Accessibility Settings…", action: viewModel.openAccessibilitySettings)
-                        .buttonStyle(.link)
+                        .buttonStyle(.plain)
+                        .tint(appAccentColor.color)
                         .font(.subheadline)
+                        .foregroundStyle(appAccentColor.color)
                         .padding(.leading, 2)
                 }
             }
@@ -138,7 +141,7 @@ private extension AdvancedSettingsView {
                             : .default,
                         value: runtimeStore.isSyncing
                     )
-                    .foregroundStyle(runtimeStore.isSyncing ? .secondary : Color.accentColor)
+                    .foregroundStyle(runtimeStore.isSyncing ? .secondary : appAccentColor.color)
                     .disabled(runtimeStore.isSyncing)
                 }
 
@@ -161,7 +164,7 @@ private extension AdvancedSettingsView {
     }
 
     var syncStatusColor: Color {
-        if runtimeStore.isSyncing { return .blue }
+        if runtimeStore.isSyncing { return appAccentColor.color }
         if runtimeStore.syncError != nil { return .red }
         return .green
     }
