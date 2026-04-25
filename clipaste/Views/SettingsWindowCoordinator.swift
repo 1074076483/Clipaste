@@ -77,24 +77,20 @@ enum SettingsWindowCoordinator {
         let windowID = ObjectIdentifier(window)
         guard closeObservers[windowID] == nil else { return }
 
+        // SwiftUI 的 Settings 场景会在 App 生命周期内复用同一个 NSWindow 与内容视图树：
+        // 第一次关闭后再打开时 viewDidMoveToWindow 不会再次触发，因此 register(window:) 也
+        // 不会重新执行。这里保持监听器一直附着在窗口上，每次关闭都能恢复 accessory，从而
+        // 避免第二次关闭后 Dock 图标残留。restoreAccessoryPolicyIfNeeded 自身是幂等的
+        // （shouldRestoreAccessoryPolicy 用过即清），多次触发不会有副作用。
         closeObservers[windowID] = NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification,
             object: window,
             queue: .main
         ) { _ in
-            // 已在主线程，直接同步处理，不需要额外的异步嵌套
             Task { @MainActor in
-                removeCloseObserver(for: window)
                 restoreAccessoryPolicyIfNeeded()
             }
         }
-    }
-
-    @MainActor
-    private static func removeCloseObserver(for window: NSWindow) {
-        let windowID = ObjectIdentifier(window)
-        guard let observer = closeObservers.removeValue(forKey: windowID) else { return }
-        NotificationCenter.default.removeObserver(observer)
     }
 
     @MainActor
