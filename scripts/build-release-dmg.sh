@@ -21,6 +21,8 @@ DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$BUILD_ROOT/DerivedData-Release}"
 ARCHIVE_PATH="${ARCHIVE_PATH:-$BUILD_ROOT/${APP_NAME}.xcarchive}"
 EXPORT_DIR="${EXPORT_DIR:-$BUILD_ROOT/export}"
 DMG_STAGING_DIR="${DMG_STAGING_DIR:-$BUILD_ROOT/dmg-staging}"
+DMG_RW_PATH="${DMG_RW_PATH:-$BUILD_ROOT/${ARTIFACT_BASENAME:-$APP_NAME}-rw.dmg}"
+DMG_MOUNT_DIR="${DMG_MOUNT_DIR:-$BUILD_ROOT/dmg-mount}"
 TEMP_ROOT="${RUNNER_TEMP:-$BUILD_ROOT/tmp}"
 
 KEYCHAIN_PATH="$TEMP_ROOT/build-signing.keychain-db"
@@ -177,8 +179,10 @@ if (( ${#missing_env[@]} > 0 )); then
 fi
 
 cleanup() {
+  detach_dmg_if_mounted
   security delete-keychain "$KEYCHAIN_PATH" >/dev/null 2>&1 || true
-  rm -f "$CERT_PATH" "$APPSTORE_CONNECT_KEY_PATH" "$EXPORT_OPTIONS_PLIST" "$PROFILE_METADATA_PLIST" "$ZIP_NOTARIZATION_PATH"
+  rm -f "$CERT_PATH" "$APPSTORE_CONNECT_KEY_PATH" "$EXPORT_OPTIONS_PLIST" "$PROFILE_METADATA_PLIST" "$ZIP_NOTARIZATION_PATH" "$DMG_RW_PATH"
+  rm -rf "$DMG_MOUNT_DIR"
 }
 trap cleanup EXIT
 
@@ -188,6 +192,76 @@ load_profile_metadata() {
   security cms -D -i "$profile_path" > "$PROFILE_METADATA_PLIST"
   PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$PROFILE_METADATA_PLIST")"
   PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$PROFILE_METADATA_PLIST")"
+}
+
+detach_dmg_if_mounted() {
+  if [[ -d "$DMG_MOUNT_DIR" ]] && mount | grep -q "on $DMG_MOUNT_DIR "; then
+    hdiutil detach "$DMG_MOUNT_DIR" -quiet || hdiutil detach "$DMG_MOUNT_DIR" -force -quiet || true
+  fi
+}
+
+create_styled_dmg() {
+  local app_path="$1"
+  local dmg_path="$2"
+  local icon_source="$PROJECT_ROOT/clipaste/Assets.xcassets/AppIcon.appiconset/app-icon-1024.png"
+  local background_dir="$DMG_STAGING_DIR/.background"
+  local background_name="background.png"
+  local background_path="$background_dir/$background_name"
+
+  rm -rf "$DMG_STAGING_DIR" "$DMG_MOUNT_DIR" "$DMG_RW_PATH" "$dmg_path"
+  mkdir -p "$background_dir" "$DMG_MOUNT_DIR"
+  cp -R "$app_path" "$DMG_STAGING_DIR/"
+  ln -s /Applications "$DMG_STAGING_DIR/Applications"
+
+  xcrun swift \
+    "$PROJECT_ROOT/scripts/generate-dmg-background.swift" \
+    "$background_path" \
+    "$icon_source" \
+    "$APP_NAME"
+
+  hdiutil create \
+    -volname "$APP_NAME" \
+    -srcfolder "$DMG_STAGING_DIR" \
+    -ov \
+    -format UDRW \
+    "$DMG_RW_PATH"
+
+  hdiutil attach "$DMG_RW_PATH" \
+    -readwrite \
+    -noverify \
+    -noautoopen \
+    -mountpoint "$DMG_MOUNT_DIR"
+
+  chflags hidden "$DMG_MOUNT_DIR/.background" || true
+
+  osascript <<EOF
+tell application "Finder"
+  tell disk "$APP_NAME"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set bounds of container window to {120, 120, 880, 600}
+    set theViewOptions to icon view options of container window
+    set arrangement of theViewOptions to not arranged
+    set icon size of theViewOptions to 108
+    set background picture of theViewOptions to file ".background:$background_name"
+    set position of item "$APP_NAME.app" of container window to {230, 250}
+    set position of item "Applications" of container window to {530, 250}
+    update without registering applications
+    delay 1
+    close
+  end tell
+end tell
+EOF
+
+  sync
+  hdiutil detach "$DMG_MOUNT_DIR" -quiet
+  hdiutil convert "$DMG_RW_PATH" \
+    -format UDZO \
+    -imagekey zlib-level=9 \
+    -o "$dmg_path"
+  rm -f "$DMG_RW_PATH"
 }
 
 validate_release_profile() {
@@ -344,16 +418,7 @@ spctl -a -vv "$APP_PATH"
 
 ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
 
-mkdir -p "$DMG_STAGING_DIR"
-cp -R "$APP_PATH" "$DMG_STAGING_DIR/"
-ln -s /Applications "$DMG_STAGING_DIR/Applications"
-
-hdiutil create \
-  -volname "$APP_NAME" \
-  -srcfolder "$DMG_STAGING_DIR" \
-  -ov \
-  -format UDZO \
-  "$DMG_PATH"
+create_styled_dmg "$APP_PATH" "$DMG_PATH"
 
 codesign --force \
   --sign "$SIGNING_IDENTITY" \
