@@ -4726,6 +4726,9 @@
         }
       }
     },
+    "GitHub" : {
+
+    },
     "Global Search" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -9095,46 +9098,6 @@
         }
       }
     },
-    "Quickly review, search, and re-paste recently copied content." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zuletzt kopierte Inhalte schnell anzeigen, suchen und erneut einfügen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consultez, recherchez et recollez rapidement le contenu récemment copié."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最近コピーした内容をすばやく確認、検索、再貼り付け。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "최근 복사한 내용을 빠르게 확인, 검색 및 다시 붙여넣기."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "快速查看、搜索并重新粘贴最近复制的内容。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "快速檢視、搜尋並重新貼上最近拷貝的內容。"
-          }
-        }
-      }
-    },
     "Quit" : {
       "localizations" : {
         "de" : {
@@ -12706,6 +12669,9 @@
           }
         }
       }
+    },
+    "Telegram" : {
+
     },
     "Terms of Service" : {
       "localizations" : {

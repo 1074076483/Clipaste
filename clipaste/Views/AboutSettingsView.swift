@@ -7,22 +7,34 @@ struct AboutSettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.locale) private var locale
     @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
+    private let telegramURL = URL(string: "https://t.me/clipaste")!
+    private let githubURL = URL(string: "https://github.com/gangz1o/Clipaste")!
     private let privacyPolicyURL = URL(string: "https://legal.clipaste.com/?page=privacy")!
     private let termsOfServiceURL = URL(string: "https://legal.clipaste.com/?page=terms")!
 
     var body: some View {
         @Bindable var updateViewModel = updateViewModel
 
-        Form {
+        VStack(alignment: .leading, spacing: 18) {
             brandSection
-            softwareUpdateSection(
-                viewModel: updateViewModel,
-                automaticallyChecksForUpdates: $updateViewModel.automaticallyChecksForUpdates,
-                automaticallyDownloadsUpdates: $updateViewModel.automaticallyDownloadsUpdates
-            )
-            linksSection
+
+            Form {
+                softwareUpdateSection(
+                    viewModel: updateViewModel,
+                    automaticallyChecksForUpdates: $updateViewModel.automaticallyChecksForUpdates,
+                    automaticallyDownloadsUpdates: $updateViewModel.automaticallyDownloadsUpdates
+                )
+                linksSection
+            }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
+            .settingsScrollChromeHidden()
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .settingsPageChrome()
+        .padding(.horizontal, 24)
+        .padding(.top, 18)
+        .padding(.bottom, 32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task {
             updateViewModel.start()
             updateViewModel.refreshAvailabilityIfNeeded()
@@ -34,36 +46,58 @@ struct AboutSettingsView: View {
 
 private extension AboutSettingsView {
     var brandSection: some View {
-        Section {
-            VStack(spacing: 14) {
-                Image(nsImage: NSApp.applicationIconImage)
-                    .resizable()
-                    .frame(width: 84, height: 84)
-                    .clipShape(.rect(cornerRadius: 22))
-                    .shadow(color: .black.opacity(0.12), radius: 16, y: 8)
+        VStack(spacing: 10) {
+            Image(nsImage: appIconImage)
+                .resizable()
+                .frame(width: 64, height: 64)
+                .clipShape(.rect(cornerRadius: 16))
+                .shadow(color: .black.opacity(0.10), radius: 10, y: 5)
 
-                Text(AppMetadata.displayName)
-                    .font(.system(size: 34, weight: .bold))
-                    .tracking(-0.8)
+            Text(AppMetadata.displayName)
+                .font(.system(size: 24, weight: .semibold))
+                .tracking(-0.3)
 
-                HStack(spacing: 0) {
+            HStack(spacing: 8) {
+                brandIconLink(assetName: "telegram", title: "Telegram", destination: telegramURL)
+                brandSeparator
+                brandIconLink(assetName: "github", title: "GitHub", destination: githubURL)
+                brandSeparator
+
+                HStack(spacing: 4) {
                     Text("Version")
-                    Text(verbatim: " \(AppMetadata.displayVersion)")
+                    Text(verbatim: AppMetadata.displayVersion)
                 }
-                .font(.system(size: 17, weight: .medium))
+                .font(.callout.weight(.medium))
                 .foregroundStyle(.secondary)
-
-                Text("Quickly review, search, and re-paste recently copied content.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 360)
-                    .padding(.top, 4)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
         }
-        .listRowBackground(Color.clear)
+        .fixedSize(horizontal: true, vertical: false)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.vertical, 8)
+    }
+
+    var appIconImage: NSImage {
+        NSImage(named: "AppIcon") ?? NSApp.applicationIconImage
+    }
+
+    var brandSeparator: some View {
+        Text(verbatim: "|")
+            .font(.callout)
+            .foregroundStyle(.tertiary)
+    }
+
+    func brandIconLink(assetName: String, title: LocalizedStringKey, destination: URL) -> some View {
+        Link(destination: destination) {
+            Image(assetName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(title))
+        .help(Text(title))
     }
 }
 
@@ -76,7 +110,9 @@ private extension AboutSettingsView {
         automaticallyDownloadsUpdates: Binding<Bool>
     ) -> some View {
         Section {
-            updateStatusBanner(for: viewModel)
+            if viewModel.isUpdateAvailable {
+                updateStatusBanner(for: viewModel)
+            }
 
             LabeledContent("Current Version") {
                 Text(verbatim: viewModel.currentVersion)

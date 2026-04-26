@@ -1,15 +1,40 @@
 import Cocoa
+import ApplicationServices
 
 enum AccessibilityPermissionCoordinator {
-    static func requestPermissionPrompt() {
-        let options: NSDictionary = ["AXTrustedCheckOptionPrompt": true]
-        _ = AXIsProcessTrustedWithOptions(options)
+    @discardableResult
+    static func requestPermissionPrompt() -> Bool {
+        let promptKey = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
+        let options: NSDictionary = [promptKey: true]
+        return AXIsProcessTrustedWithOptions(options)
     }
 
     @discardableResult
     static func openSystemSettings() -> Bool {
-        requestPermissionPrompt()
+        let isAlreadyTrusted = requestPermissionPrompt()
+        primeAccessibilityRegistration()
 
+        if isAlreadyTrusted {
+            return openAccessibilitySettingsPane()
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            _ = openAccessibilitySettingsPane()
+        }
+        return true
+    }
+
+    private static func primeAccessibilityRegistration() {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedApplication: CFTypeRef?
+        _ = AXUIElementCopyAttributeValue(
+            systemWideElement,
+            kAXFocusedApplicationAttribute as CFString,
+            &focusedApplication
+        )
+    }
+
+    private static func openAccessibilitySettingsPane() -> Bool {
         let workspace = NSWorkspace.shared
         let candidateURLs = [
             "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
