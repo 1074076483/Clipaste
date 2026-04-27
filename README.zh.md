@@ -20,7 +20,7 @@ Clipaste 是一个基于 **SwiftUI** 和 **SwiftData** 构建的 macOS 剪贴板
 - 🗂️ 面对超大剪贴板历史仍然保持顺滑不卡顿
 - 📝 面对超大文本内容时依然流畅，不会因为内容变重而明显拖慢界面
 - 🐸 后台自动ocr识别图片内容，支持搜索图片内文字
-- 🔄 可迁移 **Paste**、**PasteNow**、**iCopy** 的历史数据
+- 🔄 可迁移 **Paste**、**PasteNow**、**Maccy** 和 **iCopy** 的历史数据
 - ↔️ UI 同时支持横向和纵向布局
 - ☁️ 支持可选的 iCloud / CloudKit 同步
 - 💕 开源免费
