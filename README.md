@@ -21,7 +21,7 @@ Its core goal is simple: **stay fast, smooth, and memory-efficient even when cli
 - 🗂️ Smooth even with very large clipboard histories
 - 📝 Large text entries remain fluid instead of dragging the UI down
 - 🐸 Automatically recognizes image content and supports searching
-- 🔄 Imports history from **Paste**, **PasteNow**, and **iCopy**
+- 🔄 Imports history from **Paste**, **PasteNow**, **Maccy** and **iCopy**
 - ↔️ Supports both horizontal and vertical layouts
 - ☁️ Optional iCloud / CloudKit sync
 - 🆓 Free and open source
