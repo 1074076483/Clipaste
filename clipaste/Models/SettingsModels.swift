@@ -184,6 +184,7 @@ enum VerticalFollowMode: String, CaseIterable, Identifiable {
 }
 
 enum HistoryRetention: String, CaseIterable, Identifiable {
+    case oneDay = "1d"
     case threeDays = "3d"
     case oneWeek = "1w"
     case oneMonth = "1m"
@@ -194,6 +195,7 @@ enum HistoryRetention: String, CaseIterable, Identifiable {
     
     var localizedTitle: LocalizedStringResource {
         switch self {
+        case .oneDay: return LocalizedStringResource("1 Day")
         case .threeDays: return LocalizedStringResource("3 Days")
         case .oneWeek: return LocalizedStringResource("1 Week")
         case .oneMonth: return LocalizedStringResource("1 Month")
@@ -211,6 +213,7 @@ extension HistoryRetention {
         let now = Date()
         let cal = Calendar(identifier: .gregorian)
         switch self {
+        case .oneDay:    return now.addingTimeInterval(-24 * 3600)
         case .threeDays:  return now.addingTimeInterval(-3 * 24 * 3600)
         case .oneWeek:    return now.addingTimeInterval(-7 * 24 * 3600)
         case .oneMonth:   return cal.date(byAdding: .month, value: -1, to: now)

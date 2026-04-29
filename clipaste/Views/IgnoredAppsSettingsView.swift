@@ -48,6 +48,9 @@ private extension IgnoredAppsSettingsView {
                 selection: $selectedIgnoredAppBundleIdentifiers
             )
                 .frame(minHeight: 280)
+                .padding(.horizontal, -16)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .listRowInsets(EdgeInsets())
         } header: {
             HStack {
                 SettingsSectionHeader(title: "Ignored Apps")

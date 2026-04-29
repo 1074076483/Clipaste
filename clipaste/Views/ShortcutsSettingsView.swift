@@ -23,13 +23,6 @@ private extension ShortcutsSettingsView {
             ShortcutRecorderRow("Show / Hide Clipboard Panel", name: .toggleClipboardPanel)
         } header: {
             SettingsSectionHeader(title: "Global Shortcuts")
-        } footer: {
-            SettingsSectionFooter {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Only the wake shortcut is registered globally. Other actions work only while the Clipaste panel is focused.")
-                    Text("If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility.")
-                }
-            }
         }
     }
 }
@@ -46,10 +39,6 @@ private extension ShortcutsSettingsView {
             ShortcutRecorderRow("Clear Clipboard History", name: .clearHistory)
         } header: {
             SettingsSectionHeader(title: "Panel Shortcuts")
-        } footer: {
-            SettingsSectionFooter {
-                Text("These shortcuts are handled only when the Clipaste panel is the active window, so native shortcuts in Notes, browsers, Terminal, and other apps stay intact.")
-            }
         }
     }
 }

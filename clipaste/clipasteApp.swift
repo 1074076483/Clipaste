@@ -11,6 +11,7 @@ extension Notification.Name {
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private let onboardingDefaultsKey = "hasCompletedOnboarding"
+    private let hideMenuBarIconDefaultsKey = "hideMenuBarIcon"
     private let globalShortcutNames: [KeyboardShortcuts.Name] = [
         .toggleClipboardPanel
     ]
@@ -31,9 +32,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.applicationIconImage = appIcon
         }
 
-        if statusBarController == nil {
-            statusBarController = StatusBarController()
-        }
+        syncStatusBarControllerVisibility()
 
         let hasCompleted = UserDefaults.standard.bool(forKey: onboardingDefaultsKey)
         lastKnownOnboardingState = hasCompleted
@@ -69,6 +68,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.lastObservedAppLanguageRaw = langRaw
                     SettingsWindowCoordinator.refreshAllSettingsWindowTitles()
                 }
+
+                self.syncStatusBarControllerVisibility()
 
                 let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: self.onboardingDefaultsKey)
                 guard hasCompletedOnboarding != self.lastKnownOnboardingState else { return }
@@ -160,6 +161,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             NSApp.setActivationPolicy(.regular)
             NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    private func syncStatusBarControllerVisibility() {
+        let shouldHideMenuBarIcon = UserDefaults.standard.bool(forKey: hideMenuBarIconDefaultsKey)
+        if shouldHideMenuBarIcon {
+            statusBarController = nil
+        } else if statusBarController == nil {
+            statusBarController = StatusBarController()
         }
     }
 

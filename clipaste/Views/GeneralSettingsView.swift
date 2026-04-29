@@ -6,14 +6,15 @@ struct GeneralSettingsView: View {
     @AppStorage("appTheme") private var appTheme: AppTheme = .system
     @AppStorage("appAccentColor") private var appAccentColor: AppAccentColor = .defaultValue
     @AppStorage("clipboardLayout") private var clipboardLayout: AppLayoutMode = .horizontal
+    @AppStorage("hideMenuBarIcon") private var hideMenuBarIcon = false
 
     @State private var showingClearAlert = false
 
     var body: some View {
         Form {
-            startupLanguageSection
+            appearanceSection
+            generalSection
             windowSection
-            feedbackSection
             historySection
         }
         .settingsPageChrome()
@@ -23,14 +24,39 @@ struct GeneralSettingsView: View {
     }
 }
 
-// MARK: - Section 1: Startup & Language
+// MARK: - Section 1: General
 
 private extension GeneralSettingsView {
-    var startupLanguageSection: some View {
+    var generalSection: some View {
         Section {
             Toggle(isOn: launchAtLoginBinding) {
-                Text("Launch Clipaste at Login")
+                Text("Launch at Login")
             }
+
+            Toggle(isOn: $hideMenuBarIcon) {
+                Text("Hide Menu Bar Icon")
+            }
+
+            Picker("Language", selection: $viewModel.appLanguage) {
+                ForEach(AppLanguage.allCases) { lang in
+                    Text(lang.localizedDisplayName).tag(lang)
+                }
+            }
+
+            Toggle(isOn: $viewModel.isCopySoundEnabled) {
+                Text("Copy Notification Sound")
+            }
+        } header: {
+            SettingsSectionHeader(title: "Basic")
+        }
+    }
+}
+
+// MARK: - Section 2: Appearance
+
+private extension GeneralSettingsView {
+    var appearanceSection: some View {
+        Section {
 
             AppearanceThemePicker(
                 selection: $appTheme,
@@ -38,19 +64,13 @@ private extension GeneralSettingsView {
             )
 
             ThemeColorPicker(selection: $appAccentColor)
-
-            Picker("Language", selection: $viewModel.appLanguage) {
-                ForEach(AppLanguage.allCases) { lang in
-                    Text(lang.localizedDisplayName).tag(lang)
-                }
-            }
         } header: {
-            SettingsSectionHeader(title: "Startup & Language")
+            SettingsSectionHeader(title: "Appearance")
         }
     }
 }
 
-// MARK: - Section 2: Window
+// MARK: - Section 3: Window
 
 private extension GeneralSettingsView {
     var windowSection: some View {
@@ -64,10 +84,6 @@ private extension GeneralSettingsView {
             PreviewPanelToggle()
         } header: {
             SettingsSectionHeader(title: "Window")
-        } footer: {
-            SettingsSectionFooter {
-                Text("Layout Mode controls how clipboard items are displayed. Preview Panel shows detailed preview when using vertical layouts.")
-            }
         }
     }
 }
@@ -404,24 +420,6 @@ private struct AppearanceThemePreview: View {
 
     private func windowControl(_ tint: Color, style: PreviewWindowStyle) -> Color {
         style == .dark ? tint.opacity(0.92) : tint.opacity(0.84)
-    }
-}
-
-// MARK: - Section 3: Feedback & Sound
-
-private extension GeneralSettingsView {
-    var feedbackSection: some View {
-        Section {
-            Toggle(isOn: $viewModel.isCopySoundEnabled) {
-                Text("Copy Notification Sound")
-            }
-        } header: {
-            SettingsSectionHeader(title: "Feedback & Sound")
-        } footer: {
-            SettingsSectionFooter {
-                Text("Play a short sound after copying to the clipboard.")
-            }
-        }
     }
 }
 

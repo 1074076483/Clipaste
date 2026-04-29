@@ -79,13 +79,6 @@ private extension AdvancedSettingsView {
             }
         } header: {
             SettingsSectionHeader(title: "Interface")
-        } footer: {
-            SettingsSectionFooter {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Display preset category tabs like Text, Links, and Images in the navigation bar.")
-                    Text("Rich mode shows link titles, favicons, and domains. Default mode shows only the URL.")
-                }
-            }
         }
     }
 }
@@ -108,12 +101,7 @@ private extension AdvancedSettingsView {
     var dataSyncSection: some View {
         Section {
             Toggle(isOn: syncEnabledBinding) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Sync via iCloud")
-                    Text("Seamlessly sync clipboard history across all Macs signed in with the same Apple ID.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text("iCloud Sync")
             }
             .disabled(runtimeStore.isSyncing)
 

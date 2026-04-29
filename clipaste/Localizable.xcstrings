@@ -1484,6 +1484,46 @@
         }
       }
     },
+    "Basic" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grundlagen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Base"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基础"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기본"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基础"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基礎"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "de" : {
@@ -3993,6 +4033,7 @@
       }
     },
     "Display preset category tabs like Text, Links, and Images in the navigation bar." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4390,6 +4431,7 @@
       }
     },
     "Feedback & Sound" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5013,6 +5055,46 @@
     "Hello, world!" : {
 
     },
+    "Hide Menu Bar Icon" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menüleistensymbol ausblenden"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer l’icône dans la barre des menus"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メニューバーアイコンを非表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메뉴 막대 아이콘 숨기기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐藏菜单栏图标"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏選單列圖示"
+          }
+        }
+      }
+    },
     "History" : {
       "localizations" : {
         "de" : {
@@ -5436,7 +5518,48 @@
         }
       }
     },
+    "iCloud Sync" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud-Synchronisierung"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synchronisation iCloud"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 同期"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 동기화"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 同步"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud 同步"
+          }
+        }
+      }
+    },
     "If the shortcut doesn't work, allow Clipaste in System Settings > Privacy & Security > Accessibility." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6333,13 +6456,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "随系统启动"
+            "value" : "开机启动"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "隨系統啟動"
+            "value" : "開機啟動"
           }
         }
       }
@@ -6386,6 +6509,7 @@
       }
     },
     "Launch Clipaste at Login" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6466,6 +6590,7 @@
       }
     },
     "Layout Mode controls how clipboard items are displayed. Preview Panel shows detailed preview when using vertical layouts." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -7793,6 +7918,7 @@
       }
     },
     "Only the wake shortcut is registered globally. Other actions work only while the Clipaste panel is focused." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -8697,6 +8823,7 @@
       }
     },
     "Play a short sound after copying to the clipboard." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10222,6 +10349,7 @@
       }
     },
     "Rich mode shows link titles, favicons, and domains. Default mode shows only the URL." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10440,6 +10568,7 @@
       }
     },
     "Seamlessly sync clipboard history across all Macs signed in with the same Apple ID." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12044,6 +12173,7 @@
       }
     },
     "Startup & Language" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12428,6 +12558,7 @@
       }
     },
     "Sync via iCloud" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12949,6 +13080,7 @@
       }
     },
     "These shortcuts are handled only when the Clipaste panel is the active window, so native shortcuts in Notes, browsers, Terminal, and other apps stay intact." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
